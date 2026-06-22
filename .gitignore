@@ -48,6 +48,7 @@ environment/generated/
 *.tmp
 *.temp
 ~$*
+_backup_ui_*/
 
 # ── Binary Deliverables (ไม่ track ด้วย git — ใช้ SharePoint/Drive แทน) ──
 deliver-docs/*.pptx
