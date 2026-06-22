@@ -44,12 +44,12 @@ if [ ! -s "$violations_file" ]; then
   exit 0
 fi
 
-outside_src=$(grep -v '^src/' "$violations_file" || true)
-if [ -z "$outside_src" ]; then
+outside_allowed=$(grep -Ev '^(src|project-planner|test-scenarios|test-scenarioes)/' "$violations_file" || true)
+if [ -z "$outside_allowed" ]; then
   exit 0
 fi
 
-echo "Push blocked: only files under src/ are allowed in pushed commits." >&2
-echo "Files outside src/:" >&2
-printf '%s\n' "$outside_src" >&2
+echo "Push blocked: only files under src/, project-planner/, test-scenarios/, or test-scenarioes/ are allowed in pushed commits." >&2
+echo "Files outside allowed folders:" >&2
+printf '%s\n' "$outside_allowed" >&2
 exit 1
