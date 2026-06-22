@@ -14,11 +14,12 @@ public class IndexModel : PageModel
 
     public DashboardSnapshot Snapshot { get; private set; } = new();
     public IReadOnlyList<CalcRunItem> RecentRuns { get; private set; } = Array.Empty<CalcRunItem>();
+    public IReadOnlyList<DashboardChannelSummary> ChannelSummaries { get; private set; } = Array.Empty<DashboardChannelSummary>();
 
     public async Task OnGetAsync()
     {
         Snapshot = await _portalDataService.GetDashboardSnapshotAsync();
         RecentRuns = await _portalDataService.GetRecentRunsAsync(8);
-
+        ChannelSummaries = await _portalDataService.GetDashboardChannelSummariesAsync();
     }
 }

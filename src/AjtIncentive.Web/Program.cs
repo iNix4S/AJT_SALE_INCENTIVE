@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using AjtIncentive.Infrastructure.Data;
 using AjtIncentive.Application.Interfaces;
 using AjtIncentive.Infrastructure.StoredProcedures;
@@ -6,8 +10,56 @@ using AjtIncentive.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var azureAdSection = builder.Configuration.GetSection("AzureAd");
+var isEntraConfigured =
+    IsConfiguredValue(azureAdSection["Instance"])
+    && IsConfiguredValue(azureAdSection["TenantId"])
+    && IsConfiguredValue(azureAdSection["ClientId"])
+    && IsConfiguredValue(azureAdSection["ClientSecret"]);
+
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddAuthorization();
+
+var authenticationBuilder = builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = isEntraConfigured
+            ? OpenIdConnectDefaults.AuthenticationScheme
+            : CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/account/signin";
+        options.LogoutPath = "/account/signout";
+        options.AccessDeniedPath = "/";
+    });
+
+if (isEntraConfigured)
+{
+    authenticationBuilder.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    {
+        var instance = azureAdSection["Instance"]?.TrimEnd('/') ?? "https://login.microsoftonline.com";
+        var tenantId = azureAdSection["TenantId"] ?? string.Empty;
+
+        options.Authority = $"{instance}/{tenantId}/v2.0";
+        options.ClientId = azureAdSection["ClientId"] ?? string.Empty;
+        options.ClientSecret = azureAdSection["ClientSecret"] ?? string.Empty;
+        options.CallbackPath = azureAdSection["CallbackPath"] ?? "/signin-oidc";
+        options.SignedOutCallbackPath = azureAdSection["SignedOutCallbackPath"] ?? "/signout-callback-oidc";
+        options.ResponseType = OpenIdConnectResponseType.Code;
+        options.UsePkce = true;
+        options.SaveTokens = true;
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+        options.TokenValidationParameters.NameClaimType = "name";
+    });
+}
 
 var connectionString =
     Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
@@ -42,10 +94,46 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/account/signin", (HttpContext httpContext, string? returnUrl) =>
+{
+    if (!isEntraConfigured)
+    {
+        return Results.Redirect("/");
+    }
+
+    var redirectUri = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl;
+
+    return Results.Challenge(
+        new AuthenticationProperties { RedirectUri = redirectUri },
+        new[] { OpenIdConnectDefaults.AuthenticationScheme });
+}).AllowAnonymous();
+
+app.MapGet("/account/signout", () =>
+    Results.SignOut(
+        new AuthenticationProperties { RedirectUri = "/" },
+        new[]
+        {
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            OpenIdConnectDefaults.AuthenticationScheme
+        }))
+    .RequireAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
 app.Run();
+
+static bool IsConfiguredValue(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return false;
+    }
+
+    return !value.Contains("__SET_IN_", StringComparison.OrdinalIgnoreCase)
+        && !value.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase);
+}

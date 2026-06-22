@@ -27,13 +27,20 @@
             <form method="post" asp-page-handler="RunMt" class="calc-card__form mt-3">
                 <div class="mb-3">
                     <label asp-for="MtPeriodId" class="form-label">Period</label>
-                    <select asp-for="MtPeriodId" class="form-select">
+                    <select asp-for="MtPeriodId" class="form-select calc-period-select" id="mt-period"
+                            onchange="calcUpdateStatus('mt', this)">
                         @foreach (var p in Model.Periods)
                         {
-                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                            var r = Model.MtReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
+                            <option value="@p.PeriodId"
+                                    data-target="@r.TargetRows"
+                                    data-actual="@r.ActualRows">
+                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
+                            </option>
                         }
                     </select>
                 </div>
+                <div id="mt-status" class="mb-2"></div>
                 <button type="submit" class="btn btn-danger calc-run-btn">Run MT Calculation</button>
             </form>
         </article>
@@ -49,21 +56,22 @@
 
             <form method="post" asp-page-handler="RunTt" class="calc-card__form mt-3">
                 <div class="mb-3">
-                    <label asp-for="TtPeriodCode" class="form-label">Period Code</label>
-                    <select asp-for="TtPeriodCode" class="form-select">
+                    <label asp-for="TtPeriodCode" class="form-label">Period</label>
+                    <select asp-for="TtPeriodCode" class="form-select calc-period-select" id="tt-period"
+                            onchange="calcUpdateStatus('tt', this)">
                         @foreach (var p in Model.Periods)
                         {
-                            <option value="@p.PeriodCode">@p.PeriodCode</option>
+                            var r = Model.TtReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
+                            <option value="@p.PeriodCode"
+                                    data-target="@r.TargetRows"
+                                    data-actual="@r.ActualRows">
+                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
+                            </option>
                         }
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="TtWsType" class="form-label">WS Type</label>
-                    <select asp-for="TtWsType" class="form-select">
-                        <option value="TOP_WS">TOP_WS</option>
-                        <option value="STAFF">STAFF</option>
-                    </select>
-                </div>
+                <div id="tt-status" class="mb-2"></div>
+                <p class="text-muted small mb-2">คำนวณพร้อมกันทุก WS Type: @string.Join(", ", Model.TtWsTypes)</p>
                 <button type="submit" class="btn btn-success calc-run-btn">Run TT Calculation</button>
             </form>
         </article>
@@ -80,13 +88,20 @@
             <form method="post" asp-page-handler="RunSi" class="calc-card__form mt-3">
                 <div class="mb-3">
                     <label asp-for="SiPeriodId" class="form-label">Period</label>
-                    <select asp-for="SiPeriodId" class="form-select">
+                    <select asp-for="SiPeriodId" class="form-select calc-period-select" id="si-period"
+                            onchange="calcUpdateStatus('si', this)">
                         @foreach (var p in Model.Periods)
                         {
-                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                            var r = Model.SiReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
+                            <option value="@p.PeriodId"
+                                    data-target="@r.TargetRows"
+                                    data-actual="@r.ActualRows">
+                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
+                            </option>
                         }
                     </select>
                 </div>
+                <div id="si-status" class="mb-2"></div>
                 <button type="submit" class="btn btn-warning calc-run-btn" disabled="@(!Model.Snapshot.HasSiSp)">Run S&I Calculation</button>
                 @if (!Model.Snapshot.HasSiSp)
                 {
@@ -107,13 +122,20 @@
             <form method="post" asp-page-handler="RunLaos" class="calc-card__form mt-3">
                 <div class="mb-3">
                     <label asp-for="LaosPeriodId" class="form-label">Period</label>
-                    <select asp-for="LaosPeriodId" class="form-select">
+                    <select asp-for="LaosPeriodId" class="form-select calc-period-select" id="laos-period"
+                            onchange="calcUpdateStatus('laos', this)">
                         @foreach (var p in Model.Periods)
                         {
-                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                            var r = Model.LaosReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
+                            <option value="@p.PeriodId"
+                                    data-target="@r.TargetRows"
+                                    data-actual="@r.ActualRows">
+                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
+                            </option>
                         }
                     </select>
                 </div>
+                <div id="laos-status" class="mb-2"></div>
                 <button type="submit" class="btn btn-secondary calc-run-btn" disabled="@(!Model.Snapshot.HasLaosSp)">Run Laos Calculation</button>
                 @if (!Model.Snapshot.HasLaosSp)
                 {
@@ -130,6 +152,33 @@
         @TempData["Message"]
     </div>
 }
+
+<script>
+function calcUpdateStatus(ch, sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const target = parseInt(opt.dataset.target || '0');
+    const actual = parseInt(opt.dataset.actual || '0');
+    const div = document.getElementById(ch + '-status');
+    if (!div) return;
+
+    if (target > 0 && actual > 0) {
+        div.innerHTML = '<div class="alert alert-success py-1 px-2 small mb-0">✅ พร้อมคำนวณ — Target: ' + target + ' rows &nbsp;|&nbsp; Actual: ' + actual + ' rows</div>';
+    } else if (target > 0) {
+        div.innerHTML = '<div class="alert alert-warning py-1 px-2 small mb-0">⚠️ ยังไม่พร้อม — มี Target ' + target + ' rows แต่ไม่มีข้อมูล Actual</div>';
+    } else {
+        div.innerHTML = '<div class="alert alert-danger py-1 px-2 small mb-0">❌ ไม่มีข้อมูล — ไม่พบ Target และ Actual สำหรับ Period นี้</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    ['mt', 'tt', 'si', 'laos'].forEach(function (ch) {
+        const el = document.getElementById(ch + '-period');
+        if (el) {
+            calcUpdateStatus(ch, el);
+        }
+    });
+});
+</script>
 
 <section class="content-panel mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">

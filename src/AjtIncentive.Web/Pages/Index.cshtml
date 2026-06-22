@@ -1,28 +1,37 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Dashboard";
+    var readyChannels = Model.ChannelSummaries.Count(c => c.HasProcedure && c.ReadyPeriodCount > 0);
 }
 
-<section class="hero-banner mb-4 enterprise-hero">
+<section class="hero-banner mb-4 enterprise-hero dashboard-hero">
     <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-            <div class="eyebrow">Enterprise Control Center</div>
+        <div class="col-xl-8">
+            <div class="eyebrow">Sales Incentive Control Tower</div>
             <h1 class="display-6 fw-bold mb-2">AJT Sale Incentive Operations</h1>
             <p class="lead text-muted mb-3">
-                หน้าหลักนี้ผูกกับ master data และ process จริง เพื่อให้การทำงานสอดคล้องกับ test-scenarios (TC01-TC06)
+                ติดตามความพร้อมของ master data, ความพร้อมคำนวณราย channel, ผลลัพธ์ล่าสุด และทางลัดไปยังหน้าที่ใช้จริงในกระบวนการ Incentive
             </p>
             <div class="d-flex flex-wrap gap-2">
-                <span class="badge badge-soft-red">TC01-TC02: Run-based PASS</span>
-                <span class="badge badge-soft-green">TC03-TC06: Current-State PASS</span>
-                <span class="badge badge-soft-gray">DB-Driven</span>
+                <span class="badge badge-soft-red">Master Data Driven</span>
+                <span class="badge badge-soft-green">Calculation Ready: @readyChannels/4 Channels</span>
+                <span class="badge badge-soft-gray">For HR Output Linked</span>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="hero-stat-card">
-                <div class="stat-label">Live Process Snapshot</div>
-                <div class="stat-value">MT: @(Model.Snapshot.LatestMtRunId?.ToString() ?? "-") / TT: @(Model.Snapshot.LatestTtRunId?.ToString() ?? "-")</div>
-                <div class="stat-sub">Calc Runs: @Model.Snapshot.CalcRunCount</div>
+        <div class="col-xl-4">
+            <div class="hero-stat-card dashboard-hero__card">
+                <div class="stat-label">Operational Snapshot</div>
+                <div class="stat-value">@Model.Snapshot.CalcRunCount Runs</div>
+                <div class="stat-sub mb-2">Periods: @Model.Snapshot.PeriodCount / Employees: @Model.Snapshot.ActiveEmployeeCount</div>
+                <div class="dashboard-health-line">
+                    <span>Stored Procedures</span>
+                    <strong>@Model.ChannelSummaries.Count(c => c.HasProcedure)/4 Ready</strong>
+                </div>
+                <div class="dashboard-health-line">
+                    <span>Channels Ready to Calculate</span>
+                    <strong>@readyChannels/4</strong>
+                </div>
             </div>
         </div>
     </div>
@@ -32,7 +41,7 @@
     <div class="row g-3">
         <div class="col-6 col-lg-3">
             <div class="kpi-card">
-                <div class="kpi-label">Periods</div>
+                <div class="kpi-label">Master Periods</div>
                 <div class="kpi-value">@Model.Snapshot.PeriodCount</div>
             </div>
         </div>
@@ -44,14 +53,139 @@
         </div>
         <div class="col-6 col-lg-3">
             <div class="kpi-card">
-                <div class="kpi-label">Active Employees</div>
-                <div class="kpi-value">@Model.Snapshot.ActiveEmployeeCount</div>
+                <div class="kpi-label">Latest MT Run</div>
+                <div class="kpi-value">@(Model.Snapshot.LatestMtRunId?.ToString() ?? "-")</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="kpi-card">
-                <div class="kpi-label">Stored Procedures</div>
-                <div class="kpi-value">@(new[] { Model.Snapshot.HasMtSp, Model.Snapshot.HasTtSp, Model.Snapshot.HasSiSp, Model.Snapshot.HasLaosSp }.Count(x => x))/4</div>
+                <div class="kpi-label">Latest TT Run</div>
+                <div class="kpi-value">@(Model.Snapshot.LatestTtRunId?.ToString() ?? "-")</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Channel Operations</div>
+            <h2 class="h5 mb-0">Calculation Readiness by Channel</h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var channel in Model.ChannelSummaries)
+        {
+            var statusClass = channel.HasProcedure && channel.ReadyPeriodCount > 0 ? "ready" : channel.HasProcedure ? "warning" : "blocked";
+            var statusText = channel.HasProcedure && channel.ReadyPeriodCount > 0
+                ? "พร้อมคำนวณ"
+                : channel.HasProcedure
+                    ? "SP พร้อม แต่ข้อมูลยังไม่ครบ"
+                    : "SP ยังไม่พร้อม";
+            var formulaNote = channel.ChannelCode switch
+            {
+                "MT" => "คำนวณแบบ product group ตาม salesman ดูแลหลายกลุ่มสินค้า",
+                "TT" => "คำนวณตาม SKU และประมวลผลทุก WS Type พร้อมกัน",
+                "SI" => "ใช้ pattern จาก MT แต่ทดสอบเฉพาะ S&I test channel",
+                "LAOS" => "ใช้ pattern ใกล้ TT พร้อม product mapping A/R/B/Y -> AJ/RD/BD/YY",
+                _ => "ใช้ master data จาก database"
+            };
+            <div class="col-12 col-md-6">
+                <article class="dashboard-channel-card dashboard-channel-card--@statusClass">
+                    <div class="dashboard-channel-card__head">
+                        <div>
+                            <div class="module-kicker mb-1">@channel.ChannelCode</div>
+                            <h3 class="h5 mb-1">@channel.ChannelNameEn Calculation</h3>
+                            <p class="text-muted mb-0 small">@formulaNote</p>
+                        </div>
+                        <span class="dashboard-status-pill dashboard-status-pill--@statusClass">@statusText</span>
+                    </div>
+
+                    <div class="dashboard-channel-grid">
+                        <div>
+                            <div class="dashboard-mini-label">Latest Ready Period</div>
+                            <div class="dashboard-mini-value">@((channel.LatestReadyPeriodCode != string.Empty ? channel.LatestReadyPeriodCode : "-"))</div>
+                            <div class="dashboard-mini-sub">Target @channel.LatestReadyTargetRows / Actual @channel.LatestReadyActualRows</div>
+                        </div>
+                        <div>
+                            <div class="dashboard-mini-label">Latest Calc Run</div>
+                            <div class="dashboard-mini-value">@(channel.LatestCalcRunId?.ToString() ?? "-")</div>
+                            <div class="dashboard-mini-sub">@((channel.LatestRunStatus != string.Empty ? channel.LatestRunStatus : "No run yet"))</div>
+                        </div>
+                        <div>
+                            <div class="dashboard-mini-label">Ready Period Count</div>
+                            <div class="dashboard-mini-value">@channel.ReadyPeriodCount</div>
+                            <div class="dashboard-mini-sub">Periods with target + actual</div>
+                        </div>
+                        <div>
+                            <div class="dashboard-mini-label">For HR Rows</div>
+                            <div class="dashboard-mini-value">@channel.LatestForHrRowCount</div>
+                            <div class="dashboard-mini-sub">Latest output row count</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-channel-actions">
+                        <a class="btn btn-sm btn-outline-dark" asp-page="/Calculation/Index">Run Calculation</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="/ForHR/Index">Review For HR</a>
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="mb-4">
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <div class="content-panel dashboard-process-card h-100">
+                <div class="eyebrow">Step 1</div>
+                <h2 class="h5">Master Setup</h2>
+                <p class="text-muted mb-3">ดูแล period master, parameter และสถานะพร้อมคำนวณของข้อมูลต้นทาง</p>
+                <div class="dashboard-process-links">
+                    <a class="module-card dashboard-mini-card" asp-page="/Periods/Index">
+                        <h3>Periods</h3>
+                        <p>เพิ่ม ลด และตั้งค่างวดคำนวณในฐานข้อมูลจริง</p>
+                    </a>
+                    <a class="module-card dashboard-mini-card" asp-page="/Parameters/Index">
+                        <h3>Parameters</h3>
+                        <p>ดูค่าที่ใช้คำนวณ incentive ตาม master data</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="content-panel dashboard-process-card h-100">
+                <div class="eyebrow">Step 2</div>
+                <h2 class="h5">Calculation & Adjustment</h2>
+                <p class="text-muted mb-3">รัน calculation ตาม channel และบันทึกกรณีพิเศษที่มีผลต่อ incentive</p>
+                <div class="dashboard-process-links">
+                    <a class="module-card dashboard-mini-card" asp-page="/Calculation/Index">
+                        <h3>Calculation</h3>
+                        <p>รัน MT, TT, S&I และ LAOS ด้วยพารามิเตอร์จริง</p>
+                    </a>
+                    <a class="module-card dashboard-mini-card" asp-page="/Prorate/Index">
+                        <h3>Adjustments</h3>
+                        <p>จัดการ Prorate และ Special Adjustment ตาม business case</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="content-panel dashboard-process-card h-100">
+                <div class="eyebrow">Step 3</div>
+                <h2 class="h5">Review & Output</h2>
+                <p class="text-muted mb-3">ตรวจสอบผลล่าสุด, row สำหรับ HR และสถานะการอนุมัติก่อนใช้งานจริง</p>
+                <div class="dashboard-process-links">
+                    <a class="module-card dashboard-mini-card" asp-page="/ForHR/Index">
+                        <h3>For HR</h3>
+                        <p>ตรวจ `out_for_hr_variable` และผลลัพธ์ต่อพนักงาน</p>
+                    </a>
+                    <a class="module-card dashboard-mini-card" asp-page="/Approvals/Index">
+                        <h3>Approvals</h3>
+                        <p>ติดตาม calc run และการอนุมัติผลคำนวณล่าสุด</p>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -75,6 +209,7 @@
                             <th>Channel</th>
                             <th>Period</th>
                             <th>Status</th>
+                            <th>Approved By</th>
                             <th>Updated</th>
                         </tr>
                     </thead>
@@ -86,6 +221,7 @@
                             <td>@run.ChannelCode</td>
                             <td>@run.PeriodCode</td>
                             <td><span class="badge rounded-pill bg-light text-dark border">@run.RunStatus</span></td>
+                            <td>@run.ApprovedBy</td>
                             <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
                         </tr>
                     }
@@ -97,33 +233,16 @@
 
     <div class="col-xl-5">
         <div class="content-panel h-100">
-            <div class="eyebrow">Scenario Alignment</div>
-            <h2 class="h5">Master Data & Capability Checks</h2>
-            <ul class="list-unstyled mb-0 mt-3 small">
-                <li class="mb-2">MT SP: @(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</li>
-                <li class="mb-2">TT SP: @(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</li>
-                <li class="mb-2">S&I SP: @(Model.Snapshot.HasSiSp ? "Ready" : "Current-State Skip")</li>
-                <li class="mb-2">Laos SP: @(Model.Snapshot.HasLaosSp ? "Ready" : "Current-State Skip")</li>
-                <li class="mb-2">Prorate field (start_date): @(Model.Snapshot.HasStartDate ? "Ready" : "Current-State Skip")</li>
-                <li>Adjustment table: @(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Current-State Skip")</li>
+            <div class="eyebrow">System Readiness</div>
+            <h2 class="h5">Capability Checks</h2>
+            <ul class="list-unstyled mb-0 mt-3 dashboard-checklist">
+                <li>MT SP: <strong>@(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</strong></li>
+                <li>TT SP: <strong>@(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</strong></li>
+                <li>S&I SP: <strong>@(Model.Snapshot.HasSiSp ? "Ready" : "Missing")</strong></li>
+                <li>Laos SP: <strong>@(Model.Snapshot.HasLaosSp ? "Ready" : "Missing")</strong></li>
+                <li>Prorate field (`start_date`): <strong>@(Model.Snapshot.HasStartDate ? "Ready" : "Missing")</strong></li>
+                <li>Adjustment table: <strong>@(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Missing")</strong></li>
             </ul>
         </div>
     </div>
 </div>
-
-<section class="mt-4">
-    <div class="row g-3">
-        <div class="col-md-6 col-xl-3">
-            <a class="module-card" asp-page="/Calculation/Index"><h3>Calculation</h3><p>Run MT/TT ด้วยพารามิเตอร์จริงจาก master data</p></a>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="module-card" asp-page="/ForHR/Index"><h3>For HR</h3><p>ตรวจผล out_for_hr_variable ตาม calc_run ล่าสุด</p></a>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="module-card" asp-page="/Periods/Index"><h3>Periods</h3><p>ดู period master และช่วงเดือนที่ใช้งาน</p></a>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <a class="module-card" asp-page="/Approvals/Index"><h3>Approvals</h3><p>ติดตามสถานะ run และการอนุมัติล่าสุด</p></a>
-        </div>
-    </div>
-</section>

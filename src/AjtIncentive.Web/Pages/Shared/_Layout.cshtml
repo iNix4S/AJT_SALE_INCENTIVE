@@ -1,4 +1,25 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@inject IConfiguration Configuration
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    var entraConfigured =
+        !string.IsNullOrWhiteSpace(Configuration["AzureAd:Instance"])
+        && !string.IsNullOrWhiteSpace(Configuration["AzureAd:TenantId"])
+        && !Configuration["AzureAd:TenantId"]!.Contains("__SET_IN_", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(Configuration["AzureAd:ClientId"])
+        && !Configuration["AzureAd:ClientId"]!.Contains("__SET_IN_", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(Configuration["AzureAd:ClientSecret"])
+        && !Configuration["AzureAd:ClientSecret"]!.Contains("__SET_IN_", StringComparison.OrdinalIgnoreCase);
+    var userName = User.Identity?.Name
+        ?? User.FindFirst("name")?.Value
+        ?? "Microsoft User";
+    var userEmail = User.FindFirst(ClaimTypes.Upn)?.Value
+        ?? User.FindFirst("preferred_username")?.Value
+        ?? User.FindFirst(ClaimTypes.Email)?.Value
+        ?? userName;
+    var userInitial = string.IsNullOrWhiteSpace(userName) ? "U" : userName.Trim()[0].ToString().ToUpperInvariant();
+}
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="utf-8" />
@@ -25,7 +46,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
-                    <ul class="navbar-nav ms-auto gap-lg-1">
+                    <ul class="navbar-nav me-auto gap-lg-1">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Index">Dashboard</a>
                         </li>
@@ -37,9 +58,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/ForHR/Index">For HR</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Parameters/Index">Parameters</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Approvals/Index">Approvals</a>
@@ -60,6 +78,74 @@
                                 </li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Parameters/Index">Parameters</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-lg-3 mt-3 mt-lg-0 align-items-lg-center">
+                        @if (entraConfigured)
+                        {
+                            @if (isAuthenticated)
+                            {
+                                <li class="nav-item dropdown nav-user-menu">
+                                    <a class="nav-link dropdown-toggle nav-user-link" href="#" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="nav-user-avatar">@userInitial</span>
+                                        <span class="nav-user-meta d-none d-lg-flex">
+                                            <span class="nav-user-name">@userName</span>
+                                            <span class="nav-user-caption">Microsoft Entra ID</span>
+                                        </span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end nav-user-dropdown">
+                                        <li class="dropdown-item-text nav-user-dropdown__identity">
+                                            <strong>@userName</strong>
+                                            <span>@userEmail</span>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item" href="/account/signout">
+                                                <span class="nav-inline-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                                        <path d="M16 17l5-5-5-5" />
+                                                        <path d="M21 12H9" />
+                                                    </svg>
+                                                </span>
+                                                Sign out
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link nav-user-link" href="/account/signin">
+                                        <span class="nav-user-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20 21a8 8 0 0 0-16 0" />
+                                                <circle cx="12" cy="8" r="4" />
+                                            </svg>
+                                        </span>
+                                        <span>Sign in</span>
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link nav-user-link nav-user-link--disabled" title="Configure AzureAd settings to enable Microsoft Entra ID sign-in.">
+                                    <span class="nav-user-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21a8 8 0 0 0-16 0" />
+                                            <circle cx="12" cy="8" r="4" />
+                                        </svg>
+                                    </span>
+                                    <span>Entra ID</span>
+                                </span>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
