@@ -1,0 +1,169 @@
+@page
+@model AjtIncentive.Web.Pages.Calculation.IndexModel
+@{
+    ViewData["Title"] = "Calculation";
+}
+
+<section class="content-panel mb-4 calc-header-panel">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <div class="eyebrow">Run Incentive</div>
+            <h1 class="h3 mb-1">Calculation Workspace</h1>
+            <p class="text-muted mb-0">รองรับครบ 4 Channel ตาม master data: MT, TT, S&I, LAOS</p>
+        </div>
+        <div class="calc-master-pill">Master data: @Model.Periods.Count periods / @Model.Channels.Count channels</div>
+    </div>
+</section>
+
+<section class="row g-4 calc-grid">
+    <div class="col-12 col-xl-6">
+        <article class="content-panel calc-card h-100">
+            <header class="calc-card__header">
+                <div class="module-kicker mb-1">TC02</div>
+                <h2 class="h5 mb-1">MT Calculation</h2>
+                <p class="text-muted mb-0">เรียก <code>usp_run_mt_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
+            </header>
+
+            <form method="post" asp-page-handler="RunMt" class="calc-card__form mt-3">
+                <div class="mb-3">
+                    <label asp-for="MtPeriodId" class="form-label">Period</label>
+                    <select asp-for="MtPeriodId" class="form-select">
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger calc-run-btn">Run MT Calculation</button>
+            </form>
+        </article>
+    </div>
+
+    <div class="col-12 col-xl-6">
+        <article class="content-panel calc-card h-100">
+            <header class="calc-card__header">
+                <div class="module-kicker mb-1">TC01</div>
+                <h2 class="h5 mb-1">TT Calculation</h2>
+                <p class="text-muted mb-0">เรียก <code>usp_run_tt_incentive_calculation</code> ด้วย <code>@@PeriodCode</code>, <code>@@WsType</code>, <code>@@ApprovedBy</code></p>
+            </header>
+
+            <form method="post" asp-page-handler="RunTt" class="calc-card__form mt-3">
+                <div class="mb-3">
+                    <label asp-for="TtPeriodCode" class="form-label">Period Code</label>
+                    <select asp-for="TtPeriodCode" class="form-select">
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodCode">@p.PeriodCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="TtWsType" class="form-label">WS Type</label>
+                    <select asp-for="TtWsType" class="form-select">
+                        <option value="TOP_WS">TOP_WS</option>
+                        <option value="STAFF">STAFF</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success calc-run-btn">Run TT Calculation</button>
+            </form>
+        </article>
+    </div>
+
+    <div class="col-12 col-xl-6">
+        <article class="content-panel calc-card h-100">
+            <header class="calc-card__header">
+                <div class="module-kicker mb-1">TC03</div>
+                <h2 class="h5 mb-1">S&I Calculation</h2>
+                <p class="text-muted mb-0">เรียก <code>usp_run_si_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
+            </header>
+
+            <form method="post" asp-page-handler="RunSi" class="calc-card__form mt-3">
+                <div class="mb-3">
+                    <label asp-for="SiPeriodId" class="form-label">Period</label>
+                    <select asp-for="SiPeriodId" class="form-select">
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-warning calc-run-btn" disabled="@(!Model.Snapshot.HasSiSp)">Run S&I Calculation</button>
+                @if (!Model.Snapshot.HasSiSp)
+                {
+                    <div class="calc-note text-muted mt-2">SP ยังไม่ deploy ใน environment ปัจจุบัน</div>
+                }
+            </form>
+        </article>
+    </div>
+
+    <div class="col-12 col-xl-6">
+        <article class="content-panel calc-card h-100">
+            <header class="calc-card__header">
+                <div class="module-kicker mb-1">TC04</div>
+                <h2 class="h5 mb-1">Laos Calculation</h2>
+                <p class="text-muted mb-0">เรียก <code>usp_run_laos_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
+            </header>
+
+            <form method="post" asp-page-handler="RunLaos" class="calc-card__form mt-3">
+                <div class="mb-3">
+                    <label asp-for="LaosPeriodId" class="form-label">Period</label>
+                    <select asp-for="LaosPeriodId" class="form-select">
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId">@p.PeriodId - @p.PeriodCode (@p.SalesMonth:yyyy-MM)</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary calc-run-btn" disabled="@(!Model.Snapshot.HasLaosSp)">Run Laos Calculation</button>
+                @if (!Model.Snapshot.HasLaosSp)
+                {
+                    <div class="calc-note text-muted mt-2">SP ยังไม่ deploy ใน environment ปัจจุบัน</div>
+                }
+            </form>
+        </article>
+    </div>
+</section>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info mt-4 mb-4 calc-alert">
+        @TempData["Message"]
+    </div>
+}
+
+<section class="content-panel mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Operational Trace</div>
+            <h2 class="h5 mb-0">Recent Calculation Runs</h2>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Calc Run</th>
+                    <th>Channel</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                    <th>Approved By</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var run in Model.RecentRuns)
+            {
+                <tr>
+                    <td class="fw-semibold">@run.CalcRunId</td>
+                    <td>@run.ChannelCode</td>
+                    <td>@run.PeriodCode</td>
+                    <td>@run.RunStatus</td>
+                    <td>@run.ApprovedBy</td>
+                    <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

@@ -1,0 +1,129 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<section class="hero-banner mb-4 enterprise-hero">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <div class="eyebrow">Enterprise Control Center</div>
+            <h1 class="display-6 fw-bold mb-2">AJT Sale Incentive Operations</h1>
+            <p class="lead text-muted mb-3">
+                หน้าหลักนี้ผูกกับ master data และ process จริง เพื่อให้การทำงานสอดคล้องกับ test-scenarios (TC01-TC06)
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge badge-soft-red">TC01-TC02: Run-based PASS</span>
+                <span class="badge badge-soft-green">TC03-TC06: Current-State PASS</span>
+                <span class="badge badge-soft-gray">DB-Driven</span>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="hero-stat-card">
+                <div class="stat-label">Live Process Snapshot</div>
+                <div class="stat-value">MT: @(Model.Snapshot.LatestMtRunId?.ToString() ?? "-") / TT: @(Model.Snapshot.LatestTtRunId?.ToString() ?? "-")</div>
+                <div class="stat-sub">Calc Runs: @Model.Snapshot.CalcRunCount</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <div class="row g-3">
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="kpi-label">Periods</div>
+                <div class="kpi-value">@Model.Snapshot.PeriodCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="kpi-label">Active Channels</div>
+                <div class="kpi-value">@Model.Snapshot.ActiveChannelCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="kpi-label">Active Employees</div>
+                <div class="kpi-value">@Model.Snapshot.ActiveEmployeeCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="kpi-label">Stored Procedures</div>
+                <div class="kpi-value">@(new[] { Model.Snapshot.HasMtSp, Model.Snapshot.HasTtSp, Model.Snapshot.HasSiSp, Model.Snapshot.HasLaosSp }.Count(x => x))/4</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="content-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="eyebrow">Recent Process Runs</div>
+                    <h2 class="h5 mb-0">Latest Calc Runs</h2>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle enterprise-table">
+                    <thead>
+                        <tr>
+                            <th>Run</th>
+                            <th>Channel</th>
+                            <th>Period</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var run in Model.RecentRuns)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@run.CalcRunId</td>
+                            <td>@run.ChannelCode</td>
+                            <td>@run.PeriodCode</td>
+                            <td><span class="badge rounded-pill bg-light text-dark border">@run.RunStatus</span></td>
+                            <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="content-panel h-100">
+            <div class="eyebrow">Scenario Alignment</div>
+            <h2 class="h5">Master Data & Capability Checks</h2>
+            <ul class="list-unstyled mb-0 mt-3 small">
+                <li class="mb-2">MT SP: @(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</li>
+                <li class="mb-2">TT SP: @(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</li>
+                <li class="mb-2">S&I SP: @(Model.Snapshot.HasSiSp ? "Ready" : "Current-State Skip")</li>
+                <li class="mb-2">Laos SP: @(Model.Snapshot.HasLaosSp ? "Ready" : "Current-State Skip")</li>
+                <li class="mb-2">Prorate field (start_date): @(Model.Snapshot.HasStartDate ? "Ready" : "Current-State Skip")</li>
+                <li>Adjustment table: @(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Current-State Skip")</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<section class="mt-4">
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3">
+            <a class="module-card" asp-page="/Calculation/Index"><h3>Calculation</h3><p>Run MT/TT ด้วยพารามิเตอร์จริงจาก master data</p></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="module-card" asp-page="/ForHR/Index"><h3>For HR</h3><p>ตรวจผล out_for_hr_variable ตาม calc_run ล่าสุด</p></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="module-card" asp-page="/Periods/Index"><h3>Periods</h3><p>ดู period master และช่วงเดือนที่ใช้งาน</p></a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="module-card" asp-page="/Approvals/Index"><h3>Approvals</h3><p>ติดตามสถานะ run และการอนุมัติล่าสุด</p></a>
+        </div>
+    </div>
+</section>

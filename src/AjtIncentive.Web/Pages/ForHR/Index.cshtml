@@ -1,0 +1,83 @@
+@page
+@model AjtIncentive.Web.Pages.ForHR.IndexModel
+@{
+    ViewData["Title"] = "For HR";
+}
+
+<div class="content-panel">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="eyebrow">Export</div>
+            <h1 class="h3 mb-1">For HR</h1>
+            <p class="text-muted mb-0">เลือก Channel และ Period เพื่อโหลดข้อมูล For HR และส่งออกรายงาน</p>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Message"]</div>
+    }
+
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label asp-for="ChannelId" class="form-label">Channel</label>
+            <select asp-for="ChannelId" class="form-select">
+                @foreach (var c in Model.Channels)
+                {
+                    <option value="@c.ChannelId">@c.ChannelCode - @c.ChannelNameEn</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PeriodId" class="form-label">Period</label>
+            <select asp-for="PeriodId" class="form-select">
+                @foreach (var p in Model.Periods)
+                {
+                    <option value="@p.PeriodId">@p.PeriodCode (@p.SalesMonth.ToString("yyyy-MM"))</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-dark">Load For HR</button>
+        </div>
+    </form>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
+        <div class="small text-muted">Loaded rows: @Model.Rows.Count | Calc Run: @(Model.CalcRunId?.ToString() ?? "-")</div>
+        @if (Model.CalcRunId.HasValue && Model.Rows.Count > 0)
+        {
+            <a class="btn btn-sm btn-outline-primary"
+               asp-page="/ForHR/Index"
+               asp-page-handler="ExportCsv"
+               asp-route-ChannelId="@Model.ChannelId"
+               asp-route-PeriodId="@Model.PeriodId"
+               asp-route-CalcRunId="@Model.CalcRunId">
+                Export CSV Report
+            </a>
+        }
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Calc Run ID</th>
+                    <th>Employee Code</th>
+                    <th>Position Level</th>
+                    <th class="text-end">Total Variable</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>@row.CalcRunId</td>
+                    <td class="fw-semibold">@row.EmployeeCode</td>
+                    <td>@row.PositionLevelCode</td>
+                    <td class="text-end">@row.TotalVariable.ToString("N2")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

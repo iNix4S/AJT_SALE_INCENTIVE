@@ -1,0 +1,46 @@
+@page
+@model AjtIncentive.Web.Pages.Parameters.IndexModel
+@{
+    ViewData["Title"] = "Parameters";
+}
+
+<div class="content-panel">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <div>
+            <div class="eyebrow">Config</div>
+            <h1 class="h3 mb-1">Parameters</h1>
+            <p class="text-muted mb-0">จุดควบคุม master data ที่ผูกกับ process และ test-scenarios</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">MT SP</div><div class="kpi-value">@(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">TT SP</div><div class="kpi-value">@(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Prorate Field</div><div class="kpi-value">@(Model.Snapshot.HasStartDate ? "Ready" : "Skip")</div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Adjustment</div><div class="kpi-value">@(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Skip")</div></div></div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Channel</th>
+                    <th>Name</th>
+                    <th>Calc Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var c in Model.Channels)
+            {
+                <tr>
+                    <td class="fw-semibold">@c.ChannelCode (@c.ChannelId)</td>
+                    <td>@c.ChannelNameEn</td>
+                    <td>@c.CalcType</td>
+                    <td>@(c.IsActive ? "Active" : "Inactive")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,298 @@
+@page
+@model AjtIncentive.Web.Pages.SpecialAdjust.IndexModel
+@{
+    ViewData["Title"] = "Special Adjustment";
+}
+
+<section class="adj-header-panel mb-4">
+    <p class="adj-eyebrow">Adjustments</p>
+    <h1 class="adj-title">Special Adjustment</h1>
+    <p class="adj-desc">รองรับการปรับ Incentive ในกรณีพิเศษ — Shortage (สินค้าขาด) และ Special Situation</p>
+</section>
+
+@if (TempData["Message"] is string msg)
+{
+    var cls = msg.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show mb-3" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filter -->
+<div class="content-panel mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label small fw-semibold">Channel</label>
+            <select name="ChannelId" class="form-select form-select-sm" style="min-width:130px;">
+                @foreach (var c in Model.Channels)
+                {
+                    <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode – @c.ChannelNameEn</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label small fw-semibold">Period</label>
+            <select name="PeriodId" class="form-select form-select-sm" style="min-width:130px;">
+                @foreach (var p in Model.Periods)
+                {
+                    <option value="@p.PeriodId" selected="@(p.PeriodId == Model.PeriodId)">@p.PeriodCode</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Load</button>
+        </div>
+    </form>
+</div>
+
+<!-- Rule Reference -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="content-panel">
+            <h6 class="fw-semibold mb-3">ประเภทของ Special Adjustment (Function 4)</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0 small">
+                    <thead class="table-dark">
+                        <tr><th>ประเภท</th><th>คำอธิบาย</th><th>Logic</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-danger">SHORTAGE</span></td>
+                            <td>ยอดขายต่ำกว่า Target เพราะสินค้าขาด ไม่ใช่ Performance ต่ำ</td>
+                            <td>ปรับ Actual เป็น Standard 100% (by brand)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">SPECIAL_SITUATION</span></td>
+                            <td>พนักงานรับผิดชอบห้างและสินค้าเพิ่มขึ้นชั่วคราว หรือเหตุการณ์ภายนอก</td>
+                            <td>ปรับ sales target และ/หรือ % allocation weight</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-0" id="adjTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="shortage-tab" data-bs-toggle="tab"
+                data-bs-target="#shortage-pane" type="button" role="tab">
+            <span class="badge bg-danger me-1">SHORTAGE</span> Shortage (@Model.ShortageRecords.Count)
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="special-tab" data-bs-toggle="tab"
+                data-bs-target="#special-pane" type="button" role="tab">
+            <span class="badge bg-warning text-dark me-1">SPECIAL</span> Special Situation (@Model.SpecialRecords.Count)
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content content-panel rounded-top-0 border-top-0">
+
+    <!-- ═══════════════════════════════════════════ SHORTAGE TAB -->
+    <div class="tab-pane fade show active" id="shortage-pane" role="tabpanel">
+        <h6 class="fw-semibold mb-3 mt-1">Shortage Adjustments — @Model.SelectedChannelCode / @Model.SelectedPeriodCode</h6>
+
+        @if (Model.ShortageRecords.Count == 0)
+        {
+            <div class="adj-empty-state mb-3">
+                <span class="text-muted small">ยังไม่มี Shortage Adjustment สำหรับ Channel/Period นี้</span>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Product Code</th>
+                            <th class="text-center">Override Achievement</th>
+                            <th>Reason</th>
+                            <th>Approved By</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.ShortageRecords)
+                        {
+                            <tr>
+                                <td>@(string.IsNullOrEmpty(r.EmployeeCode) ? "<all>" : r.EmployeeCode)</td>
+                                <td class="fw-semibold">@r.ProductCode</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">@(r.OverrideAchievement?.ToString("P0") ?? "1.0000")</span>
+                                </td>
+                                <td class="text-muted small">@r.Reason</td>
+                                <td class="text-muted small">@r.ApprovedBy</td>
+                                <td>
+                                    <form method="post" asp-page-handler="Delete" class="d-inline">
+                                        <input type="hidden" name="AdjustmentId" value="@r.AdjustmentId" />
+                                        <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1"
+                                                onclick="return confirm('ลบ Shortage record นี้?')">ลบ</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- Add Shortage -->
+        <div class="adj-add-panel">
+            <h6 class="small fw-semibold mb-2">เพิ่ม Shortage Adjustment</h6>
+            <form method="post" asp-page-handler="SaveShortage" class="row g-2 align-items-end">
+                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                <div class="col-md-2">
+                    <label class="form-label small">Employee (ถ้าว่าง=ทุกคน)</label>
+                    <select name="EmployeeCode" class="form-select form-select-sm">
+                        <option value="">-- ทุก Employee --</option>
+                        @foreach (var e in Model.Employees)
+                        {
+                            <option value="@e.EmployeeCode">@e.EmployeeCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Product Code</label>
+                    <select name="ProductCode" class="form-select form-select-sm" required>
+                        <option value="">-- เลือก Product --</option>
+                        @foreach (var p in Model.Products)
+                        {
+                            <option value="@p.ProductCode">@p.ProductCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Override Achievement (1.0 = 100%)</label>
+                    <input type="number" name="OverrideAchievement" class="form-control form-control-sm"
+                           step="0.0001" min="0" max="2" value="1.0000" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Reason</label>
+                    <input type="text" name="Reason" class="form-control form-control-sm"
+                           placeholder="เช่น สินค้าขาดตลาด เดือน Apr-2026" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Approved By</label>
+                    <input type="text" name="ApprovedBy" class="form-control form-control-sm"
+                           placeholder="ชื่อผู้อนุมัติ" />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-danger btn-sm w-100">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ SPECIAL SITUATION TAB -->
+    <div class="tab-pane fade" id="special-pane" role="tabpanel">
+        <h6 class="fw-semibold mb-3 mt-1">Special Situation Adjustments — @Model.SelectedChannelCode / @Model.SelectedPeriodCode</h6>
+
+        @if (Model.SpecialRecords.Count == 0)
+        {
+            <div class="adj-empty-state mb-3">
+                <span class="text-muted small">ยังไม่มี Special Situation Adjustment สำหรับ Channel/Period นี้</span>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Product Code</th>
+                            <th class="text-end">Adjusted Target</th>
+                            <th class="text-end">Adjusted Weight%</th>
+                            <th>Reason</th>
+                            <th>Approved By</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.SpecialRecords)
+                        {
+                            <tr>
+                                <td>@(string.IsNullOrEmpty(r.EmployeeCode) ? "<all>" : r.EmployeeCode)</td>
+                                <td class="fw-semibold">@r.ProductCode</td>
+                                <td class="text-end">@(r.AdjustedTargetAmount.HasValue ? r.AdjustedTargetAmount.Value.ToString("N0") : "—")</td>
+                                <td class="text-end">@(r.AdjustedWeightPercent.HasValue ? r.AdjustedWeightPercent.Value.ToString("P2") : "—")</td>
+                                <td class="text-muted small">@r.Reason</td>
+                                <td class="text-muted small">@r.ApprovedBy</td>
+                                <td>
+                                    <form method="post" asp-page-handler="Delete" class="d-inline">
+                                        <input type="hidden" name="AdjustmentId" value="@r.AdjustmentId" />
+                                        <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1"
+                                                onclick="return confirm('ลบ Special record นี้?')">ลบ</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- Add Special Situation -->
+        <div class="adj-add-panel">
+            <h6 class="small fw-semibold mb-2">เพิ่ม Special Situation Adjustment</h6>
+            <form method="post" asp-page-handler="SaveSpecial" class="row g-2 align-items-end">
+                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                <div class="col-md-2">
+                    <label class="form-label small">Employee (ถ้าว่าง=ทุกคน)</label>
+                    <select name="EmployeeCode" class="form-select form-select-sm">
+                        <option value="">-- ทุก Employee --</option>
+                        @foreach (var e in Model.Employees)
+                        {
+                            <option value="@e.EmployeeCode">@e.EmployeeCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Product Code</label>
+                    <select name="ProductCode" class="form-select form-select-sm">
+                        <option value="">-- เลือก Product --</option>
+                        @foreach (var p in Model.Products)
+                        {
+                            <option value="@p.ProductCode">@p.ProductCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Adjusted Target Amount</label>
+                    <input type="number" name="AdjustedTargetAmount" class="form-control form-control-sm"
+                           step="1000" min="0" placeholder="เช่น 1500000" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Adjusted Weight% (เช่น 0.35)</label>
+                    <input type="number" name="AdjustedWeightPercent" class="form-control form-control-sm"
+                           step="0.0001" min="0" max="1" placeholder="เช่น 0.3500" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Reason <span class="text-danger">*</span></label>
+                    <input type="text" name="Reason" class="form-control form-control-sm"
+                           placeholder="เช่น สินค้าใหม่เพิ่มชั่วคราว" required />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small">Approved By</label>
+                    <input type="text" name="ApprovedBy" class="form-control form-control-sm"
+                           placeholder="ผู้อนุมัติ" />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning btn-sm w-100">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>

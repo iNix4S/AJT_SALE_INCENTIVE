@@ -8,6 +8,11 @@
 !*.env.example
 database-dev*.env
 
+# .NET user secrets & dev config (contains real passwords)
+appsettings.Development.json
+appsettings.*.Local.json
+secrets.json
+
 # Files containing API keys / personal credentials
 "5.Docs/Cline VS Code (claude).md"
 5.Docs/Cline*
