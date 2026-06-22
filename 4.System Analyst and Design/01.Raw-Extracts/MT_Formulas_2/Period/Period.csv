@@ -1,3 +1,0 @@
-﻿ROW\COL,A,B,C,D
-1,sales incentive ของเดือน,รอบการจ่าย Incentive (Variable),รอบการจ่าย Incentive (Fixed),Default column
-2,2026-04-01 00:00:00,"=VLOOKUP(A2,M_Month!A:B,2,FALSE)","=VLOOKUP(A2,M_Month!A:D,3,FALSE)","=VLOOKUP(A2,M_Month!A:E,4,FALSE)"
