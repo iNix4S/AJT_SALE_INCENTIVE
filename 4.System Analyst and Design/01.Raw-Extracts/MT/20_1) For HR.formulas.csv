@@ -1,0 +1,406 @@
+﻿Cell,Formula
+B2,"=IF(IF(VLOOKUP(A2,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A2,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A2,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A2,ASTBase!F:P,11,FALSE)))"
+C2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J2,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A2,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K2,"=IF(ROUND(P2+Q2+R2+S2,2)<O2,O2,ROUND(P2+Q2+R2+S2,2))"
+L2,=Period!$A$2
+M2,=Period!$B$2
+P2,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A2)"
+Q2,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A2)"
+R2,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A2)"
+S2,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A2)"
+B3,"=IF(IF(VLOOKUP(A3,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A3,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A3,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A3,ASTBase!F:P,11,FALSE)))"
+C3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J3,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A3,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K3,=
+L3,=Period!$A$2
+M3,=Period!$B$2
+P3,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A3)"
+Q3,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A3)"
+R3,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A3)"
+S3,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A3)"
+B4,"=IF(IF(VLOOKUP(A4,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A4,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A4,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A4,ASTBase!F:P,11,FALSE)))"
+C4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J4,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A4,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K4,=
+L4,=Period!$A$2
+M4,=Period!$B$2
+P4,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A4)"
+Q4,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A4)"
+R4,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A4)"
+S4,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A4)"
+B5,"=IF(IF(VLOOKUP(A5,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A5,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A5,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A5,ASTBase!F:P,11,FALSE)))"
+C5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J5,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A5,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K5,=
+L5,=Period!$A$2
+M5,=Period!$B$2
+P5,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A5)"
+Q5,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A5)"
+R5,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A5)"
+S5,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A5)"
+B6,"=IF(IF(VLOOKUP(A6,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A6,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A6,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A6,ASTBase!F:P,11,FALSE)))"
+C6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J6,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A6,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K6,=
+L6,=Period!$A$2
+M6,=Period!$B$2
+P6,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A6)"
+Q6,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A6)"
+R6,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A6)"
+S6,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A6)"
+B7,"=IF(IF(VLOOKUP(A7,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A7,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A7,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A7,ASTBase!F:P,11,FALSE)))"
+C7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J7,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A7,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K7,=
+L7,=Period!$A$2
+M7,=Period!$B$2
+P7,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A7)"
+Q7,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A7)"
+R7,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A7)"
+S7,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A7)"
+B8,"=IF(IF(VLOOKUP(A8,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A8,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A8,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A8,ASTBase!F:P,11,FALSE)))"
+C8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J8,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A8,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K8,=
+L8,=Period!$A$2
+M8,=Period!$B$2
+P8,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A8)"
+Q8,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A8)"
+R8,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A8)"
+S8,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A8)"
+B9,"=IF(IF(VLOOKUP(A9,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A9,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A9,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A9,ASTBase!F:P,11,FALSE)))"
+C9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J9,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A9,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K9,=
+L9,=Period!$A$2
+M9,=Period!$B$2
+P9,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A9)"
+Q9,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A9)"
+R9,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A9)"
+S9,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A9)"
+B10,"=IF(IF(VLOOKUP(A10,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A10,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A10,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A10,ASTBase!F:P,11,FALSE)))"
+C10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J10,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A10,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K10,=
+L10,=Period!$A$2
+M10,=Period!$B$2
+P10,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A10)"
+Q10,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A10)"
+R10,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A10)"
+S10,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A10)"
+B11,"=IF(IF(VLOOKUP(A11,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A11,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A11,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A11,ASTBase!F:P,11,FALSE)))"
+C11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J11,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A11,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K11,=
+L11,=Period!$A$2
+M11,=Period!$B$2
+P11,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A11)"
+Q11,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A11)"
+R11,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A11)"
+S11,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A11)"
+B12,"=IF(IF(VLOOKUP(A12,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A12,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A12,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A12,ASTBase!F:P,11,FALSE)))"
+C12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J12,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A12,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K12,=
+L12,=Period!$A$2
+M12,=Period!$B$2
+P12,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A12)"
+Q12,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A12)"
+R12,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A12)"
+S12,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A12)"
+B13,"=IF(IF(VLOOKUP(A13,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A13,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A13,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A13,ASTBase!F:P,11,FALSE)))"
+C13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J13,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A13,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K13,=
+L13,=Period!$A$2
+M13,=Period!$B$2
+P13,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A13)"
+Q13,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A13)"
+R13,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A13)"
+S13,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A13)"
+B14,"=IF(IF(VLOOKUP(A14,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A14,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A14,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A14,ASTBase!F:P,11,FALSE)))"
+C14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J14,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A14,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K14,=
+L14,=Period!$A$2
+M14,=Period!$B$2
+P14,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A14)"
+Q14,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A14)"
+R14,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A14)"
+S14,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A14)"
+B15,"=IF(IF(VLOOKUP(A15,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A15,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A15,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A15,ASTBase!F:P,11,FALSE)))"
+C15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J15,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A15,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K15,=
+L15,=Period!$A$2
+M15,=Period!$B$2
+P15,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A15)"
+Q15,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A15)"
+R15,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A15)"
+S15,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A15)"
+B16,"=IF(IF(VLOOKUP(A16,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A16,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A16,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A16,ASTBase!F:P,11,FALSE)))"
+C16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J16,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A16,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K16,=
+L16,=Period!$A$2
+M16,=Period!$B$2
+P16,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A16)"
+Q16,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A16)"
+R16,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A16)"
+S16,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A16)"
+B17,"=IF(IF(VLOOKUP(A17,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A17,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A17,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A17,ASTBase!F:P,11,FALSE)))"
+C17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J17,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A17,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K17,=
+L17,=Period!$A$2
+M17,=Period!$B$2
+P17,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A17)"
+Q17,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A17)"
+R17,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A17)"
+S17,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A17)"
+B18,"=IF(IF(VLOOKUP(A18,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A18,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A18,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A18,ASTBase!F:P,11,FALSE)))"
+C18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J18,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A18,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K18,=
+L18,=Period!$A$2
+M18,=Period!$B$2
+P18,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A18)"
+Q18,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A18)"
+R18,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A18)"
+S18,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A18)"
+B19,"=IF(IF(VLOOKUP(A19,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A19,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A19,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A19,ASTBase!F:P,11,FALSE)))"
+C19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J19,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A19,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K19,=
+L19,=Period!$A$2
+M19,=Period!$B$2
+P19,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A19)"
+Q19,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A19)"
+R19,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A19)"
+S19,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A19)"
+B20,"=IF(IF(VLOOKUP(A20,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A20,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A20,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A20,ASTBase!F:P,11,FALSE)))"
+C20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J20,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A20,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K20,=
+L20,=Period!$A$2
+M20,=Period!$B$2
+P20,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A20)"
+Q20,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A20)"
+R20,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A20)"
+S20,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A20)"
+B21,"=IF(IF(VLOOKUP(A21,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A21,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A21,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A21,ASTBase!F:P,11,FALSE)))"
+C21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J21,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A21,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K21,=
+L21,=Period!$A$2
+M21,=Period!$B$2
+P21,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A21)"
+Q21,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A21)"
+R21,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A21)"
+S21,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A21)"
+B22,"=IF(IF(VLOOKUP(A22,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A22,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A22,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A22,ASTBase!F:P,11,FALSE)))"
+C22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J22,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A22,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K22,=
+L22,=Period!$A$2
+M22,=Period!$B$2
+P22,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A22)"
+Q22,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A22)"
+R22,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A22)"
+S22,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A22)"
+B23,"=IF(IF(VLOOKUP(A23,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A23,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A23,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A23,ASTBase!F:P,11,FALSE)))"
+C23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J23,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A23,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K23,=
+L23,=Period!$A$2
+M23,=Period!$B$2
+P23,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A23)"
+Q23,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A23)"
+R23,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A23)"
+S23,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A23)"
+B24,"=IF(IF(VLOOKUP(A24,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A24,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A24,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A24,ASTBase!F:P,11,FALSE)))"
+C24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J24,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A24,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K24,=
+L24,=Period!$A$2
+M24,=Period!$B$2
+P24,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A24)"
+Q24,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A24)"
+R24,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A24)"
+S24,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A24)"
+B25,"=IF(IF(VLOOKUP(A25,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A25,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A25,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A25,ASTBase!F:P,11,FALSE)))"
+C25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J25,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A25,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K25,=
+L25,=Period!$A$2
+M25,=Period!$B$2
+P25,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A25)"
+Q25,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A25)"
+R25,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A25)"
+S25,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A25)"
+B26,"=IF(IF(VLOOKUP(A26,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A26,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A26,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A26,ASTBase!F:P,11,FALSE)))"
+C26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J26,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A26,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K26,=
+L26,=Period!$A$2
+M26,=Period!$B$2
+P26,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A26)"
+Q26,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A26)"
+R26,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A26)"
+S26,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A26)"
+B27,"=IF(IF(VLOOKUP(A27,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A27,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A27,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A27,ASTBase!F:P,11,FALSE)))"
+C27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J27,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A27,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K27,=
+L27,=Period!$A$2
+M27,=Period!$B$2
+P27,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A27)"
+Q27,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A27)"
+R27,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A27)"
+S27,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A27)"
+B28,"=IF(IF(VLOOKUP(A28,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A28,ASTBase!F:P,11,FALSE))=0,"""",IF(VLOOKUP(A28,ASTBase!F:P,11,FALSE)="""","""",VLOOKUP(A28,ASTBase!F:P,11,FALSE)))"
+C28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!C$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+D28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!D$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+E28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!E$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+F28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!F$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+H28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!H$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+I28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!I$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+J28,"=IF(IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),"""")="""","""",IFERROR(_xlfn.IFNA(VLOOKUP($A28,'HR Rep'!$A:$X,MATCH('1) For HR'!J$1,'HR Rep'!$A$1:$X$1,0),0),""""),""""))"
+K28,=
+L28,=Period!$A$2
+M28,=Period!$B$2
+P28,"=SUMIFS('3)Target & Cal_Staff'!BN:BN,'3)Target & Cal_Staff'!BM:BM,'1) For HR'!A28)"
+Q28,"=SUMIFS('3)Target & Cal_Sect'!BN:BN,'3)Target & Cal_Sect'!BM:BM,'1) For HR'!A28)"
+R28,"=SUMIFS('3)Target & Cal_Dept'!BN:BN,'3)Target & Cal_Dept'!BM:BM,'1) For HR'!A28)"
+S28,"=SUMIFS('3)Target & Cal_AD'!BN:BN,'3)Target & Cal_AD'!BM:BM,'1) For HR'!A28)"

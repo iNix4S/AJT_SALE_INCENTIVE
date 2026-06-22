@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1200" viewBox="0 0 2200 1200">
+  <defs>
+    <style>
+      .title { font: 700 34px 'Noto Sans Thai', 'Tahoma', sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 18px 'Noto Sans Thai', 'Tahoma', sans-serif; fill: #334155; }
+      .txt { font: 500 16px 'Noto Sans Thai', 'Tahoma', sans-serif; fill: #0f172a; }
+      .small { font: 500 14px 'Noto Sans Thai', 'Tahoma', sans-serif; fill: #334155; }
+      .box { stroke: #334155; stroke-width: 2; rx: 14; ry: 14; }
+      .arrow { stroke: #1e293b; stroke-width: 2.2; fill: none; marker-end: url(#arrowhead); }
+      .dash { stroke-dasharray: 10 8; }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#1e293b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2200" height="1200" fill="#f8fafc"/>
+  <text x="80" y="70" class="title">AJT New Sale Incentive - End-to-End Business Process</text>
+  <text x="80" y="102" class="subtitle">Canva Import SVG | Source: Business-Process-Design_AJT-New-Sale-Incentive_v1.0_2026-06-13</text>
+
+  <!-- Main flow boxes -->
+  <rect class="box" x="80" y="180" width="180" height="70" fill="#bbf7d0"/>
+  <text x="110" y="222" class="txt">Start Monthly</text>
+
+  <rect class="box" x="320" y="180" width="220" height="70" fill="#dbeafe"/>
+  <text x="352" y="210" class="txt">Step 1: Set Period</text>
+  <text x="368" y="232" class="small">M1</text>
+
+  <rect class="box" x="600" y="180" width="260" height="70" fill="#dbeafe"/>
+  <text x="626" y="210" class="txt">Step 2: Import BI Sales</text>
+  <text x="650" y="232" class="small">M2</text>
+
+  <rect class="box" x="920" y="180" width="260" height="70" fill="#dbeafe"/>
+  <text x="940" y="210" class="txt">Step 3: Update ASTBase</text>
+  <text x="970" y="232" class="small">M3</text>
+
+  <rect class="box" x="1240" y="180" width="280" height="70" fill="#dbeafe"/>
+  <text x="1265" y="210" class="txt">Step 4: Import HCM Data</text>
+  <text x="1315" y="232" class="small">M4</text>
+
+  <rect class="box" x="1580" y="180" width="250" height="70" fill="#fde68a"/>
+  <text x="1610" y="210" class="txt">Validation Gate</text>
+  <text x="1650" y="232" class="small">CP-1,2,3,6</text>
+
+  <!-- Channel split -->
+  <rect class="box" x="920" y="340" width="280" height="74" fill="#bfdbfe"/>
+  <text x="960" y="370" class="txt">MT Path (Mapping +</text>
+  <text x="975" y="392" class="txt">Cascade 4 Levels)</text>
+
+  <rect class="box" x="1260" y="340" width="240" height="74" fill="#ddd6fe"/>
+  <text x="1310" y="370" class="txt">TT Path</text>
+  <text x="1288" y="392" class="txt">(Single-Sheet Calc)</text>
+
+  <rect class="box" x="1560" y="340" width="260" height="74" fill="#fed7aa"/>
+  <text x="1584" y="370" class="txt">GD Special Incentive</text>
+  <text x="1638" y="392" class="small">G1-G4</text>
+
+  <rect class="box" x="1880" y="340" width="230" height="74" fill="#fef3c7"/>
+  <text x="1912" y="370" class="txt">Fixed Rate</text>
+  <text x="1922" y="392" class="small">N5 + M_Month</text>
+
+  <rect class="box" x="1560" y="500" width="300" height="80" fill="#fde68a"/>
+  <text x="1602" y="532" class="txt">Generate For HR Output</text>
+  <text x="1658" y="554" class="small">Variable + Fixed</text>
+
+  <rect class="box" x="1880" y="500" width="230" height="80" fill="#fef08a"/>
+  <text x="1920" y="532" class="txt">Approval</text>
+  <text x="1930" y="554" class="small">M6 | CP-4</text>
+
+  <rect class="box" x="1560" y="670" width="250" height="74" fill="#bae6fd"/>
+  <text x="1600" y="700" class="txt">Export to HR</text>
+  <text x="1622" y="722" class="small">M7 | CP-8</text>
+
+  <rect class="box" x="1860" y="670" width="250" height="74" fill="#bae6fd"/>
+  <text x="1902" y="700" class="txt">HR Payment</text>
+  <text x="1906" y="722" class="small">Payroll Process</text>
+
+  <rect class="box" x="1560" y="840" width="300" height="74" fill="#fce7f3"/>
+  <text x="1605" y="870" class="txt">Audit + Period Close</text>
+  <text x="1635" y="892" class="small">M8 | CP-5,9</text>
+
+  <rect class="box" x="1920" y="840" width="190" height="74" fill="#fecdd3"/>
+  <text x="1982" y="882" class="txt">End</text>
+
+  <!-- Exception / as-needed -->
+  <rect class="box" x="80" y="520" width="520" height="150" fill="#fff1f2"/>
+  <text x="110" y="555" class="txt">Exception Handling</text>
+  <text x="110" y="585" class="small">E-PERIOD-001, E-REQ-002, E-MAP-003, E-HIER-004</text>
+  <text x="110" y="610" class="small">Fix at source and re-validate (loop back to Validation Gate)</text>
+
+  <rect class="box" x="80" y="760" width="520" height="150" fill="#fffbeb"/>
+  <text x="110" y="795" class="txt">As-needed Adjustments</text>
+  <text x="110" y="825" class="small">N1 T_SectAbove | N2 Table | N3 Target & Cal | N4 Shortage | N5 Fix Rate</text>
+  <text x="110" y="850" class="small">Require reason/user/timestamp (CP-5)</text>
+
+  <!-- Arrows main top row -->
+  <path class="arrow" d="M260 215 L320 215"/>
+  <path class="arrow" d="M540 215 L600 215"/>
+  <path class="arrow" d="M860 215 L920 215"/>
+  <path class="arrow" d="M1180 215 L1240 215"/>
+  <path class="arrow" d="M1520 215 L1580 215"/>
+
+  <!-- split down -->
+  <path class="arrow" d="M1705 250 L1705 300 L1060 300 L1060 340"/>
+  <path class="arrow" d="M1705 250 L1705 300 L1380 300 L1380 340"/>
+
+  <!-- path forward -->
+  <path class="arrow" d="M1200 377 L1260 377"/>
+  <path class="arrow" d="M1500 377 L1560 377"/>
+  <path class="arrow" d="M1820 377 L1880 377"/>
+
+  <path class="arrow" d="M1995 414 L1995 500"/>
+  <path class="arrow" d="M1880 540 L1860 540"/>
+
+  <path class="arrow" d="M1685 580 L1685 670"/>
+  <path class="arrow" d="M1810 707 L1860 707"/>
+  <path class="arrow" d="M1685 744 L1685 840"/>
+  <path class="arrow" d="M1860 877 L1920 877"/>
+
+  <!-- approval rejected back -->
+  <path class="arrow dash" d="M1995 580 L1995 620 L1100 620 L1100 414"/>
+  <text x="2010" y="605" class="small">Rejected</text>
+
+  <!-- exception loop -->
+  <path class="arrow dash" d="M1580 250 L1580 560 L600 560"/>
+  <path class="arrow dash" d="M600 615 L760 615 L760 250 L1580 250"/>
+
+  <!-- as-needed to calc -->
+  <path class="arrow dash" d="M600 835 L920 835 L920 414"/>
+  <path class="arrow dash" d="M600 865 L1260 865 L1260 414"/>
+  <path class="arrow dash" d="M600 895 L1880 895 L1880 414"/>
+
+  <!-- legend -->
+  <rect class="box" x="80" y="980" width="2030" height="150" fill="#ffffff"/>
+  <text x="110" y="1015" class="txt">Legend</text>
+  <rect x="110" y="1038" width="24" height="24" fill="#dbeafe" stroke="#334155"/>
+  <text x="145" y="1056" class="small">Core process step</text>
+  <rect x="360" y="1038" width="24" height="24" fill="#fde68a" stroke="#334155"/>
+  <text x="395" y="1056" class="small">Validation / Output Gate</text>
+  <rect x="650" y="1038" width="24" height="24" fill="#fffbeb" stroke="#334155"/>
+  <text x="685" y="1056" class="small">As-needed adjustment</text>
+  <rect x="940" y="1038" width="24" height="24" fill="#fff1f2" stroke="#334155"/>
+  <text x="975" y="1056" class="small">Exception handling</text>
+  <text x="110" y="1098" class="small">Control reference: CP-1..CP-9 | RACI/KPI mapping: see companion file AJT_Canva_Diagram_Pack_Guide.md</text>
+</svg>

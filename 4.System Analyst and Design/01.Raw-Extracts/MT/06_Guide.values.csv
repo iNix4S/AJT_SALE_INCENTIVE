@@ -1,0 +1,25 @@
+﻿Sale Incentive Guide,,
+,,
+Annually,,
+Step No.,Sheet,Step detail
+1,M_Month,Set the Sales Incentive payment cycle to once per year.
+,,
+Monthly,,
+Step No.,Sheet,Step detail
+1,Period,Define the Sales Incentive period.
+2,Actual,Download data from BI and copy it into the Actual sheet.
+3,AST_Base,Update the data in the AST Base sheet and copy the formulas in the yellow-highlighted columns.
+4,HR Rep,"Download Personal Employment (Main & Active)_AST report from HCM, Update the data in the HR Rep and copy the formulas in the yellow-highlighted columns."
+5,For HR,"Enter the employee ID, then copy all formulas except the Employee ID and Payment Method columns."
+,,
+As needed,,
+Step No.,Sheet,Step detail
+1,T_SectAbove,Adjust the compensation rate based on position level.
+2,Table,Adjust the compensation rate based on Job Function.
+3,Target & Cal,Adjust sales targets based on business conditions.
+4,Shortage,Adjust shortages by product and month.
+5,Fix Rate,Adjust fixed rate based on employee.
+,,
+***Please ensure that sales and employee data align with the Sales Incentive period for that month.,,
+,,
+Recheck Job Function,,

@@ -1,0 +1,4 @@
+﻿Cell,Formula
+B2,"=VLOOKUP(A2,M_Month!A:B,2,FALSE)"
+C2,"=VLOOKUP(A2,M_Month!A:D,3,FALSE)"
+D2,"=VLOOKUP(A2,M_Month!A:E,4,FALSE)"

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>AJT New Sale Incentive — Manday Estimate v2.1</title>
+  <style>
+    :root {
+      --color-accent:    #2563eb;
+      --color-planning:  #0e7490;
+      --color-design:    #7c3aed;
+      --color-stab:      #166534;
+      --color-golive:    #be123c;
+      --color-summary:   #1a3a5c;
+      --color-risk-high: #fef2f2;
+      --color-risk-med:  #fffbeb;
+      --bg-header:       #f8fafc;
+      --border:          #cbd5e1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Noto Sans Thai', Arial, sans-serif;
+      font-size: 13px;
+      color: #1e293b;
+      background: #f1f5f9;
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    /* ─── Document wrapper ─── */
+    .doc {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    /* ─── Document header ─── */
+    .doc-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 28px 36px 22px;
+    }
+    .doc-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      margin-bottom: 10px;
+    }
+    .meta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 28px;
+    }
+    .meta-item { font-size: 12px; opacity: .85; }
+    .meta-item strong { opacity: 1; font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #fbbf24;
+      color: #1a1a1a;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ─── Body padding ─── */
+    .doc-body { padding: 28px 36px 40px; }
+
+    /* ─── Section titles ─── */
+    h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary);
+      border-left: 4px solid var(--color-accent);
+      padding-left: 12px;
+      margin: 32px 0 12px;
+    }
+    h3 {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 20px 0 8px;
+    }
+
+    /* ─── Phase label colours ─── */
+    h3.ph-planning { color: var(--color-planning); border-left: 3px solid var(--color-planning); padding-left: 10px; }
+    h3.ph-design   { color: var(--color-design);   border-left: 3px solid var(--color-design);   padding-left: 10px; }
+    h3.ph-dev      { color: var(--color-dev);       border-left: 3px solid var(--color-dev);       padding-left: 10px; }
+    h3.ph-stab     { color: var(--color-stab);      border-left: 3px solid var(--color-stab);      padding-left: 10px; }
+    h3.ph-golive   { color: var(--color-golive);    border-left: 3px solid var(--color-golive);    padding-left: 10px; }
+
+    /* ─── Tables ─── */
+    .tbl-wrap { overflow-x: auto; margin-bottom: 16px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 700px;
+    }
+    th {
+      background: var(--bg-header);
+      color: var(--color-primary);
+      font-weight: 700;
+      text-align: center;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tr:hover td { background: #eff6ff; }
+
+    /* summary / total rows */
+    tr.row-total td {
+      background: #e0f2fe !important;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+    tr.row-total-main td {
+      background: var(--color-primary) !important;
+      color: #fff !important;
+      font-weight: 700;
+    }
+
+    /* numeric cells */
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    td.wp-id { font-family: monospace; font-size: 11px; color: #475569; white-space: nowrap; }
+    td.complexity-H { color: #dc2626; font-weight: 700; text-align: center; }
+    td.complexity-M { color: #d97706; font-weight: 700; text-align: center; }
+    td.complexity-L { color: #059669; font-weight: 700; text-align: center; }
+    td.channel { font-size: 11px; color: #64748b; text-align: center; }
+
+    /* risk highlight */
+    tr.risk-high td { background: var(--color-risk-high) !important; }
+    tr.risk-med  td { background: var(--color-risk-med)  !important; }
+
+    /* phase colour stripe on left */
+    .stripe-planning td:first-child { border-left: 4px solid var(--color-planning); }
+    .stripe-design   td:first-child { border-left: 4px solid var(--color-design); }
+    .stripe-dev      td:first-child { border-left: 4px solid var(--color-dev); }
+    .stripe-stab     td:first-child { border-left: 4px solid var(--color-stab); }
+    .stripe-golive   td:first-child { border-left: 4px solid var(--color-golive); }
+
+    /* ─── Summary stat cards ─── */
+    .stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .stat-card {
+      flex: 1 1 140px;
+      border-radius: 8px;
+      padding: 14px 18px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+    }
+    .stat-card .label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+    .stat-card .value { font-size: 22px; font-weight: 800; }
+    .stat-card .sub   { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .stat-card.blue  { background: #eff6ff; border-color: #bfdbfe; }
+    .stat-card.blue  .value { color: #1d4ed8; }
+    .stat-card.amber { background: #fffbeb; border-color: #fde68a; }
+    .stat-card.amber .value { color: #b45309; }
+    .stat-card.green { background: #f0fdf4; border-color: #bbf7d0; }
+    .stat-card.green .value { color: #166534; }
+    .stat-card.red   { background: #fff1f2; border-color: #fecdd3; }
+    .stat-card.red   .value { color: #be123c; }
+    .stat-card.slate { background: #f8fafc; border-color: #cbd5e1; }
+    .stat-card.slate .value { color: #1a3a5c; }
+
+    /* ─── Note / callout ─── */
+    .note {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      margin: 10px 0 16px;
+      color: #78350f;
+    }
+    .note-info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e3a8a;
+    }
+    .note-danger {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #7f1d1d;
+    }
+
+    /* ─── Open questions ─── */
+    .oq-high { color: #dc2626; font-weight: 700; }
+    .oq-med  { color: #d97706; font-weight: 700; }
+    .oq-low  { color: #059669; font-weight: 700; }
+
+    /* ─── DoD checklist ─── */
+    .dod-list { list-style: none; padding: 0; }
+    .dod-list li {
+      padding: 6px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12.5px;
+    }
+    .dod-list li::before { content: "☐  "; color: #94a3b8; }
+
+    /* ─── Footer ─── */
+    .doc-footer {
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      padding: 14px 36px;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .doc-footer a { color: var(--color-accent); text-decoration: none; }
+
+    /* ─── Print ─── */
+    @media print {
+      body { background: #fff; padding: 0; font-size: 11px; }
+      .doc { box-shadow: none; border: none; max-width: 100%; }
+      .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr.row-total td, tr.row-total-main td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      h2 { page-break-after: avoid; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ══════════════════════════ HEADER ══════════════════════════ -->
+  <div class="doc-header">
+    <h1>AJT New Sale Incentive — Manday Estimate Template
+      <span class="badge">v2.1</span>
+    </h1>
+    <div class="meta-grid">
+      <div class="meta-item"><strong>เวอร์ชัน:</strong> v2.1</div>
+      <div class="meta-item"><strong>วันที่:</strong> 2026-06-17</div>
+      <div class="meta-item"><strong>สถานะ:</strong> Draft for Review</div>
+      <div class="meta-item"><strong>จัดทำโดย:</strong> AI (GitHub Copilot) — ทบทวนจาก BRD, SRS, SA Design, POC Status + ปรับ Junior DEV Factor (×1.4) + Buffer ~30%</div>
+    </div>
+  </div>
+
+  <div class="doc-body">
+
+    <!-- ══════════════════════════ STAT CARDS ══════════════════════════ -->
+    <div class="stat-row">
+      <div class="stat-card slate">
+        <div class="label">Total Mandays</div>
+        <div class="value">330.5</div>
+        <div class="sub">MD รวมทั้งโครงการ</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="label">DEV Pool (3 Junior)</div>
+        <div class="value">162.5</div>
+        <div class="sub">K2 DEV ×2 + API DEV ×1 (×1.4 factor)</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Buffer (~9%)</div>
+        <div class="value">31.0</div>
+        <div class="sub">Base effort 299.5 MD</div>
+      </div>
+      <div class="stat-card green">
+        <div class="label">Work Packages</div>
+        <div class="value">27</div>
+        <div class="sub">5 Phases × P/D/DEV/STB/GL</div>
+      </div>
+      <div class="stat-card red">
+        <div class="label">Risk Buffer (pessimistic)</div>
+        <div class="value">+40</div>
+        <div class="sub">MD เพิ่มสูงสุด ถ้า risk ทั้งหมดเกิด</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════ REVISION NOTES ══════════════════════════ -->
+    <h2>Revision Notes (v1.0 → v2.0 → v2.1)</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">รายการ</th>
+            <th>v1.0</th>
+            <th>v2.0</th>
+            <th style="background:#e0f2fe;color:var(--color-primary)">v2.1 (ฉบับนี้)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DEV Columns</td>
+            <td>K2 DEV #1 / K2 DEV #2 / API DEV (แยก 3 column)</td>
+            <td>DEV รวม (K2×2 + API×1) — column เดียว</td>
+            <td>เหมือน v2.0</td>
+          </tr>
+          <tr>
+            <td>DEV Skill Level</td>
+            <td>ไม่ระบุ</td>
+            <td>ไม่ระบุ</td>
+            <td><strong>Junior Developer (K2 DEV ×2 + API DEV ×1) — ใช้ factor ×1.4</strong></td>
+          </tr>
+          <tr>
+            <td>WP ทั้งหมด</td>
+            <td>24 WPs</td>
+            <td>25 WPs</td>
+            <td><strong>26 WPs</strong> (+1 API Interface)</td>
+          </tr>
+          <tr>
+            <td>Buffer Policy</td>
+            <td>~12%</td>
+            <td>8.2% (18.5 MD)</td>
+            <td><strong>~30% ของ base effort (70.5 MD)</strong></td>
+          </tr>
+          <tr>
+            <td>Total MD</td>
+            <td>157.0 MD</td>
+            <td>224.5 MD</td>
+            <td><strong>315.5 MD</strong></td>
+          </tr>
+          <tr>
+            <td>เหตุผลที่ปรับขึ้น</td>
+            <td>—</td>
+            <td>ครอบคลุม 4 channels + Prorate + GD</td>
+            <td><strong>Junior DEV ×1.4 + SA mentoring +15% + QA +10% + Buffer 30% + DEV ไม่เข้า Design Phase + Architecture: Calc ผ่าน SmartObject/SP, .NET API เฉพาะ Interface</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ CONTEXT ══════════════════════════ -->
+    <h2>Context สำคัญที่ใช้ประเมิน</h2>
+
+    <h3>POC Status</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th style="text-align:left">งาน</th><th>สถานะ</th><th style="text-align:left">ผลต่อ DEV MD</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DDL 01–39 (ทุก schema)</td><td style="text-align:center;color:#059669">✅ Deploy แล้ว</td><td>SA/DB design MD ลด</td></tr>
+          <tr><td>TT Calculation SP v9</td><td style="text-align:center;color:#059669">✅ Verified FY2026-05</td><td>DEV-07 (TT engine) MD ลดกว่า channel อื่น</td></tr>
+          <tr><td>MT/SI calculation engine</td><td style="text-align:center;color:#d97706">⏳ ยังไม่ implement</td><td>DEV-06 ต้องทำเต็ม</td></tr>
+          <tr><td>LAOS engine</td><td style="text-align:center;color:#d97706">⏳ ยังไม่ implement</td><td>DEV-08 ต้องทำเต็ม</td></tr>
+          <tr><td>K2 Workflow ทั้งหมด</td><td style="text-align:center;color:#d97706">⏳ ยังไม่ implement</td><td>DEV-01/02/03 ทำเต็ม</td></tr>
+          <tr><td>Prorate policy</td><td style="text-align:center;color:#dc2626">❓ ยังรอ 3+ scenarios</td><td>Buffer เพิ่ม DEV-11</td></tr>
+          <tr><td>GD integration method</td><td style="text-align:center;color:#dc2626">❓ ยังไม่ confirm</td><td>Buffer เพิ่ม DEV-09</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Assumptions หลัก</h3>
+    <div class="note note-info">
+      <strong>DEV ไม่มีส่วนร่วมใน Design Phase</strong> — งาน Design เป็นของ PM, BA, SA, QA/Doc เป็นหลัก (ตาม Estimation Context)<br>
+      <strong>DEV ทั้ง 3 คนเป็น Junior Developer</strong> → ใช้ factor ×1.4 เทียบกับ mid-level baseline<br>
+      <strong>Calculation Engine ทำผ่าน K2 SmartObject → SQL Server SP/Functions</strong> (ไม่ใช่ .NET Core API)<br>
+      <strong>.NET Core API ใช้เฉพาะ Interface External System (BI/DWH/HR)</strong> เท่านั้น<br>
+      <strong>SA ต้อง mentor junior DEV</strong> → เพิ่ม SA MD ~15% สำหรับ code review, pair programming, design walkthrough<br>
+      <strong>QA ต้อง test มากขึ้น</strong> → เพิ่ม QA MD ~10% เพราะ defect rate สูงกว่า mid-level<br>
+      <strong>Buffer ~30% ของ base effort</strong> ครอบคลุม: junior rework, policy change, integration glitch, UAT defect, K2 learning curve<br>
+      1 Manday = 8 working hours | max parallel DEV = 3 MD/วัน
+    </div>
+
+    <!-- ══════════════════════════ PHASE TABLES ══════════════════════════ -->
+    <h2>Work Package Tables</h2>
+
+    <!-- Planning -->
+    <h3 class="ph-planning">Phase 1: Planning</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>WP ID</th><th style="text-align:left">Work Package</th><th>Channel</th><th>Cmplx</th>
+            <th>PM</th><th>BA</th><th>SA</th><th>DEV รวม</th><th>QA/Doc</th><th>Buffer</th><th style="background:#dbeafe">Total MD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-01</td><td style="font-weight:700">1.1 Gathering Requirements</td><td class="channel"></td><td></td>
+            <td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num" style="background:#dbeafe"></td>
+          </tr>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-01a</td><td>— Requirement Sale Incentive Policy Clarification (TT &amp; LAOS Channels)</td><td class="channel">TT, LAOS</td><td class="complexity-L">L</td>
+            <td class="num">0.5</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">1.0</td>
+          </tr>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-01b</td><td>— Requirement Sale Incentive Policy Clarification (MT &amp; SI Channels)</td><td class="channel">MT, SI</td><td class="complexity-L">L</td>
+            <td class="num">0.5</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">1.0</td>
+          </tr>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-01c</td><td>— Requirement Sale Incentive Policy Clarification (Prorate, GD, Special Adjustment)</td><td class="channel">All</td><td class="complexity-L">L</td>
+            <td class="num">0.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num" style="background:#dbeafe;font-weight:700">1.0</td>
+          </tr>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-02</td><td>1.2 Produce Business Requirements Document (SRS and High Level Design)</td><td class="channel">All</td><td class="complexity-L">L</td>
+            <td class="num">1.0</td><td class="num">1.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">1.0</td><td class="num" style="background:#dbeafe;font-weight:700">3.5</td>
+          </tr>
+          <tr class="stripe-planning">
+            <td class="wp-id">P-03</td><td>1.3 Confirm Business Requirement and Conceptual Design</td><td class="channel">All</td><td class="complexity-L">L</td>
+            <td class="num">1.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num" style="background:#dbeafe;font-weight:700">2.0</td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:right">รวม Planning</td>
+            <td class="num">3.5</td><td class="num">2.0</td><td class="num">1.0</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">2.0</td><td class="num">8.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Design -->
+    <h3 class="ph-design">Phase 2: Design Phase</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>WP ID</th><th style="text-align:left">Work Package</th><th>Channel</th><th>Cmplx</th>
+            <th>PM</th><th>BA</th><th>SA</th><th>DEV รวม</th><th>QA/Doc</th><th>Buffer</th><th style="background:#dbeafe">Total MD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="stripe-design">
+            <td class="wp-id">D-01</td><td>Requirement Workshop + Policy Clarification (Prorate, GD, Channels)</td><td class="channel">All</td><td class="complexity-H">H</td>
+            <td class="num">0.5</td><td class="num">4.0</td><td class="num">2.5</td><td class="num">0.0</td><td class="num">1.0</td><td class="num">2.5</td><td class="num" style="background:#dbeafe;font-weight:700">10.5</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-02</td><td>Solution Architecture + Interface Contract (K2/SmartObject/SP/SSRS)</td><td class="channel">All</td><td class="complexity-H">H</td>
+            <td class="num">0.5</td><td class="num">1.0</td><td class="num">3.5</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">7.0</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-03</td><td>K2 Workflow + Smart Form Design (ทุก flow)</td><td class="channel">All</td><td class="complexity-H">H</td>
+            <td class="num">0.5</td><td class="num">1.5</td><td class="num">1.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.0</td><td class="num" style="background:#dbeafe;font-weight:700">4.5</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-04</td><td>SP Calculation Engine + .NET API Interface Design Spec</td><td class="channel">All</td><td class="complexity-H">H</td>
+            <td class="num">0.5</td><td class="num">1.0</td><td class="num">2.5</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">6.0</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-05</td><td>DB Model Finalization + Stored Procedure Design</td><td class="channel">All</td><td class="complexity-M">M</td>
+            <td class="num">0.0</td><td class="num">0.5</td><td class="num">2.5</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">1.0</td><td class="num" style="background:#dbeafe;font-weight:700">4.0</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-06</td><td>SSRS Report Format Design (For HR, Trace Report)</td><td class="channel">All</td><td class="complexity-M">M</td>
+            <td class="num">0.0</td><td class="num">1.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">1.0</td><td class="num">1.0</td><td class="num" style="background:#dbeafe;font-weight:700">3.5</td>
+          </tr>
+          <tr class="stripe-design">
+            <td class="wp-id">D-07</td><td>SIT/UAT Test Strategy + Test Case Design</td><td class="channel">All</td><td class="complexity-M">M</td>
+            <td class="num">0.5</td><td class="num">1.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">3.5</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">7.0</td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:right">รวม Design</td>
+            <td class="num">2.5</td><td class="num">10.0</td><td class="num">13.0</td><td class="num">0.0</td><td class="num">7.0</td><td class="num">10.0</td><td class="num">42.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Development -->
+    <h3 class="ph-dev">Phase 3: Development Phase</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>WP ID</th><th style="text-align:left">Work Package</th><th>Channel</th><th>Cmplx</th>
+            <th>PM</th><th>BA</th><th>SA</th><th>DEV รวม</th><th>QA/Doc</th><th>Buffer</th><th style="background:#dbeafe">Total MD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="stripe-dev"><td class="wp-id">DEV-01</td><td>K2 Master Data Forms (Period, M_Month, Parameters, Rate Tables)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">10.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">11.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-02</td><td>K2 Import Workflow (BI/HCM upload + Validation Gate trigger)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">11.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">15.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-03</td><td>K2 Approval Workflow (Draft→Review→Approve→Export)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">1.5</td><td class="num">0.5</td><td class="num">9.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">13.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-04</td><td>SmartObject + SP Common Infrastructure (Auth, DB Layer, Error Handling, Logging)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">1.5</td><td class="num">8.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">10.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-05</td><td>SP Validation Gate Engine (Period/Hierarchy/Mapping checks)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">11.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-06</td><td>SP MT/SI Calculation Engine (Mapping + Cascade 4 ระดับ)</td><td class="channel">MT, SI</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">1.5</td><td class="num">2.5</td><td class="num">15.0</td><td class="num">2.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">21.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-07</td><td>SP TT Calculation Engine (Single-sheet, Refactor จาก SP v9)</td><td class="channel">TT</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">10.5</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-08</td><td>SP LAOS Calculation Engine (Single-sheet, simpler scope)</td><td class="channel">LAOS</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">10.5</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-09</td><td>SP GD Special Incentive Engine (4 products × step payout)</td><td class="channel">MT, TT</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">11.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-10</td><td>SP Fixed Rate Engine (Job Function lookup → fixed amount)</td><td class="channel">MT, TT</td><td class="complexity-L">L</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">4.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">6.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-11</td><td>SP Prorate Logic Engine (≥4 scenarios + policy edge cases)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">1.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">12.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-12</td><td>Special Adjustment Config + Before/After Audit (Shortage, T_SectAbove, Table)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">5.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">9.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-13</td><td>For HR Output Generation (Variable + Fixed, M_Month mapping)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">5.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">8.5</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-14</td><td>SSRS Reports (For HR print form + Calculation Trace Report)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">5.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">8.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-15</td><td>Chart.js Dashboard (Achievement summary, by channel/dept/period)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num">5.0</td><td class="num">1.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">6.5</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-16</td><td>Audit Trail + Parameter Change Logging (ทุก event, ทุก parameter)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">4.0</td><td class="num">0.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">5.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-17</td><td>.NET Core API Interface — External System Integration (BI/DWH/HR Import &amp; HR Output Export)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">1.5</td><td class="num">7.5</td><td class="num">1.5</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">11.0</td></tr>
+          <tr class="stripe-dev"><td class="wp-id">DEV-18</td><td>K2 Main Transaction Forms (Incentive Entry, Calculation Result View, Core Function UI)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">0.0</td><td class="num">2.0</td><td class="num">3.0</td><td class="num">8.0</td><td class="num">2.0</td><td class="num">0.0</td><td class="num" style="background:#dbeafe;font-weight:700">15.0</td></tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:right">รวม Development</td>
+            <td class="num">0.0</td><td class="num">12.0</td><td class="num">23.0</td><td class="num">136.5</td><td class="num">22.5</td><td class="num">0.0</td><td class="num">194.0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Stabilizing -->
+    <h3 class="ph-stab">Phase 4: Stabilizing Phase</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>WP ID</th><th style="text-align:left">Work Package</th><th>Channel</th><th>Cmplx</th>
+            <th>PM</th><th>BA</th><th>SA</th><th>DEV รวม</th><th>QA/Doc</th><th>Buffer</th><th style="background:#dbeafe">Total MD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="stripe-stab"><td class="wp-id">STB-01</td><td>SIT — Common Platform (K2 forms, workflow, import, auth)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">4.0</td><td class="num">4.5</td><td class="num">3.0</td><td class="num" style="background:#dbeafe;font-weight:700">13.5</td></tr>
+          <tr class="stripe-stab"><td class="wp-id">STB-02</td><td>SIT — Channel Calculation Engines (MT/TT/SI/LAOS + GD + Fixed)</td><td class="channel">MT, TT, SI, LAOS</td><td class="complexity-H">H</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">1.0</td><td class="num">5.5</td><td class="num">4.5</td><td class="num">3.5</td><td class="num" style="background:#dbeafe;font-weight:700">16.0</td></tr>
+          <tr class="stripe-stab"><td class="wp-id">STB-03</td><td>UAT Support + Defect Fix (Business-driven test round)</td><td class="channel">All</td><td class="complexity-H">H</td><td class="num">1.0</td><td class="num">2.0</td><td class="num">1.0</td><td class="num">5.5</td><td class="num">4.5</td><td class="num">4.0</td><td class="num" style="background:#dbeafe;font-weight:700">18.0</td></tr>
+          <tr class="stripe-stab"><td class="wp-id">STB-04</td><td>Regression Test + Performance Check</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">3.0</td><td class="num">2.5</td><td class="num">2.0</td><td class="num" style="background:#dbeafe;font-weight:700">9.0</td></tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:right">รวม Stabilizing</td>
+            <td class="num">2.5</td><td class="num">4.0</td><td class="num">3.5</td><td class="num">18.0</td><td class="num">16.0</td><td class="num">12.5</td><td class="num">56.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Go-live -->
+    <h3 class="ph-golive">Phase 5: Go-live Phase</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>WP ID</th><th style="text-align:left">Work Package</th><th>Channel</th><th>Cmplx</th>
+            <th>PM</th><th>BA</th><th>SA</th><th>DEV รวม</th><th>QA/Doc</th><th>Buffer</th><th style="background:#dbeafe">Total MD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="stripe-golive"><td class="wp-id">GL-01</td><td>Cutover Plan + Release Checklist + Go/No-Go Sign-off</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">1.5</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">1.0</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">6.0</td></tr>
+          <tr class="stripe-golive"><td class="wp-id">GL-02</td><td>Production Deployment + Smoke Test</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">1.0</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">3.0</td><td class="num">1.0</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">7.0</td></tr>
+          <tr class="stripe-golive"><td class="wp-id">GL-03</td><td>Hypercare Support (2 สัปดาห์หลัง Go-live)</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">1.5</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">3.0</td><td class="num">1.0</td><td class="num">2.0</td><td class="num" style="background:#dbeafe;font-weight:700">8.5</td></tr>
+          <tr class="stripe-golive"><td class="wp-id">GL-04</td><td>Handover + Runbook + User Guide Finalization</td><td class="channel">All</td><td class="complexity-M">M</td><td class="num">1.0</td><td class="num">0.5</td><td class="num">0.5</td><td class="num">1.0</td><td class="num">3.0</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">7.5</td></tr>
+          <tr class="row-total">
+            <td colspan="4" style="text-align:right">รวม Go-live</td>
+            <td class="num">5.0</td><td class="num">1.5</td><td class="num">2.0</td><td class="num">8.0</td><td class="num">6.0</td><td class="num">6.5</td><td class="num">29.0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ SUMMARY MATRIX ══════════════════════════ -->
+    <h2>Project Summary Matrix — Role × Phase</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Role</th>
+            <th style="color:var(--color-planning)">Planning</th>
+            <th style="color:var(--color-design)">Design</th>
+            <th style="color:var(--color-dev)">Development</th>
+            <th style="color:var(--color-stab)">Stabilizing</th>
+            <th style="color:var(--color-golive)">Go-live</th>
+            <th style="background:#1a3a5c;color:#fff">Total MD</th>
+            <th style="background:#1a3a5c;color:#fff">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PM</td><td class="num">3.5</td><td class="num">2.5</td><td class="num">0.0</td><td class="num">2.5</td><td class="num">5.0</td><td class="num" style="background:#dbeafe;font-weight:700">13.5</td><td class="num">4.1%</td></tr>
+          <tr><td>BA</td><td class="num">2.0</td><td class="num">10.0</td><td class="num">12.0</td><td class="num">4.0</td><td class="num">1.5</td><td class="num" style="background:#dbeafe;font-weight:700">29.5</td><td class="num">8.9%</td></tr>
+          <tr><td>SA</td><td class="num">1.0</td><td class="num">13.0</td><td class="num">23.0</td><td class="num">3.5</td><td class="num">2.0</td><td class="num" style="background:#dbeafe;font-weight:700">42.5</td><td class="num">12.9%</td></tr>
+          <tr><td><strong>DEV รวม</strong> (K2×2+API×1, <strong>Junior ×1.4</strong>)</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">136.5</td><td class="num">18.0</td><td class="num">8.0</td><td class="num" style="background:#fef3c7;font-weight:700;color:#b45309">162.5</td><td class="num">49.2%</td></tr>
+          <tr><td>QA/Doc</td><td class="num">0.0</td><td class="num">7.0</td><td class="num">22.5</td><td class="num">16.0</td><td class="num">6.0</td><td class="num" style="background:#dbeafe;font-weight:700">51.5</td><td class="num">15.6%</td></tr>
+          <tr><td>Buffer (~9%)</td><td class="num">2.0</td><td class="num">10.0</td><td class="num">0.0</td><td class="num">12.5</td><td class="num">6.5</td><td class="num" style="background:#dcfce7;font-weight:700;color:#166534">31.0</td><td class="num">9.4%</td></tr>
+          <tr class="row-total-main">
+            <td><strong>รวม</strong></td>
+            <td class="num">8.5</td><td class="num">42.5</td><td class="num">194.0</td><td class="num">56.5</td><td class="num">29.0</td><td class="num">330.5</td><td class="num">100%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ PHASE BREAKDOWN ══════════════════════════ -->
+    <h2>Phase Breakdown Summary</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th style="text-align:left">Phase</th><th>MD</th><th>% ของโครงการ</th><th style="text-align:left">หมายเหตุ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="color:var(--color-planning);font-weight:600">Planning</td><td class="num">8.5</td><td class="num">2.6%</td><td>ลดได้เพราะ SA Analysis + BRD ทำไปแล้ว</td></tr>
+          <tr><td style="color:var(--color-design);font-weight:600">Design Phase</td><td class="num">42.5</td><td class="num">12.9%</td><td>DEV ไม่เกี่ยวข้อง — เน้น PM/BA/SA/QA เป็นหลัก</td></tr>
+          <tr><td style="color:var(--color-dev);font-weight:600">Development Phase</td><td class="num">194.0</td><td class="num">58.7%</td><td>Heavy DEV — 4 channels + 6 special logic + API Interface + Main Transaction Forms + junior ×1.4 factor (PM/Buffer ถูกดูดซับเข้า SA/BA/DEV/QA แล้ว)</td></tr>
+          <tr><td style="color:var(--color-stab);font-weight:600">Stabilizing Phase</td><td class="num">56.5</td><td class="num">17.1%</td><td>Channel engine test ซับซ้อน + junior defect rate สูงกว่า mid-level</td></tr>
+          <tr><td style="color:var(--color-golive);font-weight:600">Go-live Phase</td><td class="num">29.0</td><td class="num">8.8%</td><td>รวม Hypercare 2 สัปดาห์ + junior handover support</td></tr>
+          <tr class="row-total-main"><td><strong>Total</strong></td><td class="num">330.5</td><td class="num">100%</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ DEV BREAKDOWN ══════════════════════════ -->
+    <h2>DEV Breakdown Insight — Pool Analysis</h2>
+    <div class="note note-info">
+      DEV รวม <strong>162.5 MD</strong> จาก pool 3 คน (<strong>Junior Developer</strong> ทั้งหมด, K2 DEV ×2 + API DEV ×1)<br>
+      ใช้ factor ×1.4 เทียบกับ mid-level baseline เพื่อรองรับ learning curve, code review cycles, rework<br>
+      DEV ไม่มีส่วนร่วมใน Design Phase — เริ่มงานตั้งแต่ Development Phase เป็นต้นไป<br>
+      หมายเหตุ: PM และ Buffer ของ Phase 3 ถูกดูดซับเข้า BA/SA/DEV/QA แล้ว
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th style="text-align:left">DEV Sub-role</th><th>สัดส่วนงาน</th><th>MD (ประมาณ)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>K2 DEV #1 (Smart Forms + Workflow + Main Transaction Forms)</td><td class="num">~33%</td><td class="num">~54 MD</td></tr>
+          <tr><td>K2 DEV #2 (SmartObject + SP Calculation Engine)</td><td class="num">~33%</td><td class="num">~54 MD</td></tr>
+          <tr><td>API DEV (.NET Core Interface External System BI/DWH/HR)</td><td class="num">~33%</td><td class="num">~54 MD</td></tr>
+          <tr class="row-total"><td><strong>รวม</strong></td><td class="num">100%</td><td class="num"><strong>~162 MD</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong>หมายเหตุ Parallel:</strong><br>
+      • K2 DEV ทั้ง 2 คน parallel ได้ในช่วง Development เมื่อ WP แยกกัน (DEV-01/03/18 vs DEV-02)<br>
+      • API DEV ร่วมกับ K2 DEV ในช่วงสร้าง SP engine (DEV-04 ถึง DEV-12) และรับผิดชอบ .NET Core API Interface (BI/DWH/HR)<br>
+      • Peak parallel: Dev Phase → 3 คน = สูงสุด 3 MD/วัน → ใช้เวลา ~46 วันทำการ (ถ้า full parallel)<br>
+      • ⚠️ Junior DEV อาจ parallel ได้ไม่เต็มที่เพราะต้องรอ SA review/support
+    </div>
+
+    <!-- ══════════════════════════ CHANNEL COMPARISON ══════════════════════════ -->
+    <h2>Channel Complexity Comparison</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Channel</th><th>Calc Type</th><th>Complexity</th><th>TT SP POC</th><th style="text-align:left">ผลต่อ DEV</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:700;color:#1d4ed8">MT</td><td>CASCADE_4_LEVEL + Mapping</td><td class="complexity-H">H</td><td style="text-align:center;color:#dc2626">❌ ยังไม่ทำ</td><td>DEV สูงสุด (11.0 MD)</td></tr>
+          <tr><td style="font-weight:700;color:#7c3aed">SI</td><td>CASCADE_4_LEVEL (เหมือน MT)</td><td class="complexity-H">H</td><td style="text-align:center;color:#dc2626">❌ ยังไม่ทำ</td><td>ต่ำกว่า MT เพราะ reuse (~50%) — รวมใน DEV-06</td></tr>
+          <tr><td style="font-weight:700;color:#059669">TT</td><td>SINGLE_SHEET_5_LEVEL_AVG</td><td class="complexity-M">M</td><td style="text-align:center;color:#059669">✅ SP v9 done</td><td>DEV ต่ำกว่า (5.5 MD refactor จาก SP)</td></tr>
+          <tr><td style="font-weight:700;color:#b45309">LAOS</td><td>SINGLE_SHEET (simpler)</td><td class="complexity-M">M</td><td style="text-align:center;color:#dc2626">❌ ยังไม่ทำ</td><td>ต่ำ เพราะ simpler than TT cascade</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ RISK REGISTER ══════════════════════════ -->
+    <h2>Risk Register (การประเมินผลกระทบต่อ MD)</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th style="text-align:left">ความเสี่ยง</th><th>ความน่าจะเป็น</th><th style="text-align:left">ผลกระทบ</th><th>MD เพิ่ม</th><th>Owner</th></tr>
+        </thead>
+        <tbody>
+          <tr class="risk-high"><td><strong>Junior DEV learning curve (K2 platform)</strong></td><td style="text-align:center;color:#dc2626;font-weight:700">สูง</td><td><strong>DEV ช้ากว่าแผน, rework สูง</strong></td><td class="num" style="color:#dc2626;font-weight:700">+5–10 MD</td><td>SA + PM</td></tr>
+          <tr class="risk-high"><td><strong>Junior DEV code quality issues</strong></td><td style="text-align:center;color:#dc2626;font-weight:700">สูง</td><td><strong>QA defect rate สูง, re-test cycles เพิ่ม</strong></td><td class="num" style="color:#dc2626;font-weight:700">+3–5 MD</td><td>QA + SA</td></tr>
+          <tr class="risk-high"><td>Prorate policy ยังไม่ครบ (3+ scenarios ❓)</td><td style="text-align:center;color:#dc2626;font-weight:700">สูง</td><td>Rework DEV-11 + retest</td><td class="num" style="color:#dc2626;font-weight:700">+3–5 MD</td><td>BA + Business</td></tr>
+          <tr class="risk-high"><td>GD integration method ยังไม่ confirm (additive vs separate)</td><td style="text-align:center;color:#dc2626;font-weight:700">สูง</td><td>Rework DEV-09 + DEV-13</td><td class="num" style="color:#dc2626;font-weight:700">+2–4 MD</td><td>BA + Business</td></tr>
+          <tr class="risk-high"><td>K2 platform complexity / learning curve</td><td style="text-align:center;color:#dc2626;font-weight:700">สูง</td><td>K2 DEV ช้ากว่าแผน</td><td class="num" style="color:#dc2626;font-weight:700">+5–10 MD</td><td>K2 DEV</td></tr>
+          <tr class="risk-med"><td>MT Product Code mapping ยังไม่ครบ (AJA/AMV/FP/QM)</td><td style="text-align:center;color:#d97706;font-weight:700">ปานกลาง</td><td>Block DEV-06</td><td class="num" style="color:#d97706">+1–2 MD</td><td>SA + Business</td></tr>
+          <tr class="risk-med"><td>Data quality จาก BI/HCM (period mismatch)</td><td style="text-align:center;color:#d97706;font-weight:700">ปานกลาง</td><td>SIT blocker</td><td class="num" style="color:#d97706">+2–3 MD</td><td>DEV</td></tr>
+          <tr><td>Policy ambiguity (108% → 1.06 vs 1.08)</td><td style="text-align:center;color:#059669">ต่ำ</td><td>Calc error ใน UAT</td><td class="num">+1 MD</td><td>BA</td></tr>
+          <tr class="row-total"><td colspan="3" style="text-align:right"><strong>รวม Risk MD (pessimistic)</strong></td><td class="num" style="color:#dc2626;font-weight:700">+22–40 MD</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note note-danger">
+      ⚠️ Buffer 31.0 MD (~9%) ครอบคลุม risk บางส่วนแล้ว (junior factor ถูกดูดซับเข้า DEV/SA/BA/QA ใน Phase 3 แล้ว) แต่ถ้า risk แบบ pessimistic เกิดทั้งหมด อาจเพิ่มอีก +22–40 MD
+    </div>
+
+    <!-- ══════════════════════════ COMPARISON ══════════════════════════ -->
+    <h2>Comparison: BRD vs v1.0 vs v2.0 vs v2.1</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">มุมมอง</th>
+            <th>BRD (original)</th>
+            <th>v1.0 Template</th>
+            <th>v2.0</th>
+            <th style="background:#e0f2fe;color:var(--color-primary)">v2.1 (ฉบับนี้)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PM</td><td class="num">15 MD</td><td class="num">ระบุในตาราง</td><td class="num">21.0 MD *</td><td class="num" style="background:#e0f2fe;font-weight:700">19.5 MD</td></tr>
+          <tr><td>BA</td><td class="num">12 MD</td><td class="num">ระบุในตาราง</td><td class="num">26.0 MD *</td><td class="num" style="background:#e0f2fe;font-weight:700">25.5 MD</td></tr>
+          <tr><td>SA</td><td class="num">10 MD</td><td class="num">ระบุในตาราง</td><td class="num">30.0 MD</td><td class="num" style="background:#e0f2fe;font-weight:700">32.5 MD</td></tr>
+          <tr><td>DEV รวม (3 คน)</td><td class="num">52 MD</td><td class="num">ระบุแยกคน</td><td class="num">91.0 MD</td><td class="num" style="background:#fef3c7;font-weight:700;color:#b45309">120.0 MD</td></tr>
+          <tr><td>QA/Doc</td><td class="num">20 MD</td><td class="num">ระบุในตาราง</td><td class="num">38.0 MD</td><td class="num" style="background:#e0f2fe;font-weight:700">43.0 MD</td></tr>
+          <tr><td>Buffer</td><td class="num">—</td><td class="num">~12%</td><td class="num">18.5 MD (8.2%)</td><td class="num" style="background:#dcfce7;font-weight:700;color:#166534">73.0 MD (~30%)</td></tr>
+          <tr class="row-total-main">
+            <td><strong>Total</strong></td>
+            <td class="num">109 MD</td>
+            <td class="num">157.0 MD</td>
+            <td class="num">224.5 MD</td>
+            <td class="num">315.5 MD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      * v2.0 มี arithmetic error ใน Summary Matrix (PM/BA) — v2.1 แก้ไขแล้ว
+    </div>
+
+    <!-- ══════════════════════════ OPEN QUESTIONS ══════════════════════════ -->
+    <h2>Open Questions (ต้องปิดก่อน Baseline Freeze)</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th style="text-align:left">คำถาม</th><th style="text-align:left">ผลกระทบ</th><th>Priority</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="wp-id">OQ-01</td><td>Prorate: พนักงานเข้า/ออกกลางเดือน คิดอย่างไร? (Variable + Fixed แยกกัน?)</td><td>DEV-11 MD อาจเพิ่ม 3–5 MD</td><td class="oq-high">🔴 สูง</td></tr>
+          <tr><td class="wp-id">OQ-02</td><td>GD Incentive: รวมใน For HR หลัก หรือ export แยก?</td><td>DEV-09 + DEV-13 design เปลี่ยน</td><td class="oq-high">🔴 สูง</td></tr>
+          <tr><td class="wp-id">OQ-03</td><td>Product Code: AJA, AMV, FP, QM → MT หรือ TT?</td><td>DEV-06 mapping completeness</td><td class="oq-med">🟡 ปานกลาง</td></tr>
+          <tr><td class="wp-id">OQ-04</td><td>GD payout table: RDM + RDNS rate ครบแล้วหรือยัง?</td><td>DEV-09 accuracy</td><td class="oq-med">🟡 ปานกลาง</td></tr>
+          <tr><td class="wp-id">OQ-05</td><td>SI channel: ต้องการ dashboard แยก หรือรวมกับ MT?</td><td>DEV-15 scope</td><td class="oq-low">🟢 ต่ำ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════ DEFINITION OF DONE ══════════════════════════ -->
+    <h2>Definition of Done (ระดับ Project)</h2>
+    <ul class="dod-list">
+      <li>ทุก Work Package ผ่าน code review</li>
+      <li>ทุก channel (MT/TT/SI/LAOS) ผ่าน SIT (DEV test cases ตาม BRD TC-001 ถึง TC-008)</li>
+      <li>UAT ผ่าน Business Owner sign-off</li>
+      <li>For HR output ตรงกับ expected ราย period ที่ตกลงไว้</li>
+      <li>Audit Trail บันทึกทุก parameter change ครบ</li>
+      <li>Runbook + User Guide ครบก่อน Go-live</li>
+      <li>Open Questions OQ-01 และ OQ-02 ปิดแล้วก่อน Development Phase เริ่ม</li>
+    </ul>
+
+  </div><!-- /doc-body -->
+
+  <!-- ══════════════════════════ FOOTER ══════════════════════════ -->
+  <div class="doc-footer">
+    อ้างอิง:
+    BRD-SRS_AJT-New-Sale-Incentive_Draft-v0.1_2026-06-12.md &nbsp;|&nbsp;
+    System-Architecture-Design_AJT-New-Sale-Incentive_v1.0_2026-06-13.md &nbsp;|&nbsp;
+    AJT_Manday_Estimation_Context.md &nbsp;|&nbsp;
+    AJT_Project-Scope-Summary.md (v1.1) &nbsp;|&nbsp;
+    AJT_Manday_Estimate_Template.md (v1.0 baseline)
+    <br><br>
+    Generated: 2026-06-17 &nbsp;|&nbsp; AJT_Manday_Estimate_Template_v2.1.html
+  </div>
+
+</div><!-- /doc -->
+</body>
+</html>
