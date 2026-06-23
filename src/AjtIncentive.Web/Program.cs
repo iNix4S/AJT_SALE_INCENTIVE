@@ -80,6 +80,9 @@ builder.Services.AddScoped<ICalculationService>(sp =>
 builder.Services.AddScoped<IPortalDataService>(sp =>
     new PortalDataService(connectionString));
 
+builder.Services.AddScoped<IFormulaEvaluatorService>(sp =>
+    new FormulaEvaluatorService(connectionString));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
