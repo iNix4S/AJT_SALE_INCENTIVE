@@ -1,0 +1,3 @@
+Salesman Code,Product Code,Target Amount,Pct Salesman,Approved By,Approved At
+INVALID_SP,AJ,100000,1.0,ADMIN,2026-06-23
+SP002,INVALID_PROD,150000,0.5,ADMIN,2026-06-23

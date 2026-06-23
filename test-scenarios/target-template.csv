@@ -1,0 +1,4 @@
+Salesman Code,Product Code,Target Amount,Pct Salesman,Approved By,Approved At
+SM0001,PRD-MT01,100000,1.0,ADMIN,2026-06-23
+SM0002,PRD-MT02,150000,0.5,ADMIN,2026-06-23
+SM0003,PRD-MT03,200000,1.0,,
