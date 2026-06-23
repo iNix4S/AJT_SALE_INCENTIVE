@@ -41,6 +41,14 @@ public class IndexModel : PageModel
     // ── Test panel ──
     public FormulaEvalResult? TestResult { get; private set; }
 
+    // ── SP Preview panel ──
+    public IReadOnlyList<PeriodItem>        Periods     { get; private set; } = Array.Empty<PeriodItem>();
+    public IReadOnlyList<FormulaPreviewRow> PreviewRows { get; private set; } = Array.Empty<FormulaPreviewRow>();
+    public string? PreviewError    { get; private set; }
+    public int     PreviewPeriodId { get; private set; }
+    public string? PreviewChannel  { get; private set; }
+    public string  ActiveTestTab   { get; private set; } = "quick";
+
     public static IReadOnlyList<string> FormulaSteps { get; } =
         ["PCT_ACHIEVEMENT", "INCENTIVE_PER_PRODUCT", "ROLLUP", "SPECIAL_KPI"];
 
@@ -123,7 +131,27 @@ public class IndexModel : PageModel
             }
             catch { /* ไม่ต้อง throw */ }
         }
-        TestResult = _formulaService.Evaluate(formulaExpr, variables, "TEST");
+        TestResult   = _formulaService.Evaluate(formulaExpr, variables, "TEST");
+        ActiveTestTab = "quick";
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostPreviewAsync(
+        int    previewPeriodId,
+        string previewChannel)
+    {
+        await LoadAsync();
+        PreviewPeriodId = previewPeriodId;
+        PreviewChannel  = previewChannel;
+        ActiveTestTab   = "sp";
+        try
+        {
+            PreviewRows = await _portalDataService.GetFormulaPreviewAsync(previewPeriodId, previewChannel);
+        }
+        catch (Exception ex)
+        {
+            PreviewError = ex.Message;
+        }
         return Page();
     }
 
@@ -136,6 +164,7 @@ public class IndexModel : PageModel
             .ToList();
 
         Channels  = await _portalDataService.GetChannelsAsync();
+        Periods   = await _portalDataService.GetPeriodsAsync();
 
         await using var conn = new SqlConnection(_connectionString);
         Positions = (await conn.QueryAsync<PositionItem>(@"

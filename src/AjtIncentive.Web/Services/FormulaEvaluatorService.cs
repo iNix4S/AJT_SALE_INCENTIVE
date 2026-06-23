@@ -82,7 +82,7 @@ public sealed class FormulaEvaluatorService : IFormulaEvaluatorService
     public async Task<IReadOnlyList<FormulaExpression>> GetAllAsync()
     {
         await using var conn = new SqlConnection(_connectionString);
-        var rows = await conn.QueryAsync<FormulaExpression>(@"
+        var rows = await conn.QueryAsync<FormulaExpressionDbRow>(@"
 SELECT
     f.formula_id         AS FormulaId,
     f.formula_code       AS FormulaCode,
@@ -104,13 +104,13 @@ FROM dbo.mst_formula_expression f
 LEFT JOIN dbo.mst_channel        c  ON c.channel_id         = f.channel_id
 LEFT JOIN dbo.mst_position_level pl ON pl.position_level_id = f.position_level_id
 ORDER BY f.sort_order, f.formula_code;");
-        return rows.ToList();
+    return rows.Select(MapFormulaRow).ToList();
     }
 
     public async Task<FormulaExpression?> GetByCodeAsync(string formulaCode)
     {
         await using var conn = new SqlConnection(_connectionString);
-        return await conn.QuerySingleOrDefaultAsync<FormulaExpression>(@"
+        var row = await conn.QuerySingleOrDefaultAsync<FormulaExpressionDbRow>(@"
 SELECT
     f.formula_id         AS FormulaId,
     f.formula_code       AS FormulaCode,
@@ -133,6 +133,31 @@ LEFT JOIN dbo.mst_channel        c  ON c.channel_id         = f.channel_id
 LEFT JOIN dbo.mst_position_level pl ON pl.position_level_id = f.position_level_id
 WHERE f.formula_code = @FormulaCode;",
             new { FormulaCode = formulaCode });
+
+        return row is null ? null : MapFormulaRow(row);
+    }
+
+    private static FormulaExpression MapFormulaRow(FormulaExpressionDbRow row)
+    {
+        return new FormulaExpression
+        {
+            FormulaId = row.FormulaId,
+            FormulaCode = row.FormulaCode,
+            FormulaName = row.FormulaName,
+            FormulaStep = row.FormulaStep,
+            ChannelId = row.ChannelId,
+            ChannelCode = row.ChannelCode,
+            PositionLevelId = row.PositionLevelId,
+            PositionCode = row.PositionCode,
+            WsType = row.WsType,
+            FormulaExpr = row.FormulaExpr,
+            VariablesJson = row.VariablesJson,
+            Description = row.Description,
+            SortOrder = row.SortOrder,
+            EffectiveFrom = DateOnly.FromDateTime(row.EffectiveFrom),
+            EffectiveTo = row.EffectiveTo.HasValue ? DateOnly.FromDateTime(row.EffectiveTo.Value) : null,
+            IsActive = row.IsActive
+        };
     }
 
     public FormulaEvalResult Evaluate(string formulaExpr, Dictionary<string, decimal> variables,
@@ -255,4 +280,24 @@ WHERE formula_id = @FormulaId;", formula);
             "DELETE FROM dbo.mst_formula_expression WHERE formula_id = @FormulaId;",
             new { FormulaId = formulaId });
     }
+}
+
+internal sealed class FormulaExpressionDbRow
+{
+    public int FormulaId { get; init; }
+    public string FormulaCode { get; init; } = string.Empty;
+    public string FormulaName { get; init; } = string.Empty;
+    public string FormulaStep { get; init; } = string.Empty;
+    public int? ChannelId { get; init; }
+    public string? ChannelCode { get; init; }
+    public int? PositionLevelId { get; init; }
+    public string? PositionCode { get; init; }
+    public string? WsType { get; init; }
+    public string FormulaExpr { get; init; } = string.Empty;
+    public string? VariablesJson { get; init; }
+    public string? Description { get; init; }
+    public int SortOrder { get; init; }
+    public DateTime EffectiveFrom { get; init; }
+    public DateTime? EffectiveTo { get; init; }
+    public bool IsActive { get; init; }
 }
