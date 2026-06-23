@@ -9,7 +9,7 @@
         <div>
             <div class="eyebrow">Setup</div>
             <h1 class="h3 mb-1">Periods</h1>
-            <p class="text-muted mb-0">เพิ่ม แก้ไข ปิดงวด และลบ master period ได้ตรงฐานข้อมูล</p>
+            <p class="text-muted mb-0">Add, edit, close, and delete master periods directly in the database.</p>
         </div>
         <div class="calc-master-pill">Master data: @Model.Periods.Count periods</div>
     </div>
@@ -35,7 +35,7 @@
 
                 <div class="mb-3">
                     <label asp-for="Input.PeriodCode" class="form-label">Period Code</label>
-                    <input asp-for="Input.PeriodCode" class="form-control" placeholder="เช่น FY2027-04" />
+                    <input asp-for="Input.PeriodCode" class="form-control" placeholder="e.g. FY2027-04" />
                 </div>
 
                 <div class="mb-3">
@@ -119,7 +119,7 @@
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2">
                                     <a asp-page="./Index" asp-route-editId="@p.PeriodId" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <form method="post" asp-page-handler="Delete" class="d-inline" onsubmit="return confirm('ยืนยันการลบ period @p.PeriodCode ?');">
+                                    <form method="post" asp-page-handler="Delete" class="d-inline" onsubmit="return confirm('Confirm delete period @p.PeriodCode?');">
                                         <input type="hidden" name="periodId" value="@p.PeriodId" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                     </form>

@@ -10,6 +10,10 @@ public interface IPortalDataService
     Task<IReadOnlyList<ChannelItem>> GetChannelsAsync();
     Task<IReadOnlyList<CalcRunItem>> GetRecentRunsAsync(int top = 12);
     Task<IReadOnlyList<ForHrRow>> GetForHrRowsAsync(int calcRunId, int top = 200);
+    Task<IReadOnlyList<CalcRunDetailItem>> GetCalcRunDetailAsync(int calcRunId, int top = 200);
+    Task<IReadOnlyList<FormulaExpression>> GetFormulasByChannelAsync(string channelCode);
+    Task<IReadOnlyList<CalcRunHistoryItem>> GetCalcRunHistoryAsync(int channelId, int top = 10);
+    Task<IReadOnlyList<FormulaPreviewRow>> GetFormulaPreviewAsync(int periodId, string channelCode);
     Task<int?> GetLatestCalcRunIdAsync(int channelId);
     Task<int?> GetLatestCalcRunIdByPeriodAsync(int channelId, int periodId);
     Task<IReadOnlyList<string>> GetTtWsTypesAsync();
@@ -138,6 +142,154 @@ ORDER BY h.employee_code;";
         var rows = await conn.QueryAsync<ForHrRow>(sql, new { CalcRunId = calcRunId, Top = top });
         return rows.ToList();
     }
+
+    public async Task<IReadOnlyList<CalcRunDetailItem>> GetCalcRunDetailAsync(int calcRunId, int top = 200)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT TOP (@Top)
+       r.calc_run_id AS CalcRunId,
+       c.channel_code AS ChannelCode,
+       p.period_code AS PeriodCode,
+       r.run_status AS RunStatus,
+       r.updated_at AS UpdatedAt,
+       h.employee_code AS EmployeeCode,
+       h.position_level_code AS PositionLevelCode,
+       h.total_variable AS TotalVariable
+FROM dbo.out_for_hr_variable h
+INNER JOIN dbo.trn_calc_run r ON r.calc_run_id = h.calc_run_id
+LEFT JOIN dbo.mst_channel c ON c.channel_id = r.channel_id
+LEFT JOIN dbo.mst_period p ON p.period_id = r.period_id
+WHERE h.calc_run_id = @CalcRunId
+ORDER BY h.employee_code;";
+
+        var rows = await conn.QueryAsync<CalcRunDetailItem>(sql, new { CalcRunId = calcRunId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<FormulaExpression>> GetFormulasByChannelAsync(string channelCode)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT formula_id AS FormulaId,
+       formula_code AS FormulaCode,
+       formula_name AS FormulaName,
+       formula_step AS FormulaStep,
+       channel_id AS ChannelId,
+       channel_code AS ChannelCode,
+       position_level_id AS PositionLevelId,
+       position_code AS PositionCode,
+       ws_type AS WsType,
+       formula_expr AS FormulaExpr,
+       variables_json AS VariablesJson,
+       description AS Description,
+       sort_order AS SortOrder,
+       effective_from AS EffectiveFrom,
+         effective_to AS EffectiveTo
+FROM dbo.vw_formula_expression_active
+WHERE channel_code = @ChannelCode
+   OR channel_code = N'SHARED'
+ORDER BY
+    CASE formula_step
+        WHEN N'PCT_ACHIEVEMENT' THEN 1
+        WHEN N'INCENTIVE_PER_PRODUCT' THEN 2
+        WHEN N'SPECIAL_KPI' THEN 3
+        WHEN N'ROLLUP' THEN 4
+        ELSE 99
+    END,
+    sort_order,
+    formula_code;";
+
+        var rows = await conn.QueryAsync<FormulaExpressionRow>(sql, new { ChannelCode = channelCode });
+        return rows.Select(MapFormulaExpression).ToList();
+    }
+
+    private static FormulaExpression MapFormulaExpression(FormulaExpressionRow row)
+    {
+        return new FormulaExpression
+        {
+            FormulaId = row.FormulaId,
+            FormulaCode = row.FormulaCode,
+            FormulaName = row.FormulaName,
+            FormulaStep = row.FormulaStep,
+            ChannelId = row.ChannelId,
+            ChannelCode = row.ChannelCode,
+            PositionLevelId = row.PositionLevelId,
+            PositionCode = row.PositionCode,
+            WsType = row.WsType,
+            FormulaExpr = row.FormulaExpr,
+            VariablesJson = row.VariablesJson,
+            Description = row.Description,
+            SortOrder = row.SortOrder,
+            EffectiveFrom = DateOnly.FromDateTime(row.EffectiveFrom),
+            EffectiveTo = row.EffectiveTo.HasValue ? DateOnly.FromDateTime(row.EffectiveTo.Value) : null,
+            IsActive = true
+        };
+    }
+
+    public async Task<IReadOnlyList<CalcRunHistoryItem>> GetCalcRunHistoryAsync(int channelId, int top = 10)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT TOP (@Top)
+       r.calc_run_id AS CalcRunId,
+       r.channel_id AS ChannelId,
+       c.channel_code AS ChannelCode,
+       p.period_code AS PeriodCode,
+       r.run_status AS RunStatus,
+       r.approved_by AS ApprovedBy,
+       r.updated_at AS UpdatedAt,
+       ISNULL(hr.for_hr_row_count, 0) AS ForHrRowCount
+FROM dbo.trn_calc_run r
+LEFT JOIN dbo.mst_channel c ON c.channel_id = r.channel_id
+LEFT JOIN dbo.mst_period p ON p.period_id = r.period_id
+OUTER APPLY (
+    SELECT COUNT(*) AS for_hr_row_count
+    FROM dbo.out_for_hr_variable h
+    WHERE h.calc_run_id = r.calc_run_id
+) hr
+WHERE r.channel_id = @ChannelId
+ORDER BY r.calc_run_id DESC;";
+
+        var rows = await conn.QueryAsync<CalcRunHistoryItem>(sql, new { ChannelId = channelId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<FormulaPreviewRow>> GetFormulaPreviewAsync(int periodId, string channelCode)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+EXEC dbo.usp_formula_expression_preview
+    @PeriodId = @PeriodId,
+    @ChannelCode = @ChannelCode;";
+
+        var rows = await conn.QueryAsync<FormulaPreviewRowRaw>(sql, new { PeriodId = periodId, ChannelCode = channelCode });
+        return rows.Select(MapFormulaPreviewRow).ToList();
+    }
+
+    private static FormulaPreviewRow MapFormulaPreviewRow(FormulaPreviewRowRaw r) => new()
+    {
+        ChannelCode       = r.channel_code,
+        SalesmanCode      = r.salesman_code,
+        PositionCode      = r.position_code,
+        WsType            = r.ws_type_salesman,
+        ProductCode       = r.product_code,
+        TargetAmount      = r.target_amount,
+        ActualAmount      = r.actual_amount,
+        PctAchievement    = r.pct_achievement,
+        GoalMult          = r.goal_mult,
+        BaseRate          = r.base_rate,
+        WeightPct         = r.weight_pct,
+        FormulaCodePct    = r.formula_code_pct,
+        FormulaExprPct    = r.formula_expr_pct,
+        FormulaCodeIncent = r.formula_code_incent,
+        FormulaExprIncent = r.formula_expr_incent,
+        IncentiveAmount   = r.incentive_amount
+    };
 
     public async Task<int?> GetLatestCalcRunIdAsync(int channelId)
     {
@@ -357,6 +509,90 @@ public sealed class ForHrRow
     public string EmployeeCode { get; init; } = string.Empty;
     public string PositionLevelCode { get; init; } = string.Empty;
     public decimal TotalVariable { get; init; }
+}
+
+public sealed class CalcRunDetailItem
+{
+    public int CalcRunId { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string PeriodCode { get; init; } = string.Empty;
+    public string RunStatus { get; init; } = string.Empty;
+    public DateTime? UpdatedAt { get; init; }
+    public string EmployeeCode { get; init; } = string.Empty;
+    public string PositionLevelCode { get; init; } = string.Empty;
+    public decimal TotalVariable { get; init; }
+}
+
+public sealed class CalcRunHistoryItem
+{
+    public int CalcRunId { get; init; }
+    public int ChannelId { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string PeriodCode { get; init; } = string.Empty;
+    public string RunStatus { get; init; } = string.Empty;
+    public string? ApprovedBy { get; init; }
+    public DateTime? UpdatedAt { get; init; }
+    public int ForHrRowCount { get; init; }
+}
+
+public sealed class FormulaPreviewRow
+{
+    public int CalcRunId { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string SalesmanCode { get; init; } = string.Empty;
+    public string PositionCode { get; init; } = string.Empty;
+    public string? WsType { get; init; }
+    public string ProductCode { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public decimal ActualAmount { get; init; }
+    public decimal PctAchievement { get; init; }
+    public decimal GoalMult { get; init; }
+    public decimal BaseRate { get; init; }
+    public decimal WeightPct { get; init; }
+    public string? FormulaCodePct { get; init; }
+    public string? FormulaExprPct { get; init; }
+    public string? FormulaCodeIncent { get; init; }
+    public string? FormulaExprIncent { get; init; }
+    public decimal IncentiveAmount { get; init; }
+}
+
+internal sealed class FormulaPreviewRowRaw
+{
+    public string channel_code       { get; init; } = string.Empty;
+    public string salesman_code      { get; init; } = string.Empty;
+    public string position_code      { get; init; } = string.Empty;
+    public string? ws_type_salesman  { get; init; }
+    public string product_code       { get; init; } = string.Empty;
+    public decimal target_amount     { get; init; }
+    public decimal actual_amount     { get; init; }
+    public decimal pct_achievement   { get; init; }
+    public decimal goal_mult         { get; init; }
+    public decimal base_rate         { get; init; }
+    public decimal weight_pct        { get; init; }
+    public string? formula_code_pct  { get; init; }
+    public string? formula_expr_pct  { get; init; }
+    public string? formula_code_incent { get; init; }
+    public string? formula_expr_incent { get; init; }
+    public decimal incentive_amount  { get; init; }
+}
+
+internal sealed class FormulaExpressionRow
+{
+    public int FormulaId { get; init; }
+    public string FormulaCode { get; init; } = string.Empty;
+    public string FormulaName { get; init; } = string.Empty;
+    public string FormulaStep { get; init; } = string.Empty;
+    public int? ChannelId { get; init; }
+    public string? ChannelCode { get; init; }
+    public int? PositionLevelId { get; init; }
+    public string? PositionCode { get; init; }
+    public string? WsType { get; init; }
+    public string FormulaExpr { get; init; } = string.Empty;
+    public string? VariablesJson { get; init; }
+    public string? Description { get; init; }
+    public int SortOrder { get; init; }
+    public DateTime EffectiveFrom { get; init; }
+    public DateTime? EffectiveTo { get; init; }
 }
 
 public sealed class DashboardChannelSummary

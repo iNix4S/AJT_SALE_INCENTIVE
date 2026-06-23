@@ -8,179 +8,118 @@
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
         <div>
             <div class="eyebrow">Run Incentive</div>
-            <h1 class="h3 mb-1">Calculation Workspace</h1>
-            <p class="text-muted mb-0">รองรับครบ 4 Channel ตาม master data: MT, TT, S&I, LAOS</p>
+            <h1 class="h3 mb-1">Calculation Hub</h1>
+            <p class="text-muted mb-0">Central hub for all 4 channel calculations and master data readiness status.</p>
         </div>
-        <div class="calc-master-pill">Master data: @Model.Periods.Count periods / @Model.Channels.Count channels</div>
+        <div class="calc-master-pill">@Model.ChannelSummaries.Count channels / @Model.Periods.Count periods</div>
     </div>
 </section>
 
-<section class="row g-4 calc-grid">
-    <div class="col-12 col-xl-6">
-        <article class="content-panel calc-card h-100">
-            <header class="calc-card__header">
-                <div class="module-kicker mb-1">TC02</div>
-                <h2 class="h5 mb-1">MT Calculation</h2>
-                <p class="text-muted mb-0">เรียก <code>usp_run_mt_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
-            </header>
-
-            <form method="post" asp-page-handler="RunMt" class="calc-card__form mt-3">
-                <div class="mb-3">
-                    <label asp-for="MtPeriodId" class="form-label">Period</label>
-                    <select asp-for="MtPeriodId" class="form-select calc-period-select" id="mt-period"
-                            onchange="calcUpdateStatus('mt', this)">
-                        @foreach (var p in Model.Periods)
-                        {
-                            var r = Model.MtReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
-                            <option value="@p.PeriodId"
-                                    data-target="@r.TargetRows"
-                                    data-actual="@r.ActualRows">
-                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div id="mt-status" class="mb-2"></div>
-                <button type="submit" class="btn btn-danger calc-run-btn">Run MT Calculation</button>
-            </form>
+<section class="row g-4 mb-4">
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Master Data</div>
+            <h2 class="h5 mb-1">Periods</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.PeriodCount</div>
+            <p class="text-muted mb-0">Available periods for all channels.</p>
         </article>
     </div>
-
-    <div class="col-12 col-xl-6">
-        <article class="content-panel calc-card h-100">
-            <header class="calc-card__header">
-                <div class="module-kicker mb-1">TC01</div>
-                <h2 class="h5 mb-1">TT Calculation</h2>
-                <p class="text-muted mb-0">เรียก <code>usp_run_tt_incentive_calculation</code> ด้วย <code>@@PeriodCode</code>, <code>@@WsType</code>, <code>@@ApprovedBy</code></p>
-            </header>
-
-            <form method="post" asp-page-handler="RunTt" class="calc-card__form mt-3">
-                <div class="mb-3">
-                    <label asp-for="TtPeriodCode" class="form-label">Period</label>
-                    <select asp-for="TtPeriodCode" class="form-select calc-period-select" id="tt-period"
-                            onchange="calcUpdateStatus('tt', this)">
-                        @foreach (var p in Model.Periods)
-                        {
-                            var r = Model.TtReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
-                            <option value="@p.PeriodCode"
-                                    data-target="@r.TargetRows"
-                                    data-actual="@r.ActualRows">
-                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div id="tt-status" class="mb-2"></div>
-                <p class="text-muted small mb-2">คำนวณพร้อมกันทุก WS Type: @string.Join(", ", Model.TtWsTypes)</p>
-                <button type="submit" class="btn btn-success calc-run-btn">Run TT Calculation</button>
-            </form>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Master Data</div>
+            <h2 class="h5 mb-1">Active Channels</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.ActiveChannelCount</div>
+            <p class="text-muted mb-0">MT, TT, SI, LAOS</p>
         </article>
     </div>
-
-    <div class="col-12 col-xl-6">
-        <article class="content-panel calc-card h-100">
-            <header class="calc-card__header">
-                <div class="module-kicker mb-1">TC03</div>
-                <h2 class="h5 mb-1">S&I Calculation</h2>
-                <p class="text-muted mb-0">เรียก <code>usp_run_si_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
-            </header>
-
-            <form method="post" asp-page-handler="RunSi" class="calc-card__form mt-3">
-                <div class="mb-3">
-                    <label asp-for="SiPeriodId" class="form-label">Period</label>
-                    <select asp-for="SiPeriodId" class="form-select calc-period-select" id="si-period"
-                            onchange="calcUpdateStatus('si', this)">
-                        @foreach (var p in Model.Periods)
-                        {
-                            var r = Model.SiReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
-                            <option value="@p.PeriodId"
-                                    data-target="@r.TargetRows"
-                                    data-actual="@r.ActualRows">
-                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div id="si-status" class="mb-2"></div>
-                <button type="submit" class="btn btn-warning calc-run-btn" disabled="@(!Model.Snapshot.HasSiSp)">Run S&I Calculation</button>
-                @if (!Model.Snapshot.HasSiSp)
-                {
-                    <div class="calc-note text-muted mt-2">SP ยังไม่ deploy ใน environment ปัจจุบัน</div>
-                }
-            </form>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Execution</div>
+            <h2 class="h5 mb-1">Calc Runs</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.CalcRunCount</div>
+            <p class="text-muted mb-0">All calculation runs in the system.</p>
         </article>
     </div>
-
-    <div class="col-12 col-xl-6">
-        <article class="content-panel calc-card h-100">
-            <header class="calc-card__header">
-                <div class="module-kicker mb-1">TC04</div>
-                <h2 class="h5 mb-1">Laos Calculation</h2>
-                <p class="text-muted mb-0">เรียก <code>usp_run_laos_incentive_calculation</code> ด้วย <code>@@PeriodId</code></p>
-            </header>
-
-            <form method="post" asp-page-handler="RunLaos" class="calc-card__form mt-3">
-                <div class="mb-3">
-                    <label asp-for="LaosPeriodId" class="form-label">Period</label>
-                    <select asp-for="LaosPeriodId" class="form-select calc-period-select" id="laos-period"
-                            onchange="calcUpdateStatus('laos', this)">
-                        @foreach (var p in Model.Periods)
-                        {
-                            var r = Model.LaosReadiness.GetValueOrDefault(p.PeriodId) ?? new PeriodReadiness();
-                            <option value="@p.PeriodId"
-                                    data-target="@r.TargetRows"
-                                    data-actual="@r.ActualRows">
-                                @(r.IsReady ? "✅" : r.HasTarget ? "⚠️" : "❌") @p.PeriodId - @p.PeriodCode
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div id="laos-status" class="mb-2"></div>
-                <button type="submit" class="btn btn-secondary calc-run-btn" disabled="@(!Model.Snapshot.HasLaosSp)">Run Laos Calculation</button>
-                @if (!Model.Snapshot.HasLaosSp)
-                {
-                    <div class="calc-note text-muted mt-2">SP ยังไม่ deploy ใน environment ปัจจุบัน</div>
-                }
-            </form>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">HR Output</div>
+            <h2 class="h5 mb-1">Active Employees</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.ActiveEmployeeCount</div>
+            <p class="text-muted mb-0">Data for For HR and export.</p>
         </article>
     </div>
 </section>
 
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-info mt-4 mb-4 calc-alert">
-        @TempData["Message"]
-    </div>
-}
-
-<script>
-function calcUpdateStatus(ch, sel) {
-    const opt = sel.options[sel.selectedIndex];
-    const target = parseInt(opt.dataset.target || '0');
-    const actual = parseInt(opt.dataset.actual || '0');
-    const div = document.getElementById(ch + '-status');
-    if (!div) return;
-
-    if (target > 0 && actual > 0) {
-        div.innerHTML = '<div class="alert alert-success py-1 px-2 small mb-0">✅ พร้อมคำนวณ — Target: ' + target + ' rows &nbsp;|&nbsp; Actual: ' + actual + ' rows</div>';
-    } else if (target > 0) {
-        div.innerHTML = '<div class="alert alert-warning py-1 px-2 small mb-0">⚠️ ยังไม่พร้อม — มี Target ' + target + ' rows แต่ไม่มีข้อมูล Actual</div>';
-    } else {
-        div.innerHTML = '<div class="alert alert-danger py-1 px-2 small mb-0">❌ ไม่มีข้อมูล — ไม่พบ Target และ Actual สำหรับ Period นี้</div>';
+<section class="row g-4 mb-4">
+    @foreach (var channelCode in new[] { "MT", "TT", "SI", "LAOS" })
+    {
+        var channel = Model.ChannelSummaries.FirstOrDefault(item => item.ChannelCode == channelCode);
+        <div class="col-12 col-lg-6 col-xxl-3">
+            <article class="content-panel h-100 calc-card">
+                <header class="calc-card__header">
+                    <div class="module-kicker mb-1">@channelCode</div>
+                    <h2 class="h5 mb-1">@channelCode Calculation</h2>
+                    <p class="text-muted mb-0">@((channel?.CalcType) ?? "Ready for split page")</p>
+                </header>
+                <div class="mt-3 d-grid gap-2">
+                    <a class="btn btn-primary" asp-page="@($"/Calculation/{channelCode}/Index")">Open @channelCode Page</a>
+                    <div class="small text-muted">
+                        @if (channel is null)
+                        {
+                            <span>No summary available for this channel.</span>
+                        }
+                        else
+                        {
+                            <span>Ready periods: @channel.ReadyPeriodCount | Latest run: @(channel.LatestCalcRunId?.ToString() ?? "-")</span>
+                        }
+                    </div>
+                </div>
+            </article>
+        </div>
     }
-}
+</section>
 
-document.addEventListener('DOMContentLoaded', function () {
-    ['mt', 'tt', 'si', 'laos'].forEach(function (ch) {
-        const el = document.getElementById(ch + '-period');
-        if (el) {
-            calcUpdateStatus(ch, el);
-        }
-    });
-});
-</script>
+<section class="content-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Channel Readiness</div>
+            <h2 class="h5 mb-0">Latest status by channel</h2>
+        </div>
+    </div>
 
-<section class="content-panel mt-4">
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Channel</th>
+                    <th>Ready Periods</th>
+                    <th>Latest Ready Period</th>
+                    <th>Latest Run</th>
+                    <th>For HR Rows</th>
+                    <th>Procedure</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var channel in Model.ChannelSummaries)
+            {
+                <tr>
+                    <td class="fw-semibold">@channel.ChannelCode</td>
+                    <td>@channel.ReadyPeriodCount</td>
+                    <td>@(channel.LatestReadyPeriodCode ?? "-")</td>
+                    <td>
+                        @(channel.LatestCalcRunId?.ToString() ?? "-")
+                        <div class="text-muted small">@channel.LatestRunStatus</div>
+                    </td>
+                    <td>@channel.LatestForHrRowCount</td>
+                    <td>@(channel.HasProcedure ? "Available" : "Missing")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="content-panel">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <div class="eyebrow">Operational Trace</div>

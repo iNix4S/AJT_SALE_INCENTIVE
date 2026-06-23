@@ -47,11 +47,43 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto gap-lg-1">
-                        <li class="nav-item">
+                        <li class="nav-item d-none">
                             <a class="nav-link" asp-area="" asp-page="/Index">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Calculation/Index">Calculation</a>
+                            <a class="nav-link" asp-area="" asp-page="/DataInterface/Index">Validation Gate</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">Calculation</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Calculation/Index">
+                                        Overview
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Calculation/MT/Index">
+                                        MT Calculation
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Calculation/TT/Index">
+                                        TT Calculation
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Calculation/SI/Index">
+                                        SI Calculation
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Calculation/LAOS/Index">
+                                        LAOS Calculation
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Periods/Index">Periods</a>
@@ -59,7 +91,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/ForHR/Index">For HR</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item d-none">
                             <a class="nav-link" asp-area="" asp-page="/Approvals/Index">Approvals</a>
                         </li>
                         <li class="nav-item dropdown">
@@ -78,14 +110,31 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Target/Index">Target</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Formula/Index">Formula</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Parameters/Index">Parameters</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">Settings</a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Periods/Index">
+                                        Periods
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Target/Index">
+                                        Target
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Formula/Index">
+                                        Formula
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="" asp-page="/Parameters/Index">
+                                        Parameters
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                     <ul class="navbar-nav ms-lg-3 mt-3 mt-lg-0 align-items-lg-center">

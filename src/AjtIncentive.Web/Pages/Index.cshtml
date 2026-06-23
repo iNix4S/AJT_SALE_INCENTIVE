@@ -11,7 +11,7 @@
             <div class="eyebrow">Sales Incentive Control Tower</div>
             <h1 class="display-6 fw-bold mb-2">AJT Sale Incentive Operations</h1>
             <p class="lead text-muted mb-3">
-                ติดตามความพร้อมของ master data, ความพร้อมคำนวณราย channel, ผลลัพธ์ล่าสุด และทางลัดไปยังหน้าที่ใช้จริงในกระบวนการ Incentive
+                Monitor master data readiness, channel calculation status, latest results, and shortcuts to key incentive process pages.
             </p>
             <div class="d-flex flex-wrap gap-2">
                 <span class="badge badge-soft-red">Master Data Driven</span>
@@ -79,17 +79,17 @@
         {
             var statusClass = channel.HasProcedure && channel.ReadyPeriodCount > 0 ? "ready" : channel.HasProcedure ? "warning" : "blocked";
             var statusText = channel.HasProcedure && channel.ReadyPeriodCount > 0
-                ? "พร้อมคำนวณ"
+                ? "Ready to Calculate"
                 : channel.HasProcedure
-                    ? "SP พร้อม แต่ข้อมูลยังไม่ครบ"
-                    : "SP ยังไม่พร้อม";
+                    ? "SP ready, data incomplete"
+                    : "SP not ready";
             var formulaNote = channel.ChannelCode switch
             {
-                "MT" => "คำนวณแบบ product group ตาม salesman ดูแลหลายกลุ่มสินค้า",
-                "TT" => "คำนวณตาม SKU และประมวลผลทุก WS Type พร้อมกัน",
-                "SI" => "ใช้ pattern จาก MT แต่ทดสอบเฉพาะ S&I test channel",
-                "LAOS" => "ใช้ pattern ใกล้ TT พร้อม product mapping A/R/B/Y -> AJ/RD/BD/YY",
-                _ => "ใช้ master data จาก database"
+                "MT"   => "Calculated by product group; each salesman covers multiple product groups.",
+                "TT"   => "Calculated by SKU; processes all WS Types in one run.",
+                "SI"   => "MT-based pattern; used for S&I test channel.",
+                "LAOS" => "TT-like pattern with product mapping A/R/B/Y \u2192 AJ/RD/BD/YY.",
+                _      => "Derived from database master data."
             };
             <div class="col-12 col-md-6">
                 <article class="dashboard-channel-card dashboard-channel-card--@statusClass">
@@ -141,15 +141,15 @@
             <div class="content-panel dashboard-process-card h-100">
                 <div class="eyebrow">Step 1</div>
                 <h2 class="h5">Master Setup</h2>
-                <p class="text-muted mb-3">ดูแล period master, parameter และสถานะพร้อมคำนวณของข้อมูลต้นทาง</p>
+                <p class="text-muted mb-3">Manage period master, parameters, and source data readiness.</p>
                 <div class="dashboard-process-links">
                     <a class="module-card dashboard-mini-card" asp-page="/Periods/Index">
                         <h3>Periods</h3>
-                        <p>เพิ่ม ลด และตั้งค่างวดคำนวณในฐานข้อมูลจริง</p>
+                        <p>Add, close, and configure calculation periods in the database.</p>
                     </a>
                     <a class="module-card dashboard-mini-card" asp-page="/Parameters/Index">
                         <h3>Parameters</h3>
-                        <p>ดูค่าที่ใช้คำนวณ incentive ตาม master data</p>
+                        <p>View incentive calculation parameters from master data.</p>
                     </a>
                 </div>
             </div>
@@ -158,15 +158,15 @@
             <div class="content-panel dashboard-process-card h-100">
                 <div class="eyebrow">Step 2</div>
                 <h2 class="h5">Calculation & Adjustment</h2>
-                <p class="text-muted mb-3">รัน calculation ตาม channel และบันทึกกรณีพิเศษที่มีผลต่อ incentive</p>
+                <p class="text-muted mb-3">Run calculations by channel and record special cases affecting incentive.</p>
                 <div class="dashboard-process-links">
                     <a class="module-card dashboard-mini-card" asp-page="/Calculation/Index">
                         <h3>Calculation</h3>
-                        <p>รัน MT, TT, S&I และ LAOS ด้วยพารามิเตอร์จริง</p>
+                        <p>Run MT, TT, S&amp;I and LAOS with live parameters.</p>
                     </a>
                     <a class="module-card dashboard-mini-card" asp-page="/Prorate/Index">
                         <h3>Adjustments</h3>
-                        <p>จัดการ Prorate และ Special Adjustment ตาม business case</p>
+                        <p>Manage Prorate and Special Adjustment per business case.</p>
                     </a>
                 </div>
             </div>
@@ -175,15 +175,15 @@
             <div class="content-panel dashboard-process-card h-100">
                 <div class="eyebrow">Step 3</div>
                 <h2 class="h5">Review & Output</h2>
-                <p class="text-muted mb-3">ตรวจสอบผลล่าสุด, row สำหรับ HR และสถานะการอนุมัติก่อนใช้งานจริง</p>
+                <p class="text-muted mb-3">Review latest results, HR rows, and approval status before publishing.</p>
                 <div class="dashboard-process-links">
                     <a class="module-card dashboard-mini-card" asp-page="/ForHR/Index">
                         <h3>For HR</h3>
-                        <p>ตรวจ `out_for_hr_variable` และผลลัพธ์ต่อพนักงาน</p>
+                        <p>Review <code>out_for_hr_variable</code> and per-employee results.</p>
                     </a>
                     <a class="module-card dashboard-mini-card" asp-page="/Approvals/Index">
                         <h3>Approvals</h3>
-                        <p>ติดตาม calc run และการอนุมัติผลคำนวณล่าสุด</p>
+                        <p>Track calc runs and approval of the latest calculation results.</p>
                     </a>
                 </div>
             </div>

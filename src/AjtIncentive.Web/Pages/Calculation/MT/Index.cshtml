@@ -1,0 +1,193 @@
+@page
+@model AjtIncentive.Web.Pages.Calculation.MT.IndexModel
+@{
+    ViewData["Title"] = "MT Calculation";
+}
+
+<section class="content-panel mb-4 mt-modern-hero">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+        <div>
+            <div class="eyebrow">Channel: Modern Trade</div>
+            <h1 class="h3 mb-2">MT Calculation</h1>
+            <p class="mb-0 mt-hero-copy">Manage MT incentive calculation rounds — preview results before running.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="mt-kpi-chip">
+                <span class="mt-kpi-label">Periods</span>
+                <span class="mt-kpi-value">@Model.Periods.Count</span>
+            </span>
+            <span class="mt-kpi-chip">
+                <span class="mt-kpi-label">Recent Runs</span>
+                <span class="mt-kpi-value">@Model.RunHistory.Count</span>
+            </span>
+        </div>
+    </div>
+</section>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info mb-4 calc-alert">
+        @TempData["Message"]
+    </div>
+}
+
+<section class="row g-4 mb-4 mt-modern-grid">
+    <div class="col-12 col-xl-5">
+        <article class="content-panel calc-card h-100 mt-modern-card mt-fade-in">
+            <header class="calc-card__header">
+                <div class="module-kicker mb-1">MT</div>
+                <h2 class="h5 mb-1">Run MT Calculation</h2>
+                <p class="text-muted mb-0">Select a period, then click Preview to verify before running.</p>
+            </header>
+
+            <form method="post" asp-page-handler="Run" class="calc-card__form mt-3 mt-controls-form">
+                <div class="mt-controls-shell">
+                    <div class="mt-control-block">
+                        <label asp-for="PeriodId" class="form-label mt-control-label">Period</label>
+                        <select asp-for="PeriodId" class="form-select calc-period-select mt-period-select" id="mt-period">
+                            @foreach (var period in Model.Periods)
+                            {
+                                var readiness = Model.Readiness.GetValueOrDefault(period.PeriodId) ?? new PeriodReadiness();
+                                <option value="@period.PeriodId">
+                                    @(readiness.IsReady ? "✅" : readiness.HasTarget ? "⚠️" : "❌") @period.PeriodId - @period.PeriodCode
+                                </option>
+                            }
+                        </select>
+                        <div class="form-text mt-2">Start with Preview to validate data before running calculation.</div>
+                    </div>
+
+                    <div id="mt-status" class="mt-status-shell mt-status-shell--compact"></div>
+                </div>
+
+                <div class="mt-actions-row mt-3">
+                    <button type="submit" class="btn btn-outline-secondary mt-btn-preview" asp-page-handler="Preview">Preview</button>
+                    <button type="submit" class="btn btn-danger mt-btn-run">Run MT Calculation</button>
+                </div>
+            </form>
+        </article>
+    </div>
+
+    <div class="col-12 col-xl-7">
+        <article class="content-panel h-100 mt-modern-card mt-fade-in mt-fade-in-delay">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <div class="eyebrow">Readiness Guide</div>
+                    <h2 class="h5 mb-0">Data Readiness Status</h2>
+                </div>
+                <span class="text-muted small">for selected period</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="mt-state-card mt-state-ready">
+                        <div class="mt-state-icon">✅</div>
+                        <div class="fw-semibold">Ready to Calculate</div>
+                        <p class="mb-0">Target and key conditions are complete. Ready to run.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="mt-state-card mt-state-warning">
+                        <div class="mt-state-icon">⚠️</div>
+                        <div class="fw-semibold">Incomplete Data</div>
+                        <p class="mb-0">Partial data available. Review before running.</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="mt-state-card mt-state-danger">
+                        <div class="mt-state-icon">❌</div>
+                        <div class="fw-semibold">No Data</div>
+                        <p class="mb-0">Prepare period data before proceeding.</p>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="mt-callout mt-2">
+                        Suggested workflow: Select period → Preview → Review results → Run MT Calculation
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="content-panel mb-4 mt-modern-card mt-fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Preview</div>
+            <h2 class="h5 mb-0">Formula preview for selected period</h2>
+        </div>
+        <span class="text-muted small">@Model.PreviewRows.Count rows</span>
+    </div>
+
+    @if (!Model.ShowPreview)
+    {
+        <div class="text-muted">Click <strong>Preview</strong> to load results from <code>usp_formula_expression_preview</code>.</div>
+    }
+    else
+    {
+        <partial name="_FormulaPreviewTable" model="Model.PreviewRows.Take(20).ToList()" />
+    }
+</section>
+
+<section class="content-panel mt-modern-card mt-fade-in mt-fade-in-delay-2">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Execution</div>
+            <h2 class="h5 mb-0">Recent MT runs</h2>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Calc Run</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                    <th>Approved By</th>
+                    <th>Updated</th>
+                    <th>HR Rows</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var run in Model.RunHistory)
+            {
+                <tr>
+                    <td class="fw-semibold">@run.CalcRunId</td>
+                    <td>@run.PeriodCode</td>
+                    <td>@run.RunStatus</td>
+                    <td>@run.ApprovedBy</td>
+                    <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                    <td>@run.ForHrRowCount</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(function () {
+    const select = document.getElementById('mt-period');
+    const status = document.getElementById('mt-status');
+    if (!select || !status) return;
+
+    function render() {
+        const opt = select.options[select.selectedIndex];
+        const text = opt ? opt.textContent : '';
+        if (text.includes('✅')) {
+            status.innerHTML = '<div class="alert alert-success py-2 px-3 small mb-0">Ready to calculate</div>';
+            return;
+        }
+        if (text.includes('⚠️')) {
+            status.innerHTML = '<div class="alert alert-warning py-2 px-3 small mb-0">Incomplete data for this period</div>';
+            return;
+        }
+        status.innerHTML = '<div class="alert alert-danger py-2 px-3 small mb-0">No data for this period</div>';
+    }
+
+    select.addEventListener('change', render);
+    render();
+})();
+</script>
+}

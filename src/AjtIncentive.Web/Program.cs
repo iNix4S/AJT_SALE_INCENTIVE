@@ -20,6 +20,13 @@ var isEntraConfigured =
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddAuthorization();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var authenticationBuilder = builder.Services
     .AddAuthentication(options =>
@@ -83,6 +90,11 @@ builder.Services.AddScoped<IPortalDataService>(sp =>
 builder.Services.AddScoped<IFormulaEvaluatorService>(sp =>
     new FormulaEvaluatorService(connectionString));
 
+builder.Services.AddScoped<IDataInterfaceService>(sp =>
+    new DataInterfaceService(connectionString));
+
+builder.Services.AddScoped<ITargetImportService, TargetImportService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -97,6 +109,7 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

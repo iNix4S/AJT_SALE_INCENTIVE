@@ -7,7 +7,7 @@
 <section class="adj-header-panel mb-4">
     <p class="adj-eyebrow">Adjustments</p>
     <h1 class="adj-title">Prorate Logic</h1>
-    <p class="adj-desc">บันทึก prorate factor สำหรับพนักงานที่เข้า / ออก / โอนย้ายกลางเดือน</p>
+    <p class="adj-desc">Record prorate factors for employees joining, resigning, or transferring mid-month.</p>
 </section>
 
 @if (TempData["Message"] is string msg)
@@ -50,36 +50,36 @@
 <div class="row g-3 mb-4">
     <div class="col-12">
         <div class="content-panel">
-            <h6 class="fw-semibold mb-3">กฎ Prorate (3.2)</h6>
+            <h6 class="fw-semibold mb-3">Prorate Rules (3.2)</h6>
             <div class="table-responsive">
                 <table class="table table-sm table-bordered mb-0 small">
                     <thead class="table-dark">
                         <tr>
-                            <th>กรณี</th>
+                            <th>Case</th>
                             <th>Logic</th>
-                            <th>ตัวอย่าง</th>
+                            <th>Example</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="badge bg-success">JOIN</span> พนักงานเข้างานกลางเดือน</td>
-                            <td>Prorate = (วันทำงานจริง / วันทำงานในเดือน) × Incentive เต็ม</td>
-                            <td>เข้าวันที่ 16 = คำนวณ 50%</td>
+                            <td><span class="badge bg-success">JOIN</span> Employee started mid-month</td>
+                            <td>Prorate = (Actual working days / Total working days in month) × Full incentive</td>
+                            <td>Joined on the 16th = calculated at 50%</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-danger">RESIGN</span> พนักงานลาออกกลางเดือน</td>
-                            <td>ระบุว่าจ่ายหรือไม่จ่าย Incentive (Policy decision)</td>
-                            <td>ต้องได้รับการยืนยันจาก HR</td>
+                            <td><span class="badge bg-danger">RESIGN</span> Employee resigned mid-month</td>
+                            <td>Specify whether to pay or withhold incentive (Policy decision)</td>
+                            <td>Requires HR confirmation</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-warning text-dark">TRANSFER</span> Transfer ข้าม Region กลางวด</td>
-                            <td>แยกคำนวณ Incentive แต่ละ Region ตามสัดส่วนวัน</td>
-                            <td>Region A 10 วัน + Region B 20 วัน</td>
+                            <td><span class="badge bg-warning text-dark">TRANSFER</span> Cross-region transfer mid-period</td>
+                            <td>Calculate incentive for each region proportionally by days</td>
+                            <td>Region A 10 days + Region B 20 days</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-info text-dark">POSITION_CHANGE</span> เปลี่ยน Position กลางวด</td>
-                            <td>ระบุว่าใช้ Position เดิมหรือใหม่ หรือแยกคำนวณ</td>
-                            <td>ต้องได้รับการยืนยันจาก HR/Finance</td>
+                            <td><span class="badge bg-info text-dark">POSITION_CHANGE</span> Position change mid-period</td>
+                            <td>Specify old or new position, or split calculation</td>
+                            <td>Requires HR/Finance confirmation</td>
                         </tr>
                     </tbody>
                 </table>
@@ -98,7 +98,7 @@
     @if (Model.ProrateRecords.Count == 0)
     {
         <div class="adj-empty-state">
-            <span class="text-muted small">ยังไม่มีข้อมูล Prorate สำหรับ Channel/Period นี้</span>
+            <span class="text-muted small">No prorate records for this channel/period.</span>
         </div>
     }
     else
@@ -144,8 +144,8 @@
                                     <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
                                     <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
                                     <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1"
-                                            onclick="return confirm('ลบ Prorate record ของ @r.EmployeeCode?')">
-                                        ลบ
+                                            onclick="return confirm('Delete prorate record for @r.EmployeeCode?')">
+                                        Delete
                                     </button>
                                 </form>
                             </td>
@@ -159,7 +159,7 @@
 
 <!-- Add New Record Form -->
 <div class="content-panel">
-    <h6 class="fw-semibold mb-3">เพิ่ม Prorate Record</h6>
+    <h6 class="fw-semibold mb-3">Add Prorate Record</h6>
     <form method="post" asp-page-handler="Save" class="row g-3">
         <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
         <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
@@ -167,7 +167,7 @@
         <div class="col-md-3">
             <label class="form-label small fw-semibold">Employee</label>
             <select name="EmployeeCode" class="form-select form-select-sm" required>
-                <option value="">-- เลือก Employee --</option>
+                <option value="">-- Select Employee --</option>
                 @foreach (var e in Model.Employees)
                 {
                     <option value="@e.EmployeeCode">@e.EmployeeCode – @e.EmployeeNameTh</option>
@@ -176,12 +176,12 @@
         </div>
 
         <div class="col-md-2">
-            <label class="form-label small fw-semibold">ประเภท</label>
+            <label class="form-label small fw-semibold">Type</label>
             <select name="ProrateType" class="form-select form-select-sm" required>
-                <option value="JOIN">JOIN – เข้างานกลางเดือน</option>
-                <option value="RESIGN">RESIGN – ลาออกกลางเดือน</option>
-                <option value="TRANSFER">TRANSFER – โอนย้ายข้าม Region</option>
-                <option value="POSITION_CHANGE">POSITION_CHANGE – เปลี่ยน Position</option>
+                <option value="JOIN">JOIN – Started mid-month</option>
+                <option value="RESIGN">RESIGN – Left mid-month</option>
+                <option value="TRANSFER">TRANSFER – Cross-region transfer</option>
+                <option value="POSITION_CHANGE">POSITION_CHANGE – Position change</option>
             </select>
         </div>
 
@@ -200,22 +200,22 @@
         <div class="col-md-2">
             <label class="form-label small fw-semibold">Approved By</label>
             <input type="text" name="ApprovedBy" class="form-control form-control-sm"
-                   placeholder="ชื่อผู้อนุมัติ" />
+                   placeholder="Approver name" />
         </div>
 
         <div class="col-md-2">
             <label class="form-label small fw-semibold">Remarks</label>
             <input type="text" name="Remarks" class="form-control form-control-sm"
-                   placeholder="หมายเหตุ" />
+                   placeholder="Remarks" />
         </div>
 
         <div class="col-md-1 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary btn-sm w-100">บันทึก</button>
+            <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
         </div>
     </form>
 
     <div class="adj-note mt-3">
-        <strong>หมายเหตุ:</strong> Factor = Actual Days / Total Days
-        (เช่น 11/22 = 50%) ระบบจะนำ factor นี้ไปคูณกับ Incentive ที่คำนวณได้เต็มเดือน
+        <strong>Note:</strong> Factor = Actual Days / Total Days
+        (e.g. 11/22 = 50%). This factor multiplies the full-month calculated incentive.
     </div>
 </div>
