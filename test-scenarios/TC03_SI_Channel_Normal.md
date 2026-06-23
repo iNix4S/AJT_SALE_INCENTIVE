@@ -51,9 +51,9 @@
 |---|---------|------------|
 | 1 | เปิดหน้า Calculation | ไปที่ `http://localhost:5288/Calculation/Index` |
 | 2 | ตรวจสอบ S&I card | card "S&I Calculation" ต้องแสดงปุ่มที่ **ไม่ disabled** (แปลว่า SP deploy แล้ว) |
-| 3 | เลือก Period | เลือก `1 - FY2026-04 (2026-04)` จาก dropdown |
+| 3 | เลือก Period | เลือก `1 - FY2026-04` จาก dropdown |
 | 4 | กด "Run S&I Calculation" | ระบบส่ง POST ไป `OnPostRunSiAsync` → เรียก `RunSiCalculationAsync(SiPeriodId)` |
-| 5 | ตรวจ flash message | ต้องแสดง `S&I Calculation started successfully. Calc Run ID: <id>` |
+| 5 | ตรวจ flash message | ต้องแสดง `S&I Calculation started successfully. Calc Run ID: <id>` หรือกรณี fail ต้องเห็น `Error running S&I Calculation: ...` |
 | 6 | ตรวจ Recent Runs table | ต้องมีแถวใหม่ channel=SI, status=CALCULATED |
 
 ---

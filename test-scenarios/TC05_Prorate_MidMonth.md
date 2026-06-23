@@ -43,7 +43,7 @@ Prorate Logic ใช้สำหรับพนักงานที่เข้
 | 1 | เปิดหน้า Prorate | ไปที่ `http://localhost:5288/Prorate/Index` |
 | 2 | เลือก Channel | เลือก **MT** จาก dropdown |
 | 3 | เลือก Period | เลือก **FY2026-04** |
-| 4 | กด "กรองข้อมูล" | ดูตาราง rule reference (4 กรณี) และ Add form ที่ด้านล่าง |
+| 4 | กด "Load" | ดูตาราง rule reference (4 กรณี) และ Add form ที่ด้านล่าง |
 | 5 | กรอก Add form | เลือก Employee คนใดก็ได้, ProrateType = **JOIN**, ActualDays = **11**, TotalDays = **22**, ApprovedBy = **test** |
 | 6 | กด Save | ระบบ POST ไป OnPostSaveAsync → MERGE into trn_prorate_adjustment |
 | 7 | ตรวจผล | ตารางรัคอร์ดต้องแสดง **Factor = 11/22** และ **ProrateType = JOIN** |
@@ -96,7 +96,7 @@ WHERE period_id=1 AND channel_id=1 AND employee_code IN ('222208','222222');
 | # | ขั้นตอน | SQL |
 |---|---------|-----|
 | 1 | ตรวจว่าตารางมี | `SELECT CASE WHEN OBJECT_ID('dbo.trn_prorate_adjustment','U') IS NULL THEN 0 ELSE 1 END;` → 1 |
-| 2 | ตรวจ unique constraint | เพิ่ม record ซ้ำ (period+channel+employee) → ต้องได้ MERGE update ไม่ใช่ error |
+| 2 | ตรวจพฤติกรรม upsert | เพิ่ม record ซ้ำ (period+channel+employee) → หน้าเว็บใช้ MERGE และจะ update record เดิม |
 | 3 | ตรวจ prorate_type CHECK | INSERT ค่าผิด → ต้องได้ constraint error |
 | 4 | CRUD cycle | INSERT → SELECT → DELETE → verify count=0 |
 
@@ -107,7 +107,7 @@ WHERE period_id=1 AND channel_id=1 AND employee_code IN ('222208','222222');
 - [ ] ตาราง `trn_prorate_adjustment` มีใน DB
 - [ ] Web UI บันทึก prorate record ได้สำเร็จ (MERGE upsert)
 - [ ] Factor แสดงถูกต้องเป็น actual_days/total_days
-- [ ] บันทึกซ้ำ (same period+channel+employee) → update แทน insert
+- [ ] บันทึกซ้ำ (same period+channel+employee) → update แทน insert (ตาม MERGE ใน page handler)
 - [ ] ลบ record เสร็จและไม่แสดงผลแล้ว
 - [ ] prorate_type โดยฮ CHECK constraint: JOIN/RESIGN/TRANSFER/POSITION_CHANGE เท่านั้น
 

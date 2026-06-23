@@ -13,8 +13,8 @@
 
 | Type | คำอธิบาย | Columns ที่ใช้ |
 |------|----------|-----------|
-| SHORTAGE | สินค้าขาดตลาด — override achievement = 100% | `override_achievement` |
-| SPECIAL_SITUATION | อราการพิเศษ — ปรับ target/weight เป็นค่าพิเศษ | `adjusted_target_amount`, `adjusted_weight_percent` |
+| SHORTAGE | สินค้าขาดตลาด — override achievement = 100% (เก็บเป็นค่า 1.0) | `override_achievement` |
+| SPECIAL_SITUATION | กรณีพิเศษ — ปรับ target/weight เป็นค่าพิเศษ | `adjusted_target_amount`, `adjusted_weight_percent` |
 
 - ตาราง `trn_special_adjustment` deploy แล้วใน DB (14 columns)
 - หน้าเว็บ Razor Page อยู่ที่ `/SpecialAdjust/Index`
@@ -41,7 +41,7 @@
 | 1 | เปิดหน้า Special Adjustment | ไปที่ `http://localhost:5288/SpecialAdjust/Index` |
 | 2 | เลือก Channel + Period | เลือก **S&I** + **FY2026-04** → กด Filter |
 | 3 | คลิก tab **SHORTAGE** | ดูเนื้อหา tab แรก |
-| 4 | กรอก Add form | ProductCode = **AJ**, OverrideAchievement = **100**, Reason = **สินค้าขาดตลาด**, ApprovedBy = **test** |
+| 4 | กรอก Add form | ProductCode = **AJ**, OverrideAchievement = **1.0**, Reason = **สินค้าขาดตลาด**, ApprovedBy = **test** |
 | 5 | กด Save Shortage | POST ไป OnPostSaveShortageAsync → INSERT into trn_special_adjustment (type='SHORTAGE') |
 | 6 | ตรวจ table SHORTAGE | ตารางต้องแสดง record ใหม่ ProductCode=AJ, Override=100 |
 | 7 | ลบ record | กดปุ่ม Delete → POST OnPostDeleteAsync → DELETE จาก DB |
@@ -72,7 +72,7 @@ WHERE period_id=1 AND channel_id=3 AND reason IN (N'ทดสอบ SHORTAGE',N'
 INSERT INTO dbo.trn_special_adjustment
   (period_id, channel_id, adjustment_type, product_code, override_achievement,
    reason, is_active, approved_by)
-VALUES (1, 3, 'SHORTAGE', 'AJ', 100.00, N'ทดสอบ SHORTAGE', 1, 'test');
+VALUES (1, 3, 'SHORTAGE', 'AJ', 1.00, N'ทดสอบ SHORTAGE', 1, 'test');
 
 -- INSERT SPECIAL_SITUATION (employee+product)
 DECLARE @pid NVARCHAR(20) = (SELECT TOP 1 product_code FROM mst_product WHERE product_code='RD');
@@ -103,7 +103,7 @@ WHERE period_id=1 AND channel_id=3; -- ต้องได้ 0
 
 | adjustment_type | employee_code | product_code | override_achievement | adjusted_target_amount | adjusted_weight_percent |
 |---|---|---|---|---|---|
-| SHORTAGE | NULL | AJ | 100.00 | NULL | NULL |
+| SHORTAGE | NULL | AJ | 1.00 | NULL | NULL |
 | SPECIAL_SITUATION | SI001 | RD | NULL | 800,000.00 | 40.00 |
 
 ---

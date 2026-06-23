@@ -160,6 +160,11 @@ function Get-PeriodIdByCode([string]$PeriodCode) {
     return To-Int (Invoke-Scalar $q)
 }
 
+function Get-PeriodCodeById([int]$PeriodId) {
+    $q = "SELECT TOP (1) period_code FROM dbo.mst_period WHERE period_id = $PeriodId ORDER BY period_id;"
+    return (Invoke-Scalar $q)
+}
+
 function Get-ChannelIdByNameLike([string]$Pattern) {
     $candidateColumns = @("channel_name", "name", "channel_code", "channel_desc", "description", "channel_name_th", "channel_name_en")
     foreach ($col in $candidateColumns) {
@@ -257,6 +262,83 @@ BEGIN CATCH
     SELECT N'EXEC_ERROR|' + ERROR_MESSAGE();
 END CATCH;
 "@
+    return Invoke-Scalar -Query $q
+}
+
+function Invoke-LaosProcedureAuto([string]$PeriodCode, [string]$WsType = "TOP_WS", [string]$ApprovedBy = "system") {
+    $safePeriodCode = $PeriodCode.Replace("'", "''")
+    $safeWsType = $WsType.Replace("'", "''")
+    $safeApprovedBy = $ApprovedBy.Replace("'", "''")
+    $periodId = Get-PeriodIdByCode -PeriodCode $PeriodCode
+
+    $q = @"
+DECLARE @Proc SYSNAME = N'dbo.usp_run_laos_incentive_calculation';
+IF OBJECT_ID(@Proc, N'P') IS NULL
+BEGIN
+    SELECT N'PROC_NOT_FOUND';
+    RETURN;
+END;
+
+DECLARE @HasPeriodCode BIT = CASE WHEN EXISTS (
+    SELECT 1 FROM sys.parameters
+    WHERE object_id = OBJECT_ID(@Proc) AND name = N'@PeriodCode'
+) THEN 1 ELSE 0 END;
+
+DECLARE @HasPeriodId BIT = CASE WHEN EXISTS (
+    SELECT 1 FROM sys.parameters
+    WHERE object_id = OBJECT_ID(@Proc) AND name = N'@PeriodId'
+) THEN 1 ELSE 0 END;
+
+DECLARE @HasWsType BIT = CASE WHEN EXISTS (
+    SELECT 1 FROM sys.parameters
+    WHERE object_id = OBJECT_ID(@Proc) AND name = N'@WsType'
+) THEN 1 ELSE 0 END;
+
+DECLARE @HasApprovedBy BIT = CASE WHEN EXISTS (
+    SELECT 1 FROM sys.parameters
+    WHERE object_id = OBJECT_ID(@Proc) AND name = N'@ApprovedBy'
+) THEN 1 ELSE 0 END;
+
+DECLARE @Sql NVARCHAR(MAX) = N'EXEC dbo.usp_run_laos_incentive_calculation';
+DECLARE @Sep NVARCHAR(2) = N' ';
+
+IF @HasPeriodCode = 1
+BEGIN
+    SET @Sql += @Sep + N'@PeriodCode=@pcode';
+    SET @Sep = N', ';
+END
+ELSE IF @HasPeriodId = 1
+BEGIN
+    SET @Sql += @Sep + N'@PeriodId=@pid';
+    SET @Sep = N', ';
+END
+
+IF @HasWsType = 1
+BEGIN
+    SET @Sql += @Sep + N'@WsType=@ws';
+    SET @Sep = N', ';
+END
+
+IF @HasApprovedBy = 1
+BEGIN
+    SET @Sql += @Sep + N'@ApprovedBy=@ab';
+END
+
+BEGIN TRY
+    EXEC sp_executesql
+        @Sql,
+        N'@pcode NVARCHAR(20), @pid INT, @ws NVARCHAR(50), @ab NVARCHAR(100)',
+        @pcode = N'$safePeriodCode',
+        @pid = $periodId,
+        @ws = N'$safeWsType',
+        @ab = N'$safeApprovedBy';
+    SELECT N'OK';
+END TRY
+BEGIN CATCH
+    SELECT N'EXEC_ERROR|' + ERROR_MESSAGE();
+END CATCH;
+"@
+
     return Invoke-Scalar -Query $q
 }
 
@@ -459,7 +541,7 @@ try {
         Add-Result -TC "TC04" -Status "PASS" -Summary "Current-State: ไม่พบ SP usp_run_laos_incentive_calculation (capability not deployed)"
         Write-Pass "Laos ผ่านแบบ Current-State (skip: SP ยังไม่ deploy)"
     } else {
-        $laosRunResult = Invoke-LaosProc -PeriodCode $PeriodCodeLaos -WsType $WsTypeLaos -ApprovedBy "system"
+        $laosRunResult = Invoke-LaosProcedureAuto -PeriodCode $PeriodCodeLaos -WsType $WsTypeLaos -ApprovedBy "system"
         if ($laosRunResult -like "EXEC_ERROR|*") {
             Add-Result -TC "TC04" -Status "FAIL" -Summary $laosRunResult
             Write-Fail $laosRunResult
@@ -554,7 +636,7 @@ try {
         Invoke-Sql @"
 INSERT INTO dbo.trn_special_adjustment
   (period_id, channel_id, adjustment_type, product_code, override_achievement, reason, is_active, approved_by)
-VALUES (1, 3, 'SHORTAGE', 'AJ', 100.00, N'$testReason', 1, 'runner');
+VALUES (1, 3, 'SHORTAGE', 'AJ', 1.00, N'$testReason', 1, 'runner');
 INSERT INTO dbo.trn_special_adjustment
   (period_id, channel_id, adjustment_type, employee_code, product_code,
    adjusted_target_amount, adjusted_weight_percent, reason, is_active, approved_by)
@@ -562,7 +644,7 @@ VALUES (1, 3, 'SPECIAL_SITUATION', 'SI001', 'RD', 800000.00, 40.00, N'$testReaso
 "@ | Out-Null
 
         $insertedRows = To-Int (Invoke-Scalar "SELECT COUNT(*) FROM dbo.trn_special_adjustment WHERE reason=N'$testReason';")
-        $shortageOk = To-Int (Invoke-Scalar "SELECT COUNT(*) FROM dbo.trn_special_adjustment WHERE reason=N'$testReason' AND adjustment_type='SHORTAGE' AND override_achievement=100;")
+        $shortageOk = To-Int (Invoke-Scalar "SELECT COUNT(*) FROM dbo.trn_special_adjustment WHERE reason=N'$testReason' AND adjustment_type='SHORTAGE' AND ABS(override_achievement - 1.0) < 0.0001;")
         $specialOk = To-Int (Invoke-Scalar "SELECT COUNT(*) FROM dbo.trn_special_adjustment WHERE reason=N'$testReason' AND adjustment_type='SPECIAL_SITUATION' AND adjusted_weight_percent=40;")
 
         Invoke-Sql "DELETE FROM dbo.trn_special_adjustment WHERE reason=N'$testReason';" | Out-Null

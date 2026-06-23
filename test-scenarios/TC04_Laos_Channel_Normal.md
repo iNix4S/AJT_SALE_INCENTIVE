@@ -3,7 +3,7 @@
 **Scenario:** คำนวณ Incentive สำหรับพนักงาน Laos Channel — ทดสอบแบบ Full Execution ทุก Layer  
 **Channel:** Laos (`channel_id = 4`, `channel_code = 'LAOS'`)  
 **SP:** `dbo.usp_run_laos_incentive_calculation`  
-**Parameters:** `@PeriodCode NVARCHAR(20)`, `@WsType NVARCHAR(50) = 'TOP_WS'`, `@ApprovedBy NVARCHAR(100)`  
+**Parameters:** ให้ตรวจ signature ใน DB ของ environment ปัจจุบันก่อนทดสอบ (`sys.parameters`)  
 **Hierarchy:** STAFF → SECT_MGR → DEPT_MGR (ไม่มี DIVISION, ไม่มี AD)  
 **Base URL (Web):** `http://localhost:5288`
 
@@ -12,8 +12,7 @@
 ## Context สำหรับ AI Agent
 
 - Laos SP ถูก deploy แล้ว และ test data ถูก setup แล้วใน DB
-- **ข้อสำคัญ:** SP ใช้ `@PeriodCode` (string) — **ไม่ใช่** `@PeriodId` (int)  
-  Runner script ต้องใช้ `Invoke-LaosProc` (function พิเศษ) ไม่ใช่ `Invoke-IncentiveProcedure` ทั่วไป เพราะจะ bind `@PeriodId` ผิด
+- **ข้อสำคัญ:** หน้าเว็บใช้ Period dropdown เดียวกับ channel อื่น และ service layer จะจัดการพารามิเตอร์ตาม implementation ปัจจุบัน
 - Laos ทำ **SKU mapping inline ใน SP**: A→AJ, R→RD, B→BD, Y→YY (ไม่ต้องใช้ mst_tt_product)
 - Manager hierarchy: LAM01 (SECT_MGR) → LAD01 (DEPT_MGR) — ทั้งสองคนอยู่ใน `out_for_hr_variable`
 - หน้าเว็บคำนวณ: `/Calculation/Index` → card "Laos Calculation" → เลือก Period → ปุ่ม "Run Laos Calculation" (service layer แปลง PeriodId → PeriodCode อัตโนมัติ)
@@ -52,7 +51,7 @@
 |---|---------|------------|
 | 1 | เปิดหน้า Calculation | ไปที่ `http://localhost:5288/Calculation/Index` |
 | 2 | ตรวจสอบ Laos card | card "Laos Calculation" ต้องแสดงปุ่มที่ **ไม่ disabled** |
-| 3 | เลือก Period | เลือก `1 - FY2026-04 (2026-04)` |
+| 3 | เลือก Period | เลือก `1 - FY2026-04` |
 | 4 | กด "Run Laos Calculation" | ระบบ POST ไป `OnPostRunLaosAsync` → `RunLaosCalculationAsync(LaosPeriodId)` → service แปลง PeriodId→PeriodCode |
 | 5 | ตรวจ flash message | ต้องแสดง `Laos Calculation started successfully. Calc Run ID: <id>` |
 | 6 | ตรวจ Recent Runs | ต้องมีแถวใหม่ channel=LAOS, status=CALCULATED |
@@ -117,4 +116,4 @@
 > วันที่ทดสอบ: 2026-06-22  
 > ผู้ทดสอบ: Copilot  
 > calc_run_id: 1033  
-> อุปสรรคย์สำคัญ: SP ใช้ `@PeriodCode` — runner script ต้องใช้ `Invoke-LaosProc` (function แยก) ไม่เช่นเดียวกับ MT/S&I
+> ประเด็นสำคัญ: ให้ยืนยัน signature ของ SP ใน DB ทุกครั้งก่อนรัน SQL direct
