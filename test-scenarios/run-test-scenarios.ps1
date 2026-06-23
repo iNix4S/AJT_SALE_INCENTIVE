@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$EnvFile = "database-dev - cds.env",
     [int]$PeriodIdMT = 1,
     [int]$PeriodIdTT = 1,
@@ -90,28 +90,17 @@ if ([string]::IsNullOrWhiteSpace($DbPassword)) {
 
 function Invoke-Sql([string]$Query) {
     $env:SQLCMDPASSWORD = $DbPassword
-    $args = @(
-        "-S", $DbServer,
-        "-d", $DbName,
-        "-U", $DbUser,
-        "-N", "true",
-        "-C",
-        "-b",
-        "-W",
-        "-h", "-1",
-        "-s", "|",
-        "-Q", $Query
-    )
+    $sqlArgs = @('-S', $DbServer, '-d', $DbName, '-U', $DbUser, '-N', 'true', '-C', '-b', '-W', '-h', '-1', '-s', '|', '-Q', $Query)
 
-    $output = & sqlcmd @args 2>&1
+    $output = & sqlcmd @sqlArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
-        throw "SQL command failed: $($output -join [Environment]::NewLine)"
+        throw ('SQL command failed: ' + ($output -join [System.Environment]::NewLine))
     }
 
     return $output |
         ForEach-Object { $_.ToString().Trim() } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Where-Object { $_ -notmatch "\(\d+ rows affected\)" }
+        Where-Object { $_ -notmatch '\(\d+ rows affected\)' }
 }
 
 function Invoke-Scalar([string]$Query) {
@@ -138,8 +127,8 @@ function Parse-CalcRunId([string]$RawValue, [int]$PeriodId, [int]$ChannelId) {
         return $direct
     }
 
-    if ($value.Contains("|")) {
-        $firstToken = $value.Split("|")[0].Trim()
+    if ($value.Contains('|')) {
+        $firstToken = $value.Split('|')[0].Trim()
         $tokenInt = To-Int -Value $firstToken -Default -1
         if ($tokenInt -gt 0) {
             return $tokenInt
@@ -465,7 +454,7 @@ LEFT JOIN actual a ON a.employee_code = e.employee_code
 WHERE a.employee_code IS NULL OR ABS(a.actual_amt - e.expected_amt) > 0.05;
 "@)
 
-            $okRows = ($PeriodIdMT -eq 1) ? ($rows -eq 27) : ($rows -gt 0)
+            $okRows = if ($PeriodIdMT -eq 1) { $rows -eq 27 } else { $rows -gt 0 }
             if ($okRows -and $dup -eq 0 -and $levels -ge 4 -and $presetMismatch -eq 0) {
                 Add-Result -TC "TC02" -Status "PASS" -Summary "calc_run_id=$calcRunId, rows=$rows, levels=$levels, presetMismatch=$presetMismatch"
                 Write-Pass "MT ผ่านเกณฑ์หลัก"

@@ -35,11 +35,48 @@ public class MtCalculationRunner : ICalculationService
 
     public async Task<int> RunLaosCalculationAsync(int periodId)
     {
-        return await RunPeriodBasedCalculationAsync(
-            procName: "usp_run_laos_incentive_calculation",
-            periodId: periodId,
-            channelId: 4,
-            channelName: "LAOS");
+        await using var conn = new SqlConnection(_connectionString);
+        var periodCode = await conn.ExecuteScalarAsync<string>(
+            "SELECT period_code FROM dbo.mst_period WHERE period_id = @PeriodId",
+            new { PeriodId = periodId });
+
+        if (string.IsNullOrEmpty(periodCode))
+        {
+            throw new InvalidOperationException($"Period ID {periodId} not found in master data.");
+        }
+
+        var exists = await conn.ExecuteScalarAsync<int>(
+            "SELECT CASE WHEN OBJECT_ID(N'dbo.usp_run_laos_incentive_calculation', N'P') IS NULL THEN 0 ELSE 1 END;");
+
+        if (exists == 0)
+        {
+            throw new InvalidOperationException("Laos calculation is not available because SP usp_run_laos_incentive_calculation is not deployed.");
+        }
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@PeriodCode", periodCode, DbType.String);
+        parameters.Add("@WsType", "TOP_WS", DbType.String);
+        parameters.Add("@ApprovedBy", "system", DbType.String);
+
+        await conn.ExecuteAsync(
+            "usp_run_laos_incentive_calculation",
+            parameters,
+            commandType: CommandType.StoredProcedure);
+
+        var calcRunId = await conn.ExecuteScalarAsync<int?>(
+            @"SELECT TOP (1) calc_run_id
+              FROM dbo.trn_calc_run
+              WHERE channel_id = 4
+                AND period_id = @PeriodId
+              ORDER BY calc_run_id DESC;",
+            new { PeriodId = periodId });
+
+        if (!calcRunId.HasValue)
+        {
+            throw new InvalidOperationException("Laos calculation finished but calc_run_id was not found.");
+        }
+
+        return calcRunId.Value;
     }
 
     public async Task<int> RunTtCalculationAsync(string periodCode, string wsType)
