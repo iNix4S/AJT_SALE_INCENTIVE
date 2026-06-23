@@ -99,6 +99,7 @@
             <table class="table table-sm enterprise-table align-middle mb-0">
                 <thead>
                     <tr>
+                        <th style="width:2.5rem" class="text-center text-muted">#</th>
                         <th>Code</th>
                         <th>Step</th>
                         <th>Channel</th>
@@ -112,12 +113,23 @@
                 <tbody>
                 @foreach (var f in Model.Formulas)
                 {
+                    var _stepIdx = AjtIncentive.Web.Pages.Formula.IndexModel.FormulaSteps.ToList().IndexOf(f.FormulaStep);
+                    var _stepSeq = _stepIdx >= 0 ? _stepIdx + 1 : 0;
                     <tr>
+                        <td class="text-center">
+                            <span class="fw-bold text-secondary" style="font-size:0.85rem">@f.SortOrder</span>
+                        </td>
                         <td>
                             <div class="fw-semibold small">@f.FormulaCode</div>
                             <div class="small text-muted">@f.FormulaName</div>
                         </td>
-                        <td><span class="badge bg-info text-dark">@f.FormulaStep</span></td>
+                        <td>
+                            <span class="badge bg-info text-dark">@f.FormulaStep</span>
+                            @if (_stepSeq > 0)
+                            {
+                                <div class="small text-muted mt-1" style="font-size:0.7rem">Step @_stepSeq of @AjtIncentive.Web.Pages.Formula.IndexModel.FormulaSteps.Count</div>
+                            }
+                        </td>
                         <td>@(f.ChannelCode ?? "SHARED")</td>
                         <td>@(f.PositionCode ?? "—")</td>
                         <td>@(f.WsType ?? "—")</td>

@@ -104,7 +104,16 @@ SELECT
 FROM dbo.mst_formula_expression f
 LEFT JOIN dbo.mst_channel        c  ON c.channel_id         = f.channel_id
 LEFT JOIN dbo.mst_position_level pl ON pl.position_level_id = f.position_level_id
-ORDER BY f.sort_order, f.formula_code;");
+ORDER BY
+    CASE f.formula_step
+        WHEN 'PCT_ACHIEVEMENT'       THEN 1
+        WHEN 'INCENTIVE_PER_PRODUCT' THEN 2
+        WHEN 'ROLLUP'                THEN 3
+        WHEN 'SPECIAL_KPI'           THEN 4
+        ELSE 9
+    END,
+    f.sort_order,
+    f.formula_code;");
     return rows.Select(MapFormulaRow).ToList();
     }
 
