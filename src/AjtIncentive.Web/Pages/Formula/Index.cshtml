@@ -45,7 +45,7 @@
             <div class="row g-3 align-items-end">
                 <div class="col-12 col-md-4 col-xl-3">
                     <label class="form-label small fw-semibold">Channel</label>
-                    <select name="FilterChannel" class="form-select form-select-sm">
+                    <select name="FilterChannel" id="filterChannelSelect" class="form-select form-select-sm">
                         <option value="">All</option>
                         <option value="SHARED" selected="@("SHARED" == Model.FilterChannel)">SHARED (no channel)</option>
                         @foreach (var c in Model.Channels)
@@ -53,6 +53,15 @@
                             <option value="@c.ChannelCode" selected="@(c.ChannelCode == Model.FilterChannel)">@c.ChannelCode</option>
                         }
                     </select>
+                    <div id="includeSharedWrap" class="form-check mt-2"
+                         style="display:@((!string.IsNullOrEmpty(Model.FilterChannel) && Model.FilterChannel != "SHARED") ? "block" : "none")">
+                        <input class="form-check-input" type="checkbox" name="FilterIncludeShared"
+                               id="chkIncludeShared" value="true"
+                               @(Model.FilterIncludeShared ? "checked" : "") />
+                        <label class="form-check-label small text-muted" for="chkIncludeShared">
+                            Include SHARED formulas
+                        </label>
+                    </div>
                 </div>
                 <div class="col-12 col-md-4 col-xl-3">
                     <label class="form-label small fw-semibold">Formula Step</label>
@@ -457,3 +466,22 @@
 
     </div>
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    var sel = document.getElementById('filterChannelSelect');
+    var wrap = document.getElementById('includeSharedWrap');
+    if (!sel || !wrap) return;
+    function toggleWrap() {
+        var v = sel.value;
+        wrap.style.display = (v && v !== 'SHARED') ? 'block' : 'none';
+        if (!wrap.style.display || wrap.style.display === 'none') {
+            var chk = document.getElementById('chkIncludeShared');
+            if (chk) chk.checked = false;
+        }
+    }
+    sel.addEventListener('change', toggleWrap);
+}());
+</script>
+}

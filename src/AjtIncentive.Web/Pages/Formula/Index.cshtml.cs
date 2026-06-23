@@ -22,9 +22,10 @@ public class IndexModel : PageModel
     }
 
     // ── Filter ──
-    [BindProperty(SupportsGet = true)] public string? FilterChannel { get; set; }
-    [BindProperty(SupportsGet = true)] public string? FilterStep    { get; set; }
-    [BindProperty(SupportsGet = true)] public int?    EditId        { get; set; }
+    [BindProperty(SupportsGet = true)] public string? FilterChannel      { get; set; }
+    [BindProperty(SupportsGet = true)] public string? FilterStep         { get; set; }
+    [BindProperty(SupportsGet = true)] public bool    FilterIncludeShared { get; set; }
+    [BindProperty(SupportsGet = true)] public int?    EditId             { get; set; }
 
     // ── Data ──
     public IReadOnlyList<FormulaExpression> Formulas { get; private set; }
@@ -79,7 +80,7 @@ public class IndexModel : PageModel
         if (!valid)
         {
             TempData["Message"] = $"Error: Invalid formula syntax — {errMsg}";
-            return RedirectToPage(new { FilterChannel, FilterStep });
+            return RedirectToPage(new { FilterChannel, FilterStep, FilterIncludeShared });
         }
 
         var entity = new FormulaExpression
@@ -105,14 +106,14 @@ public class IndexModel : PageModel
             ? $"Formula '{formulaCode}' updated successfully."
             : $"Formula '{formulaCode}' added successfully.";
 
-        return RedirectToPage(new { FilterChannel, FilterStep });
+        return RedirectToPage(new { FilterChannel, FilterStep, FilterIncludeShared });
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(int formulaId)
     {
         await _formulaService.DeleteAsync(formulaId);
         TempData["Message"] = "Formula deleted successfully.";
-        return RedirectToPage(new { FilterChannel, FilterStep });
+        return RedirectToPage(new { FilterChannel, FilterStep, FilterIncludeShared });
     }
 
     public async Task<IActionResult> OnPostTestAsync(
@@ -159,8 +160,25 @@ public class IndexModel : PageModel
     {
         var all = await _formulaService.GetAllAsync();
         Formulas = all
-            .Where(f => (FilterChannel is null || f.ChannelCode == FilterChannel || (f.ChannelCode is null && FilterChannel == "SHARED"))
-                     && (FilterStep is null || f.FormulaStep == FilterStep))
+            .Where(f =>
+            {
+                // Channel filter logic:
+                // — No filter selected (All): show everything
+                // — FilterChannel == "SHARED": show only formulas with no channel (channel_id IS NULL)
+                // — FilterChannel == "XX": show XX-specific formulas;
+                //      if FilterIncludeShared is true, ALSO include SHARED formulas (= real calc view)
+                if (string.IsNullOrEmpty(FilterChannel))
+                    return true;  // All
+                if (FilterChannel == "SHARED")
+                    return f.ChannelCode is null;
+                // Specific channel selected
+                if (f.ChannelCode == FilterChannel)
+                    return true;
+                if (FilterIncludeShared && f.ChannelCode is null)
+                    return true;
+                return false;
+            })
+            .Where(f => string.IsNullOrEmpty(FilterStep) || f.FormulaStep == FilterStep)
             .ToList();
 
         Channels  = await _portalDataService.GetChannelsAsync();
