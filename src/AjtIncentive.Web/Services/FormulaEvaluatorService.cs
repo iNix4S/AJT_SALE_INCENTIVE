@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using NCalc;
@@ -160,18 +161,39 @@ WHERE f.formula_code = @FormulaCode;",
         };
     }
 
+    // Regex-based normalization: converts any casing of known function names
+    // to the exact casing NCalc v6 built-in dictionary expects (Pascal case).
+    // IIF is not a built-in; it is mapped to NCalc's built-in 'if' function.
+    private static readonly (Regex Re, string To)[] _fnNorm =
+    [
+        (new Regex(@"\bROUND\b",    RegexOptions.IgnoreCase | RegexOptions.Compiled), "Round"),
+        (new Regex(@"\bABS\b",      RegexOptions.IgnoreCase | RegexOptions.Compiled), "Abs"),
+        (new Regex(@"\bMAX\b",      RegexOptions.IgnoreCase | RegexOptions.Compiled), "Max"),
+        (new Regex(@"\bMIN\b",      RegexOptions.IgnoreCase | RegexOptions.Compiled), "Min"),
+        (new Regex(@"\bCEILING\b",  RegexOptions.IgnoreCase | RegexOptions.Compiled), "Ceiling"),
+        (new Regex(@"\bFLOOR\b",    RegexOptions.IgnoreCase | RegexOptions.Compiled), "Floor"),
+        (new Regex(@"\bSQRT\b",     RegexOptions.IgnoreCase | RegexOptions.Compiled), "Sqrt"),
+        (new Regex(@"\bIIF\b",      RegexOptions.IgnoreCase | RegexOptions.Compiled), "if"),
+    ];
+
+    private static string NormalizeFormula(string formulaExpr)
+    {
+        foreach (var (re, to) in _fnNorm)
+            formulaExpr = re.Replace(formulaExpr, to);
+        return formulaExpr;
+    }
+
     public FormulaEvalResult Evaluate(string formulaExpr, Dictionary<string, decimal> variables,
                                       string formulaCode = "")
     {
-        // แปลง [var_name] → ชื่อ parameter ที่ NCalc รู้จัก
-        // NCalc ใช้ [param] syntax โดยตรง ไม่ต้องแปลง
         try
         {
-            var expr = new Expression(formulaExpr, ExpressionOptions.DecimalAsDefault);
+            // Normalize function names to NCalc-expected casing before parsing
+            var expr = new Expression(NormalizeFormula(formulaExpr), ExpressionOptions.DecimalAsDefault);
 
             foreach (var (key, val) in variables)
             {
-                // ลบ [ ] ออกก่อน set parameter (NCalc v6 ใช้ key ตรงๆ)
+                // Strip [ ] brackets so NCalc v6 can match the parameter key
                 var paramKey = key.TrimStart('[').TrimEnd(']');
                 expr.Parameters[paramKey] = val;
             }
@@ -212,7 +234,7 @@ WHERE f.formula_code = @FormulaCode;",
             {
                 Success      = false,
                 Value        = 0m,
-                ErrorMessage = $"ไม่พบ formula_code '{formulaCode}' ในฐานข้อมูล",
+                ErrorMessage = $"Formula code '{formulaCode}' not found in database.",
                 FormulaCode  = formulaCode,
                 FormulaExpr  = string.Empty,
                 Variables    = variables
@@ -224,11 +246,11 @@ WHERE f.formula_code = @FormulaCode;",
     public (bool IsValid, string? ErrorMessage) Validate(string formulaExpr)
     {
         if (string.IsNullOrWhiteSpace(formulaExpr))
-            return (false, "Formula expression ต้องไม่ว่าง");
+            return (false, "Formula expression must not be empty.");
         try
         {
-            // ทดสอบ parse โดยใส่ dummy variables ค่า 1
-            var expr = new Expression(formulaExpr, ExpressionOptions.DecimalAsDefault);
+            // Dry-run: normalize function names then parse with dummy variable values
+            var expr = new Expression(NormalizeFormula(formulaExpr), ExpressionOptions.DecimalAsDefault);
             expr.EvaluateParameter += (name, args) => { args.Result = 1m; };
             expr.Evaluate();
             return (true, null);

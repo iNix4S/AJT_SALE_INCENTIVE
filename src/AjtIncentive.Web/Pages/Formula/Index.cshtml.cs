@@ -78,7 +78,7 @@ public class IndexModel : PageModel
         var (valid, errMsg) = _formulaService.Validate(formulaExpr);
         if (!valid)
         {
-            TempData["Message"] = $"Error: Formula syntax ไม่ถูกต้อง — {errMsg}";
+            TempData["Message"] = $"Error: Invalid formula syntax — {errMsg}";
             return RedirectToPage(new { FilterChannel, FilterStep });
         }
 
@@ -102,8 +102,8 @@ public class IndexModel : PageModel
 
         await _formulaService.SaveAsync(entity);
         TempData["Message"] = formulaId.HasValue
-            ? $"อัปเดต formula '{formulaCode}' เรียบร้อย"
-            : $"เพิ่ม formula '{formulaCode}' เรียบร้อย";
+            ? $"Formula '{formulaCode}' updated successfully."
+            : $"Formula '{formulaCode}' added successfully.";
 
         return RedirectToPage(new { FilterChannel, FilterStep });
     }
@@ -111,7 +111,7 @@ public class IndexModel : PageModel
     public async Task<IActionResult> OnPostDeleteAsync(int formulaId)
     {
         await _formulaService.DeleteAsync(formulaId);
-        TempData["Message"] = "ลบ formula เรียบร้อย";
+        TempData["Message"] = "Formula deleted successfully.";
         return RedirectToPage(new { FilterChannel, FilterStep });
     }
 

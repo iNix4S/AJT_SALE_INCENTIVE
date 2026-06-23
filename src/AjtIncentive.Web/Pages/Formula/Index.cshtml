@@ -288,7 +288,7 @@
             <button class="nav-link @(Model.ActiveTestTab == "sp" ? "active" : "")"
                     id="tab-sp" data-bs-toggle="tab" data-bs-target="#panel-sp"
                     type="button" role="tab">
-                🗄️ Preview via SP <small class="text-muted">(เส้นทางคำนวณจริง)</small>
+                🗄️ Preview via SP <small class="text-muted">(same path as real calculation)</small>
             </button>
         </li>
     </ul>
@@ -349,8 +349,8 @@
         <div class="tab-pane fade @(Model.ActiveTestTab == "sp" ? "show active" : "")"
              id="panel-sp" role="tabpanel">
             <div class="mt-callout mb-3">
-                เรียก <code>usp_formula_expression_preview</code> — เส้นทางเดียวกับการคำนวณจริง
-                เพื่อตรวจสอบว่า formula ที่บันทึกให้ผลลัพธ์ถูกต้องกับข้อมูลจริงในระบบ
+                Calls <code>usp_formula_expression_preview</code> — the same execution path as the real incentive calculation.
+                Use this to verify that saved formulas produce correct results against live system data.
             </div>
             <form method="post" asp-page-handler="Preview" class="row g-3 mb-3">
                 <div class="col-md-4">
@@ -434,12 +434,12 @@
                 </div>
                 @if (Model.PreviewRows.Count > 50)
                 {
-                    <div class="small text-muted mt-1">แสดง 50 จาก @Model.PreviewRows.Count rows</div>
+                    <div class="small text-muted mt-1">Showing first 50 of @Model.PreviewRows.Count rows</div>
                 }
             }
             else if (Model.ActiveTestTab == "sp" && Model.PreviewRows.Count == 0 && string.IsNullOrEmpty(Model.PreviewError))
             {
-                <div class="alert alert-info small mb-0">เลือก Period และ Channel แล้วกด Run SP Preview</div>
+                <div class="alert alert-info small mb-0">Select a Period and Channel, then click <strong>Run SP Preview</strong>.</div>
             }
         </div>
 
