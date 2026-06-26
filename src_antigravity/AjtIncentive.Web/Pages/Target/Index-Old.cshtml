@@ -1,0 +1,385 @@
+@page
+@model AjtIncentive.Web.Pages.Target.IndexModel
+@{
+    ViewData["Title"] = "Target";
+}
+
+       <!-- Header Section -->
+       <section class="content-panel mb-4 calc-header-panel">
+           <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+               <div>
+                   <div class="eyebrow">Config</div>
+                   <h1 class="h3 mb-1">Target Management</h1>
+                   <p class="text-muted mb-0">Manage sales targets by period, channel, salesman, and product in <code>dbo.trn_sales_target</code>.</p>
+               </div>
+               <div class="calc-master-pill">@Model.TargetRows.Count targets</div>
+           </div>
+       </section>
+
+@if (TempData["Message"] is string msg)
+{
+    var cls = msg.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show mb-3" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ImportMessage))
+{
+    var cls = Model.ImportMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show mb-3" role="alert">
+        @Html.Raw(Model.ImportMessage)
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Tab Navigation -->
+<div class="content-panel mb-4">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-import" data-bs-toggle="tab" data-bs-target="#tab-import-content" type="button" role="tab" aria-controls="tab-import-content" aria-selected="true">
+                📁 Import File
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-manage" data-bs-toggle="tab" data-bs-target="#tab-manage-content" type="button" role="tab" aria-controls="tab-manage-content" aria-selected="false">
+                ⚙️ Manage
+            </button>
+        </li>
+    </ul>
+</div>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    <!-- TAB 1: IMPORT -->
+    <div class="tab-pane fade show active" id="tab-import-content" role="tabpanel" aria-labelledby="tab-import">
+           <div class="content-panel mb-4">
+               <div class="eyebrow mb-2">Setup</div>
+               <h5 class="h6 fw-semibold mb-3">เลือก Channel & Period</h5>
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Channel</label>
+                    <select name="ChannelId" class="form-select form-select-sm" required>
+                        @foreach (var c in Model.Channels)
+                        {
+                            <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode - @c.ChannelNameEn</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Period</label>
+                    <select name="PeriodId" class="form-select form-select-sm" required>
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId" selected="@(p.PeriodId == Model.PeriodId)">@p.PeriodCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">อัพเดตช่อง</button>
+                </div>
+            </form>
+            <div class="text-muted small mt-2">
+                📝 Import file จะบันทึก Target สำหรับ <strong>@Model.SelectedChannelCode / @Model.SelectedPeriodCode</strong>
+            </div>
+        </div>
+
+           <div class="content-panel mb-4">
+               <div class="eyebrow mb-2">File Transfer</div>
+               <h5 class="h6 fw-semibold mb-3">อัปโหลดไฟล์ Target</h5>
+            <form method="post" asp-page-handler="Upload" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="targetFile" class="form-label small fw-semibold">Select CSV or XLSX file</label>
+                    <div class="border-2 border-dashed rounded p-4 text-center" style="cursor: pointer;" onclick="document.getElementById('targetFile').click();">
+                        <div class="mb-2">📁</div>
+                        <div class="small fw-semibold">Drag & drop file here</div>
+                        <div class="small text-muted">หรือคลิกเพื่อเลือกไฟล์ (CSV, XLSX — max 5MB)</div>
+                        <input type="file" id="targetFile" name="targetFile" class="form-control" accept=".csv,.xlsx,.xls" style="display: none;" onchange="document.querySelector('form').submit();" />
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Page("Index", pageHandler: "DownloadTemplate")" class="btn btn-sm btn-outline-secondary">💾 ดาวน์โหลด Template</a>
+                    <span class="text-muted small align-self-center">[ช่วยเหลือ] ต้องมี columns ไหนบ้าง?</span>
+                </div>
+            </form>
+        </div>
+
+        @if (Model.ImportPreview != null)
+        {
+               <div class="content-panel mb-4">
+                   <div class="eyebrow mb-2">Quality Check</div>
+                   <h5 class="h6 fw-semibold mb-3">Preview & Validation</h5>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="small text-muted">ไฟล์ที่อัปโหลด</div>
+                                <div class="fw-semibold">@Model.ImportPreview.FileName</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="small text-muted">จำนวนแถว</div>
+                                <div class="fw-semibold">@Model.ImportPreview.TotalRows แถว (@Model.ImportPreview.ValidRowCount ถูกต้อง, @Model.ImportPreview.ErrorRowCount error)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Row</th>
+                                <th>Salesman</th>
+                                <th>Product</th>
+                                <th class="text-end">Target</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.ImportPreview.Rows.Take(20))
+                            {
+                                var statusBadge = row.IsValid ? "bg-success" : "bg-danger";
+                                var statusText = row.IsValid ? "✅ Valid" : "❌ Error";
+                                <tr @(row.IsValid ? "" : "class='table-danger'")>
+                                    <td class="text-muted small">@row.RowNumber</td>
+                                    <td>
+                                        <div>@row.SalesmanCode</div>
+                                        @if (!row.IsValid && row.ErrorMessage?.Contains("Salesman") == true)
+                                        {
+                                            <div class="small text-danger">@row.ErrorMessage</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@row.ProductCode</div>
+                                        @if (!row.IsValid && row.ErrorMessage?.Contains("Product") == true)
+                                        {
+                                            <div class="small text-danger">@row.ErrorMessage</div>
+                                        }
+                                    </td>
+                                    <td class="text-end">@row.TargetAmount.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <span class="badge @statusBadge">@statusText</span>
+                                    </td>
+                                </tr>
+                                @if (!row.IsValid && !string.IsNullOrEmpty(row.ErrorMessage) && !row.ErrorMessage.Contains("Salesman") && !row.ErrorMessage.Contains("Product"))
+                                {
+                                    <tr class="table-danger">
+                                        <td colspan="5" class="small text-danger">❌ @row.ErrorMessage</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.ImportPreview.Rows.Count > 20)
+                {
+                    <div class="text-muted small mt-2">... และ @(Model.ImportPreview.Rows.Count - 20) แถวเพิ่มเติม</div>
+                }
+
+                <div class="d-flex gap-2 mt-3">
+                    @if (Model.ImportPreview.ErrorRowCount > 0)
+                    {
+                        <div class="alert alert-warning small mb-0">
+                            ⚠️ มี @Model.ImportPreview.ErrorRowCount แถวมีข้อผิดพลาด — กรุณาแก้ไขไฟล์และอัปโหลดใหม่
+                        </div>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Import" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">✅ Confirm & Import</button>
+                        </form>
+                    }
+                    <form method="get" asp-page="Index" class="d-inline">
+                        <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">❌ Cancel</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- TAB 2: MANAGE -->
+    <div class="tab-pane fade" id="tab-manage-content" role="tabpanel" aria-labelledby="tab-manage">
+        <div class="content-panel mb-4">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Channel</label>
+                    <select name="ChannelId" class="form-select form-select-sm" required>
+                        @foreach (var c in Model.Channels)
+                        {
+                            <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode - @c.ChannelNameEn</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Period</label>
+                    <select name="PeriodId" class="form-select form-select-sm" required>
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId" selected="@(p.PeriodId == Model.PeriodId)">@p.PeriodCode</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Keyword</label>
+                    <input type="text" name="Keyword" value="@Model.Keyword" class="form-control form-control-sm" placeholder="Search salesman / product" />
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-muted mb-1">Selected</div>
+                    <div class="fw-semibold">@Model.SelectedChannelCode / @Model.SelectedPeriodCode</div>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">Load</button>
+                    <a class="btn btn-outline-secondary btn-sm" asp-page="./Index" asp-route-ChannelId="@Model.ChannelId" asp-route-PeriodId="@Model.PeriodId">Clear</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-panel mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-semibold mb-0">Target Rows</h6>
+                <span class="badge bg-secondary">@Model.TargetRows.Count rows</span>
+            </div>
+
+            @if (Model.TargetRows.Count == 0)
+            {
+                <div class="adj-empty-state">
+                    <span class="text-muted small">No target data found for the selected filter.</span>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Salesman</th>
+                                <th>Product</th>
+                                <th class="text-end">Target Amount</th>
+                                <th class="text-end">Pct Salesman</th>
+                                <th>Approved</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.TargetRows)
+                            {
+                                <tr>
+                                    <td class="text-muted">@r.SalesTargetId</td>
+                                    <td>
+                                        <div class="fw-semibold">@r.SalesmanCode</div>
+                                        <div class="small text-muted">@(string.IsNullOrWhiteSpace(r.EmployeeNameTh) ? "-" : r.EmployeeNameTh)</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@r.ProductCode</div>
+                                        <div class="small text-muted">@(string.IsNullOrWhiteSpace(r.ProductNameTh) ? "-" : r.ProductNameTh)</div>
+                                    </td>
+                                    <td class="text-end fw-semibold">@r.TargetAmount.ToString("N2")</td>
+                                    <td class="text-end">@(r.PctSalesman.HasValue ? r.PctSalesman.Value.ToString("N4") : "-")</td>
+                                    <td>
+                                        <div>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</div>
+                                    <div class="small text-muted">@(r.ApprovedAt.HasValue ? r.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")</div>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a class="btn btn-outline-primary"
+                                               asp-page="./Index"
+                                               asp-route-ChannelId="@Model.ChannelId"
+                                               asp-route-PeriodId="@Model.PeriodId"
+                                               asp-route-Keyword="@Model.Keyword"
+                                               asp-route-EditId="@r.SalesTargetId">Edit</a>
+                                            <form method="post" asp-page-handler="Delete" class="d-inline">
+                                                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                                <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                                                <input type="hidden" name="Keyword" value="@Model.Keyword" />
+                                                <input type="hidden" name="SalesTargetId" value="@r.SalesTargetId" />
+                                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete Target ID @r.SalesTargetId?')">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="content-panel">
+            <h6 class="fw-semibold mb-3">@(Model.IsEditMode ? "Edit Target" : "Add Target")</h6>
+            <form method="post" asp-page-handler="Save" class="row g-3">
+                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                <input type="hidden" name="Keyword" value="@Model.Keyword" />
+                <input type="hidden" name="SalesTargetId" value="@Model.EditForm.SalesTargetId" />
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Salesman</label>
+                    <select name="SalesmanCode" class="form-select form-select-sm" required>
+                        @foreach (var e in Model.Employees)
+                        {
+                            <option value="@e.EmployeeCode" selected="@(e.EmployeeCode == Model.EditForm.SalesmanCode)">@e.EmployeeCode - @e.EmployeeNameTh</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Product</label>
+                    <select name="ProductCode" class="form-select form-select-sm" required>
+                        @foreach (var p in Model.Products)
+                        {
+                            <option value="@p.ProductCode" selected="@(p.ProductCode == Model.EditForm.ProductCode)">@p.ProductCode - @p.ProductNameTh</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Target Amount</label>
+                    <input type="number" name="TargetAmount" class="form-control form-control-sm text-end" step="0.01" min="0" value="@Model.EditForm.TargetAmount" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Pct Salesman</label>
+                    <input type="number" name="PctSalesman" class="form-control form-control-sm text-end" step="0.0001" min="0" value="@Model.EditForm.PctSalesman" />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Approved By</label>
+                    <input type="text" name="ApprovedBy" class="form-control form-control-sm" value="@Model.EditForm.ApprovedBy" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Approved At</label>
+                    <input type="datetime-local" name="ApprovedAt" class="form-control form-control-sm" value="@(Model.EditForm.ApprovedAt.HasValue ? Model.EditForm.ApprovedAt.Value.ToString("yyyy-MM-ddTHH:mm") : string.Empty)" />
+                </div>
+
+                <div class="col-md-9 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">@(Model.IsEditMode ? "Save Changes" : "Add Target")</button>
+                    @if (Model.IsEditMode)
+                    {
+                        <a class="btn btn-outline-secondary btn-sm"
+                           asp-page="./Index"
+                           asp-route-ChannelId="@Model.ChannelId"
+                           asp-route-PeriodId="@Model.PeriodId"
+                           asp-route-Keyword="@Model.Keyword">Cancel Edit</a>
+                    }
+                </div>
+            </form>
+
+            <div class="adj-note mt-3">
+                <strong>Database reference:</strong>
+                Values are saved to <code>dbo.trn_sales_target</code> keyed by
+                <code>(period_id, channel_id, salesman_code, product_code)</code>.
+            </div>
+        </div>
+    </div>
+</div>

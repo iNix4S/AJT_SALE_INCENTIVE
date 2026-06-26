@@ -1,0 +1,474 @@
+@page
+@model AjtIncentive.Web.Pages.Target.IndexModel
+@{
+    ViewData["Title"] = "Target";
+    var manageActive = string.Equals(Model.ActiveTab, "manage", StringComparison.OrdinalIgnoreCase);
+}
+
+<!-- Header Section -->
+<section class="content-panel mb-4 mt-modern-hero">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+        <div>
+            <div class="eyebrow">Channel Master Data</div>
+            <h1 class="h3 mb-2">Target Management</h1>
+            <p class="mb-0 mt-hero-copy">Maintain target rows by channel and period, then validate imported files before saving to <code>dbo.trn_sales_target</code>.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="mt-kpi-chip">
+                <span class="mt-kpi-label">Channels</span>
+                <span class="mt-kpi-value">@Model.Channels.Count</span>
+            </span>
+            <span class="mt-kpi-chip">
+                <span class="mt-kpi-label">Periods</span>
+                <span class="mt-kpi-value">@Model.Periods.Count</span>
+            </span>
+            <span class="mt-kpi-chip">
+                <span class="mt-kpi-label">Target Rows</span>
+                <span class="mt-kpi-value">@Model.TargetRows.Count</span>
+            </span>
+        </div>
+    </div>
+</section>
+
+<!-- Status Messages -->
+@if (TempData["Message"] is string msg)
+{
+    var cls = msg.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show mb-3" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ImportMessage))
+{
+    var cls = Model.ImportMessage.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show mb-3" role="alert">
+        @Html.Raw(Model.ImportMessage)
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Tab Navigation -->
+<div class="content-panel mb-4 mt-modern-card">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(manageActive ? string.Empty : "active")" id="tab-import" data-bs-toggle="tab" data-bs-target="#tab-import-content" type="button" role="tab" aria-controls="tab-import-content" aria-selected="@(!manageActive)">
+                📁 Import File
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(manageActive ? "active" : string.Empty)" id="tab-manage" data-bs-toggle="tab" data-bs-target="#tab-manage-content" type="button" role="tab" aria-controls="tab-manage-content" aria-selected="@manageActive">
+                ⚙️ Manage
+            </button>
+        </li>
+    </ul>
+</div>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    <!-- TAB 1: IMPORT -->
+    <div class="tab-pane fade @(manageActive ? string.Empty : "show active")" id="tab-import-content" role="tabpanel" aria-labelledby="tab-import">
+        <!-- Step 1: Select Channel & Period -->
+        <div class="content-panel mb-4 mt-modern-card mt-fade-in">
+            <div class="eyebrow mb-2">Setup</div>
+            <h5 class="h6 fw-semibold mb-3">Step 1: Select Channel & Period</h5>
+            <form method="get" class="mt-controls-form">
+                <div class="mt-controls-shell">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4 col-xl-3">
+                            <div class="mt-control-block">
+                                <label class="form-label mt-control-label">Channel</label>
+                                <select name="ChannelId" class="form-select form-select-sm" required>
+                        @foreach (var c in Model.Channels)
+                        {
+                            <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode - @c.ChannelNameEn</option>
+                        }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xl-3">
+                            <div class="mt-control-block">
+                                <label class="form-label mt-control-label">Period</label>
+                                <select name="PeriodId" class="form-select form-select-sm" required>
+                        @foreach (var p in Model.Periods)
+                        {
+                            <option value="@p.PeriodId" selected="@(p.PeriodId == Model.PeriodId)">@p.PeriodCode</option>
+                        }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xl-3">
+                            <button type="submit" class="btn btn-primary btn-sm w-100 mt-btn-preview">Update Selection</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="mt-callout mt-2">
+                Target import will be recorded for <strong>@Model.SelectedChannelCode / @Model.SelectedPeriodCode</strong>
+            </div>
+        </div>
+
+        <!-- Step 2: Upload File -->
+        <div class="content-panel mb-4 mt-modern-card mt-fade-in mt-fade-in-delay">
+            <div class="eyebrow mb-2">File Transfer</div>
+            <h5 class="h6 fw-semibold mb-3">Step 2: Upload Target File</h5>
+            <form id="target-upload-form" method="post" asp-page-handler="Upload" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="targetFile" class="form-label small fw-semibold">Select CSV or XLSX file</label>
+                    <div class="border-2 border-dashed rounded p-5 text-center" style="cursor: pointer; background-color: #f8f9fa;" onclick="document.getElementById('targetFile').click();">
+                        <div class="mb-3">
+                            <span style="font-size: 2rem;">📁</span>
+                        </div>
+                        <div class="small fw-semibold mb-1">Drag & drop file here</div>
+                        <div class="small text-muted">or click to choose a file (CSV, XLSX — max 5MB)</div>
+                        <div id="target-file-name" class="small fw-semibold text-primary mt-2">
+                            @(Model.ImportPreview?.FileName is string uploadedFileName && !string.IsNullOrWhiteSpace(uploadedFileName) ? $"Selected file: {uploadedFileName}" : "No file selected")
+                        </div>
+                        <input type="file" id="targetFile" name="targetFile" class="form-control" accept=".csv,.xlsx,.xls" style="display: none;" onchange="document.getElementById('target-file-name').textContent = this.files.length ? this.files[0].name : 'No file selected'; document.getElementById('target-upload-form').submit();" />
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="@Url.Page("Index", pageHandler: "DownloadTemplate")" class="btn btn-sm btn-outline-secondary">💾 Download Template Pack</a>
+                    <small class="text-muted align-self-center">4 channel-specific samples based on empty periods</small>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 3: Preview & Validation -->
+        @if (Model.ImportPreview != null)
+        {
+            <div class="content-panel mb-4 mt-modern-card mt-fade-in mt-fade-in-delay-2">
+                <div class="eyebrow mb-2">Quality Check</div>
+                <h5 class="h6 fw-semibold mb-3">Step 3: Preview & Validation</h5>
+                
+                <!-- Stats Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <article class="mt-state-card mt-state-ready">
+                            <div class="eyebrow mb-1 small">File</div>
+                            <div class="fw-semibold text-truncate">@Model.ImportPreview.FileName</div>
+                        </article>
+                    </div>
+                    <div class="col-md-3">
+                        <article class="mt-state-card mt-state-ready">
+                            <div class="eyebrow mb-1 small">Total Rows</div>
+                            <div class="fw-semibold display-6">@Model.ImportPreview.TotalRows</div>
+                        </article>
+                    </div>
+                    <div class="col-md-3">
+                        <article class="mt-state-card mt-state-ready">
+                            <div class="eyebrow mb-1 small">✅ Valid</div>
+                            <div class="fw-semibold display-6 text-success">@Model.ImportPreview.ValidRowCount</div>
+                        </article>
+                    </div>
+                    <div class="col-md-3">
+                        <article class="mt-state-card @(Model.ImportPreview.ErrorRowCount > 0 ? "mt-state-danger" : "mt-state-warning")">
+                            <div class="eyebrow mb-1 small">❌ Errors</div>
+                            <div class="fw-semibold display-6 @(Model.ImportPreview.ErrorRowCount > 0 ? "text-danger" : "text-muted")">@Model.ImportPreview.ErrorRowCount</div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- Preview Table -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm enterprise-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Row</th>
+                                <th>Salesman Code</th>
+                                <th>Product Code</th>
+                                <th class="text-end">Target Amount</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.ImportPreview.Rows.Take(20))
+                            {
+                                var statusBadge = row.IsValid ? "bg-success" : "bg-danger";
+                                var statusText = row.IsValid ? "✅ Valid" : "❌ Error";
+                                <tr @(row.IsValid ? "" : "class='table-danger'")>
+                                    <td class="text-muted small">@row.RowNumber</td>
+                                    <td>
+                                        <div>@row.SalesmanCode</div>
+                                        @if (!row.IsValid && row.ErrorMessage?.Contains("Salesman") == true)
+                                        {
+                                            <div class="small text-danger">@row.ErrorMessage</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@row.ProductCode</div>
+                                        @if (!row.IsValid && row.ErrorMessage?.Contains("Product") == true)
+                                        {
+                                            <div class="small text-danger">@row.ErrorMessage</div>
+                                        }
+                                    </td>
+                                    <td class="text-end">@row.TargetAmount.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <span class="badge @statusBadge">@statusText</span>
+                                    </td>
+                                </tr>
+                                @if (!row.IsValid && !string.IsNullOrEmpty(row.ErrorMessage) && !row.ErrorMessage.Contains("Salesman") && !row.ErrorMessage.Contains("Product"))
+                                {
+                                    <tr class="table-danger">
+                                        <td colspan="5" class="small text-danger">❌ @row.ErrorMessage</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.ImportPreview.Rows.Count > 20)
+                {
+                    <div class="text-muted small mb-3">... and @(Model.ImportPreview.Rows.Count - 20) more rows</div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap gap-2">
+                    @if (Model.ImportPreview.ErrorRowCount > 0)
+                    {
+                        <div class="alert alert-warning small flex-grow-1 mb-0 calc-alert">⚠️ Found @Model.ImportPreview.ErrorRowCount error row(s). Please fix and upload again.</div>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Import" class="d-inline">
+                            <button type="submit" class="btn btn-success">✅ Confirm & Import @Model.ImportPreview.ValidRowCount Rows</button>
+                        </form>
+                    }
+                    <form method="get" asp-page="Index" class="d-inline">
+                        <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                        <button type="submit" class="btn btn-outline-secondary">❌ Cancel</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- TAB 2: MANAGE -->
+    <div class="tab-pane fade @(manageActive ? "show active" : string.Empty)" id="tab-manage-content" role="tabpanel" aria-labelledby="tab-manage">
+        <!-- Filter Panel -->
+        <div class="content-panel mb-4 mt-modern-card mt-fade-in">
+            <div class="eyebrow mb-2">Filter</div>
+            <h5 class="h6 fw-semibold mb-3">Search & Filter</h5>
+            <form method="get" class="mt-controls-form">
+                <input type="hidden" name="ActiveTab" value="manage" />
+                <input type="hidden" name="PageNumber" value="1" />
+                <div class="mt-controls-shell">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Channel</label>
+                            <select name="ChannelId" class="form-select form-select-sm" required>
+                                @foreach (var c in Model.Channels)
+                                {
+                                    <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Period</label>
+                            <select name="PeriodId" class="form-select form-select-sm" required>
+                                @foreach (var p in Model.Periods)
+                                {
+                                    <option value="@p.PeriodId" selected="@(p.PeriodId == Model.PeriodId)">@p.PeriodCode</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Keyword</label>
+                            <input type="text" name="Keyword" value="@Model.Keyword" class="form-control form-control-sm" placeholder="Salesman / Product" />
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Salesman</label>
+                            <select name="FilterSalesmanCode" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                @foreach (var employee in Model.Employees)
+                                {
+                                    <option value="@employee.EmployeeCode" selected="@(employee.EmployeeCode == Model.FilterSalesmanCode)">@employee.EmployeeCode</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Product</label>
+                            <select name="FilterProductCode" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                @foreach (var product in Model.Products)
+                                {
+                                    <option value="@product.ProductCode" selected="@(product.ProductCode == Model.FilterProductCode)">@product.ProductCode</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-2">
+                            <label class="form-label small fw-semibold">Approved By</label>
+                            <select name="FilterApprovedBy" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                @foreach (var approvedBy in Model.ApprovedByOptions)
+                                {
+                                    <option value="@approvedBy" selected="@(approvedBy == Model.FilterApprovedBy)">@approvedBy</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1 align-items-end">
+                        <div class="col-12 col-md-4 col-xl-2">
+                            <button type="submit" class="btn target-filter-btn target-filter-btn--primary btn-sm w-100">Search</button>
+                        </div>
+                        <div class="col-12 col-md-4 col-xl-2">
+                            <a class="btn target-filter-btn target-filter-btn--secondary btn-sm w-100" asp-page="./Index" asp-route-ChannelId="@Model.ChannelId" asp-route-PeriodId="@Model.PeriodId" asp-route-ActiveTab="manage">Clear Filters</a>
+                        </div>
+                        <div class="col-12 col-md-4 col-xl-4 ms-xl-auto">
+                            <div class="target-filter-selected">
+                                <div class="small text-muted">Selected</div>
+                                <div class="fw-semibold">@Model.SelectedChannelCode / @Model.SelectedPeriodCode</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Data Table -->
+        <div class="content-panel mt-modern-card mt-fade-in mt-fade-in-delay">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="eyebrow mb-1">Inventory</div>
+                    <h5 class="h6 fw-semibold mb-0">Target Rows</h5>
+                </div>
+                <span class="mt-kpi-chip">
+                    <span class="mt-kpi-label">Rows</span>
+                    <span class="mt-kpi-value">@Model.TotalRows</span>
+                </span>
+            </div>
+
+            @if (Model.TotalRows == 0)
+            {
+                <div class="alert alert-info small mb-0">
+                    ℹ️ No target rows found for this selection. Use the Import tab to upload data.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm enterprise-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Salesman</th>
+                                <th>Product</th>
+                                <th class="text-end">Target</th>
+                                <th class="text-end text-nowrap">% Salesman</th>
+                                <th>Approved By</th>
+                                <th>Updated</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                               @foreach (var row in Model.PagedTargetRows)
+                               {
+                                   <tr>
+                                       <td>
+                                           <div class="fw-semibold">@row.SalesmanCode</div>
+                                           <div class="small text-muted">@(row.EmployeeNameTh ?? "Unknown")</div>
+                                       </td>
+                                       <td>
+                                           <div class="fw-semibold">@row.ProductCode</div>
+                                           <div class="small text-muted">@(row.ProductNameTh ?? "Unknown")</div>
+                                       </td>
+                                       <td class="text-end fw-semibold">@row.TargetAmount.ToString("N0")</td>
+                                       <td class="text-end text-nowrap">@(row.PctSalesman.HasValue ? $"{row.PctSalesman.Value:F1}%" : "-")</td>
+                                       <td>
+                                           <small class="text-nowrap">@(string.IsNullOrWhiteSpace(row.ApprovedBy) ? "-" : row.ApprovedBy)</small>
+                                       </td>
+                                       <td>
+                                           <small class="text-muted text-nowrap">@(row.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</small>
+                                       </td>
+                                       <td class="text-center">
+                                           <div class="btn-group btn-group-sm" role="group">
+                                               <form method="get" class="d-inline">
+                                                   <input type="hidden" name="EditId" value="@row.SalesTargetId" />
+                                                   <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                                   <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                                                   <input type="hidden" name="Keyword" value="@Model.Keyword" />
+                                                   <input type="hidden" name="FilterSalesmanCode" value="@Model.FilterSalesmanCode" />
+                                                   <input type="hidden" name="FilterProductCode" value="@Model.FilterProductCode" />
+                                                   <input type="hidden" name="FilterApprovedBy" value="@Model.FilterApprovedBy" />
+                                                   <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
+                                                   <input type="hidden" name="ActiveTab" value="manage" />
+                                                   <button type="submit" class="btn btn-outline-primary" title="Edit">✎</button>
+                                               </form>
+                                               <form method="post" class="d-inline" onsubmit="return confirm('Confirm delete?');">
+                                                   <input type="hidden" name="EditId" value="@row.SalesTargetId" />
+                                                   <input type="hidden" name="PageNumber" value="@Model.PageNumber" />
+                                                   <button type="submit" asp-page-handler="Delete" class="btn btn-outline-danger" title="Delete">✕</button>
+                                               </form>
+                                           </div>
+                                       </td>
+                                   </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    var startPage = Math.Max(1, Model.PageNumber - 2);
+                    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                    if (endPage - startPage < 4)
+                    {
+                        startPage = Math.Max(1, endPage - 4);
+                    }
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mt-3">
+                        <small class="text-muted">
+                            Showing @((Model.PageNumber - 1) * IndexModel.PageSize + 1)-@Math.Min(Model.PageNumber * IndexModel.PageSize, Model.TotalRows) of @Model.TotalRows rows
+                        </small>
+                        <nav aria-label="Target rows pagination">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : string.Empty)">
+                                    <a class="page-link"
+                                       asp-page="./Index"
+                                       asp-route-ChannelId="@Model.ChannelId"
+                                       asp-route-PeriodId="@Model.PeriodId"
+                                       asp-route-Keyword="@Model.Keyword"
+                                       asp-route-FilterSalesmanCode="@Model.FilterSalesmanCode"
+                                       asp-route-FilterProductCode="@Model.FilterProductCode"
+                                       asp-route-FilterApprovedBy="@Model.FilterApprovedBy"
+                                       asp-route-PageNumber="@(Model.PageNumber - 1)"
+                                       asp-route-ActiveTab="manage">Previous</a>
+                                </li>
+                                @for (var pageNo = startPage; pageNo <= endPage; pageNo++)
+                                {
+                                    <li class="page-item @(pageNo == Model.PageNumber ? "active" : string.Empty)">
+                                        <a class="page-link"
+                                           asp-page="./Index"
+                                           asp-route-ChannelId="@Model.ChannelId"
+                                           asp-route-PeriodId="@Model.PeriodId"
+                                           asp-route-Keyword="@Model.Keyword"
+                                           asp-route-FilterSalesmanCode="@Model.FilterSalesmanCode"
+                                           asp-route-FilterProductCode="@Model.FilterProductCode"
+                                           asp-route-FilterApprovedBy="@Model.FilterApprovedBy"
+                                           asp-route-PageNumber="@pageNo"
+                                           asp-route-ActiveTab="manage">@pageNo</a>
+                                    </li>
+                                }
+                                <li class="page-item @(Model.PageNumber >= Model.TotalPages ? "disabled" : string.Empty)">
+                                    <a class="page-link"
+                                       asp-page="./Index"
+                                       asp-route-ChannelId="@Model.ChannelId"
+                                       asp-route-PeriodId="@Model.PeriodId"
+                                       asp-route-Keyword="@Model.Keyword"
+                                       asp-route-FilterSalesmanCode="@Model.FilterSalesmanCode"
+                                       asp-route-FilterProductCode="@Model.FilterProductCode"
+                                       asp-route-FilterApprovedBy="@Model.FilterApprovedBy"
+                                       asp-route-PageNumber="@(Model.PageNumber + 1)"
+                                       asp-route-ActiveTab="manage">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

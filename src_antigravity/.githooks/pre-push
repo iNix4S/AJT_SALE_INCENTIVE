@@ -1,0 +1,49 @@
+#!/bin/sh
+set -eu
+
+zero_sha='0000000000000000000000000000000000000000'
+violations_file=$(mktemp)
+trap 'rm -f "$violations_file"' EXIT
+
+collect_files_for_range() {
+  local_ref="$1"
+  local_sha="$2"
+  remote_ref="$3"
+  remote_sha="$4"
+
+  if [ "$local_sha" = "$zero_sha" ]; then
+    return 0
+  fi
+
+  if [ "$remote_sha" = "$zero_sha" ]; then
+    git diff-tree --no-commit-id --diff-filter=ACMRTUXB --name-only -r "$local_sha" | sed '/^$/d'
+    return 0
+  fi
+
+  git diff --diff-filter=ACMRTUXB --name-only "$remote_sha" "$local_sha" | sed '/^$/d'
+}
+
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  [ -z "$local_ref" ] && continue
+
+  collect_files_for_range "$local_ref" "$local_sha" "$remote_ref" "$remote_sha" >> "$violations_file.tmp"
+done
+
+if [ -f "$violations_file.tmp" ]; then
+  sort -u "$violations_file.tmp" > "$violations_file"
+  rm -f "$violations_file.tmp"
+fi
+
+if [ ! -s "$violations_file" ]; then
+  exit 0
+fi
+
+outside_allowed=$(grep -Ev '^(README\.md|src/|project-planner/|test-scenarios/|test-scenarioes/)' "$violations_file" || true)
+if [ -z "$outside_allowed" ]; then
+  exit 0
+fi
+
+echo "Push blocked: only README.md and files under src/, project-planner/, test-scenarios/, or test-scenarioes/ are allowed in pushed commits." >&2
+echo "Files outside allowed folders:" >&2
+printf '%s\n' "$outside_allowed" >&2
+exit 1

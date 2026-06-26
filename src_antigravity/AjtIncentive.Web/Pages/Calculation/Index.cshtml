@@ -1,0 +1,157 @@
+@page
+@model AjtIncentive.Web.Pages.Calculation.IndexModel
+@{
+    ViewData["Title"] = "Calculation";
+}
+
+<section class="content-panel mb-4 calc-header-panel">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <div class="eyebrow">Run Incentive</div>
+            <h1 class="h3 mb-1">Calculation Hub</h1>
+            <p class="text-muted mb-0">Central hub for all 4 channel calculations and master data readiness status.</p>
+        </div>
+        <div class="calc-master-pill">@Model.ChannelSummaries.Count channels / @Model.Periods.Count periods</div>
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Master Data</div>
+            <h2 class="h5 mb-1">Periods</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.PeriodCount</div>
+            <p class="text-muted mb-0">Available periods for all channels.</p>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Master Data</div>
+            <h2 class="h5 mb-1">Active Channels</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.ActiveChannelCount</div>
+            <p class="text-muted mb-0">MT, TT, SI, LAOS</p>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">Execution</div>
+            <h2 class="h5 mb-1">Calc Runs</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.CalcRunCount</div>
+            <p class="text-muted mb-0">All calculation runs in the system.</p>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xxl-3">
+        <article class="content-panel h-100">
+            <div class="eyebrow">HR Output</div>
+            <h2 class="h5 mb-1">Active Employees</h2>
+            <div class="display-6 fw-semibold">@Model.Snapshot.ActiveEmployeeCount</div>
+            <p class="text-muted mb-0">Data for For HR and export.</p>
+        </article>
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    @foreach (var channelCode in new[] { "MT", "TT", "SI", "LAOS" })
+    {
+        var channel = Model.ChannelSummaries.FirstOrDefault(item => item.ChannelCode == channelCode);
+        <div class="col-12 col-lg-6 col-xxl-3">
+            <article class="content-panel h-100 calc-card">
+                <header class="calc-card__header">
+                    <div class="module-kicker mb-1">@channelCode</div>
+                    <h2 class="h5 mb-1">@channelCode Calculation</h2>
+                    <p class="text-muted mb-0">@((channel?.CalcType) ?? "Ready for split page")</p>
+                </header>
+                <div class="mt-3 d-grid gap-2">
+                    <a class="btn btn-primary" asp-page="@($"/Calculation/{channelCode}/Index")">Open @channelCode Page</a>
+                    <div class="small text-muted">
+                        @if (channel is null)
+                        {
+                            <span>No summary available for this channel.</span>
+                        }
+                        else
+                        {
+                            <span>Ready periods: @channel.ReadyPeriodCount | Latest run: @(channel.LatestCalcRunId?.ToString() ?? "-")</span>
+                        }
+                    </div>
+                </div>
+            </article>
+        </div>
+    }
+</section>
+
+<section class="content-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Channel Readiness</div>
+            <h2 class="h5 mb-0">Latest status by channel</h2>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Channel</th>
+                    <th>Ready Periods</th>
+                    <th>Latest Ready Period</th>
+                    <th>Latest Run</th>
+                    <th>For HR Rows</th>
+                    <th>Procedure</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var channel in Model.ChannelSummaries)
+            {
+                <tr>
+                    <td class="fw-semibold">@channel.ChannelCode</td>
+                    <td>@channel.ReadyPeriodCount</td>
+                    <td>@(channel.LatestReadyPeriodCode ?? "-")</td>
+                    <td>
+                        @(channel.LatestCalcRunId?.ToString() ?? "-")
+                        <div class="text-muted small">@channel.LatestRunStatus</div>
+                    </td>
+                    <td>@channel.LatestForHrRowCount</td>
+                    <td>@(channel.HasProcedure ? "Available" : "Missing")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="content-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="eyebrow">Operational Trace</div>
+            <h2 class="h5 mb-0">Recent Calculation Runs</h2>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Calc Run</th>
+                    <th>Channel</th>
+                    <th>Period</th>
+                    <th>Status</th>
+                    <th>Approved By</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var run in Model.RecentRuns)
+            {
+                <tr>
+                    <td class="fw-semibold">@run.CalcRunId</td>
+                    <td>@run.ChannelCode</td>
+                    <td>@run.PeriodCode</td>
+                    <td>@run.RunStatus</td>
+                    <td>@run.ApprovedBy</td>
+                    <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>
