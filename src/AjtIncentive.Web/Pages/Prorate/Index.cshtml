@@ -2,16 +2,124 @@
 @model AjtIncentive.Web.Pages.Prorate.IndexModel
 @{
     ViewData["Title"] = "Prorate";
+    var joinCount            = Model.ProrateRecords.Count(r => string.Equals(r.ProrateType, "JOIN",            StringComparison.OrdinalIgnoreCase));
+    var resignCount          = Model.ProrateRecords.Count(r => string.Equals(r.ProrateType, "RESIGN",          StringComparison.OrdinalIgnoreCase));
+    var transferCount        = Model.ProrateRecords.Count(r => string.Equals(r.ProrateType, "TRANSFER",        StringComparison.OrdinalIgnoreCase));
+    var positionChangeCount  = Model.ProrateRecords.Count(r => string.Equals(r.ProrateType, "POSITION_CHANGE", StringComparison.OrdinalIgnoreCase));
 }
 
 <section class="content-panel mb-4 calc-header-panel adj-modern-header">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
         <div>
             <div class="eyebrow">Adjustments</div>
-            <h1 class="h3 mb-1">Prorate Logic</h1>
-            <p class="text-muted mb-0">บันทึกและจำลองปัจจัย Prorate สำหรับพนักงานที่เริ่มงาน ลาออก หรือย้ายงานกลางงวด / Record and simulate prorate factors for employees joining, resigning, or transferring mid-period.</p>
+            <h1 class="h3 mb-1">Prorate</h1>
+            <p class="text-muted mb-0">Record prorate factors for employees who join, resign, transfer, or change position mid-period. Select a case type below to pre-fill the form.</p>
         </div>
         <div class="calc-master-pill">@Model.SelectedChannelCode / @Model.SelectedPeriodCode</div>
+    </div>
+</section>
+
+<!-- How to Use -->
+<div class="content-panel mb-4 py-3">
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="eyebrow mb-0">How to Use</span>
+    </div>
+    <div class="row row-cols-2 row-cols-lg-5 g-3 text-center align-items-stretch">
+        <div class="col">
+            <div class="h-100 d-flex flex-column align-items-center gap-1 px-2 position-relative">
+                <span class="badge rounded-circle bg-primary fs-6 lh-1" style="width:2rem;height:2rem;line-height:2rem!important;">1</span>
+                <span class="small fw-semibold">Select Period</span>
+                <span class="small text-muted d-block" style="max-width:12rem;">Choose Channel &amp; Period in the filter below</span>
+                <span class="text-muted d-none d-lg-inline position-absolute top-50 start-100 translate-middle fs-5">›</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="h-100 d-flex flex-column align-items-center gap-1 px-2 position-relative">
+                <span class="badge rounded-circle bg-primary fs-6 lh-1" style="width:2rem;height:2rem;line-height:2rem!important;">2</span>
+                <span class="small fw-semibold">Pick a Case</span>
+                <span class="small text-muted d-block" style="max-width:12rem;">Click <em>Use this case</em> to pre-fill the form</span>
+                <span class="text-muted d-none d-lg-inline position-absolute top-50 start-100 translate-middle fs-5">›</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="h-100 d-flex flex-column align-items-center gap-1 px-2 position-relative">
+                <span class="badge rounded-circle bg-primary fs-6 lh-1" style="width:2rem;height:2rem;line-height:2rem!important;">3</span>
+                <span class="small fw-semibold">Fill Employee</span>
+                <span class="small text-muted d-block" style="max-width:12rem;">Enter employee code, adjust days &amp; remarks</span>
+                <span class="text-muted d-none d-lg-inline position-absolute top-50 start-100 translate-middle fs-5">›</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="h-100 d-flex flex-column align-items-center gap-1 px-2 position-relative">
+                <span class="badge rounded-circle bg-primary fs-6 lh-1" style="width:2rem;height:2rem;line-height:2rem!important;">4</span>
+                <span class="small fw-semibold">Save Record</span>
+                <span class="small text-muted d-block" style="max-width:12rem;">Submit to persist the prorate factor</span>
+                <span class="text-muted d-none d-lg-inline position-absolute top-50 start-100 translate-middle fs-5">›</span>
+            </div>
+        </div>
+        <div class="col">
+            <div class="h-100 d-flex flex-column align-items-center gap-1 px-2">
+                <span class="badge rounded-circle bg-secondary fs-6 lh-1" style="width:2rem;height:2rem;line-height:2rem!important;">5</span>
+                <span class="small fw-semibold">Verify (optional)</span>
+                <span class="small text-muted d-block" style="max-width:12rem;">Run SP Simulation to confirm calculated output</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Case Quick-Select -->
+<section class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-3">
+        <article class="content-panel h-100 border-start border-4 border-danger ps-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-danger">RESIGN</span>
+                <small class="text-muted">@resignCount record@(resignCount != 1 ? "s" : "")</small>
+            </div>
+            <p class="small fw-semibold mb-1">Resigned mid-month</p>
+            <p class="small text-muted mb-3">Requires HR approval and pay/withhold policy decision.</p>
+            <button type="button" class="btn btn-outline-danger btn-sm w-100 js-case-preset"
+                    data-prorate-type="RESIGN" data-actual-days="10" data-total-days="30"
+                    data-remarks="Resigned mid-month — awaiting HR policy confirmation">Use this case</button>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <article class="content-panel h-100 border-start border-4 border-success ps-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-success">JOIN</span>
+                <small class="text-muted">@joinCount record@(joinCount != 1 ? "s" : "")</small>
+            </div>
+            <p class="small fw-semibold mb-1">Joined mid-month</p>
+            <p class="small text-muted mb-3">Prorate = Actual working days / Total days in month.</p>
+            <button type="button" class="btn btn-outline-success btn-sm w-100 js-case-preset"
+                    data-prorate-type="JOIN" data-actual-days="15" data-total-days="30"
+                    data-remarks="Joined mid-month — prorated by actual working days">Use this case</button>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <article class="content-panel h-100 border-start border-4 border-warning ps-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-warning text-dark">TRANSFER</span>
+                <small class="text-muted">@transferCount record@(transferCount != 1 ? "s" : "")</small>
+            </div>
+            <p class="small fw-semibold mb-1">Cross-region transfer mid-period</p>
+            <p class="small text-muted mb-3">Calculate each region proportionally by days, then sum.</p>
+            <button type="button" class="btn btn-outline-warning btn-sm w-100 js-case-preset"
+                    data-prorate-type="TRANSFER" data-actual-days="10" data-total-days="30"
+                    data-remarks="Cross-region transfer — specify day ranges per region in remarks">Use this case</button>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <article class="content-panel h-100 border-start border-4 border-info ps-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-info text-dark">POSITION_CHANGE</span>
+                <small class="text-muted">@positionChangeCount record@(positionChangeCount != 1 ? "s" : "")</small>
+            </div>
+            <p class="small fw-semibold mb-1">Position change mid-period</p>
+            <p class="small text-muted mb-3">Specify old/new rate or split-period calculation. HR/Finance sign-off required.</p>
+            <button type="button" class="btn btn-outline-info btn-sm w-100 js-case-preset"
+                    data-prorate-type="POSITION_CHANGE" data-actual-days="12" data-total-days="30"
+                    data-remarks="Position change mid-period — awaiting HR/Finance rate confirmation">Use this case</button>
+        </article>
     </div>
 </section>
 
@@ -21,23 +129,23 @@
             <div class="eyebrow">Reference</div>
             <h2 class="h6 mb-1">Active Formulas</h2>
             <div class="display-6 fw-semibold">@Model.ActiveFormulas.Count</div>
-            <p class="text-muted mb-0 small">สูตรที่เปิดใช้งานจากมุมมองระบบ / Active formulas from system view</p>
+            <p class="text-muted mb-0 small">Active formulas loaded from <code>vw_active_adjustment_formulas</code></p>
         </article>
     </div>
     <div class="col-12 col-md-4">
         <article class="content-panel h-100 adj-stat-card">
-            <div class="eyebrow">Execution</div>
+            <div class="eyebrow">Quality</div>
             <h2 class="h6 mb-1">Test Cases</h2>
             <div class="display-6 fw-semibold">@Model.TestSummaries.Count</div>
-            <p class="text-muted mb-0 small">ชุดทดสอบจากมุมมองสรุปผล / Test set from summary view</p>
+            <p class="text-muted mb-0 small">Logic test cases from <code>vw_adjustment_test_summary</code></p>
         </article>
     </div>
     <div class="col-12 col-md-4">
         <article class="content-panel h-100 adj-stat-card">
-            <div class="eyebrow">Master Data</div>
+            <div class="eyebrow">This Period</div>
             <h2 class="h6 mb-1">Prorate Records</h2>
             <div class="display-6 fw-semibold">@Model.ProrateRecords.Count</div>
-            <p class="text-muted mb-0 small">รายการของ channel/period ปัจจุบัน / Records in current channel and period</p>
+            <p class="text-muted mb-0 small">Records for <strong>@Model.SelectedChannelCode / @Model.SelectedPeriodCode</strong></p>
         </article>
     </div>
 </section>
@@ -51,12 +159,12 @@
     </div>
 }
 
-<!-- Filter -->
+<!-- Channel / Period Filter -->
 <div class="content-panel mb-4 adj-shell">
     <form method="get" class="row g-2 align-items-end">
         <div class="col-auto">
             <label class="form-label small fw-semibold">Channel</label>
-            <select name="ChannelId" class="form-select form-select-sm" style="min-width:130px;">
+            <select name="ChannelId" class="form-select form-select-sm" style="min-width:140px;">
                 @foreach (var c in Model.Channels)
                 {
                     <option value="@c.ChannelId" selected="@(c.ChannelId == Model.ChannelId)">@c.ChannelCode – @c.ChannelNameEn</option>
@@ -76,129 +184,152 @@
             <button type="submit" class="btn btn-primary btn-sm">Load</button>
         </div>
     </form>
-    <p class="text-muted small mb-0 mt-2">เลือก Channel และ Period เพื่อโหลดข้อมูลที่ใช้งานจริง / Select channel and period to load operational data.</p>
+    <p class="text-muted small mb-0 mt-2">Select a channel and period to load the operational dataset.</p>
 </div>
 
 <!-- Prorate Rule Reference -->
-<div class="row g-3 mb-4">
-    <div class="col-12">
-        <div class="content-panel">
-            <h6 class="fw-semibold mb-3">Prorate Rules (3.2)</h6>
-            <p class="text-muted small mb-3">แนวทางอ้างอิงสำหรับการแบ่งสัดส่วนตามวันทำงานจริง / Reference guideline for prorating by actual working days.</p>
+<div class="content-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0">Prorate Rules — Quick Reference</h6>
+        <span class="badge bg-secondary">Section 3.2</span>
+    </div>
+    <p class="text-muted small mb-3">Reference guideline for prorating by actual working days.</p>
+    <div class="table-responsive">
+        <table class="table table-sm enterprise-table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th style="width:22%">Case</th>
+                    <th>Logic</th>
+                    <th style="width:30%">Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge bg-success me-1">JOIN</span> Started mid-month</td>
+                    <td>Prorate = (Actual working days / Total days in month) × Full incentive</td>
+                    <td>Joined on day 16 → 50% of full incentive</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-danger me-1">RESIGN</span> Resigned mid-month</td>
+                    <td>Specify pay-or-withhold policy</td>
+                    <td>Requires HR confirmation</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-warning text-dark me-1">TRANSFER</span> Cross-region transfer</td>
+                    <td>Calculate each region proportionally by days, then sum</td>
+                    <td>Region A 10 days + Region B 20 days</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-info text-dark me-1">POSITION_CHANGE</span> Position change</td>
+                    <td>Specify old/new rate or split the period</td>
+                    <td>Requires HR/Finance sign-off</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Active Adjustment Formulas -->
+<div class="content-panel mb-4 adj-shell d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-semibold mb-0">Active Adjustment Formulas</h6>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">@Model.ActiveFormulas.Count formulas</span>
+            <button id="formulasToggle"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#active-formulas-body"
+                    aria-expanded="true"
+                    aria-controls="active-formulas-body">
+                Hide Formulas
+            </button>
+        </div>
+    </div>
+
+    <div id="active-formulas-body" class="collapse show">
+        <p class="text-muted small mb-3">Reads formulas directly from <code>vw_active_adjustment_formulas</code> so the UI always reflects the actual system rules.</p>
+
+        @if (Model.ActiveFormulas.Count == 0)
+        {
+            <div class="adj-empty-state">
+                <span class="text-muted small">No active formulas from vw_active_adjustment_formulas.</span>
+            </div>
+        }
+        else
+        {
             <div class="table-responsive">
-                <table class="table table-sm enterprise-table mb-0 small">
+                <table class="table table-sm table-hover enterprise-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Case</th>
-                            <th>Logic</th>
-                            <th>Example</th>
+                            <th>Order</th>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Config</th>
+                            <th>Approval</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><span class="badge bg-success">JOIN</span> เริ่มงานกลางเดือน / Employee started mid-month</td>
-                            <td>Prorate = (วันทำงานจริง / วันทำงานทั้งเดือน) × Incentive เต็มเดือน / Prorate = (Actual working days / Total working days in month) x Full incentive</td>
-                            <td>เริ่มวันที่ 16 = คำนวณ 50% / Joined on day 16 = 50%</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-danger">RESIGN</span> ลาออกกลางเดือน / Employee resigned mid-month</td>
-                            <td>ต้องระบุนโยบายจ่าย/ไม่จ่าย / Specify pay-or-withhold policy</td>
-                            <td>ต้องยืนยันโดย HR / Requires HR confirmation</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-warning text-dark">TRANSFER</span> ย้ายเขตกลางงวด / Cross-region transfer mid-period</td>
-                            <td>คำนวณแยกตามแต่ละเขตตามจำนวนวัน / Calculate each region proportionally by days</td>
-                            <td>เขต A 10 วัน + เขต B 20 วัน / Region A 10 days + Region B 20 days</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-info text-dark">POSITION_CHANGE</span> เปลี่ยนตำแหน่งกลางงวด / Position change mid-period</td>
-                            <td>กำหนดว่าจะใช้อัตราเดิม/ใหม่ หรือแบ่งช่วง / Specify old/new rate or split period</td>
-                            <td>ต้องยืนยันโดย HR/Finance / Requires HR/Finance confirmation</td>
-                        </tr>
+                        @foreach (var f in Model.ActiveFormulas)
+                        {
+                            <tr>
+                                <td><span class="badge bg-dark">@f.CalcOrderLabel</span></td>
+                                <td class="fw-semibold">@f.AdjustmentCode</td>
+                                <td>@f.AdjustmentType</td>
+                                <td>
+                                    <div class="fw-semibold">@f.AdjustmentName</div>
+                                    @if (!string.IsNullOrWhiteSpace(f.Description))
+                                    {
+                                        <div class="small text-muted">@f.Description</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (f.RequiresConfig)
+                                    {
+                                        <span class="badge bg-warning text-dark">Required (@f.ConfigKey)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (f.RequiresApproval)
+                                    {
+                                        <span class="badge bg-info text-dark">Required</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
-        </div>
+        }
     </div>
-</div>
-
-<!-- Active Adjustment Formulas (from view) -->
-<div class="content-panel mb-4 adj-shell">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-semibold mb-0">Active Adjustment Formulas (vw_active_adjustment_formulas)</h6>
-        <span class="badge bg-secondary">@Model.ActiveFormulas.Count formulas</span>
-    </div>
-    <p class="text-muted small mb-3">อ่านสูตรจากฐานข้อมูลโดยตรง เพื่อให้หน้าจอสอดคล้องกับกฎจริงของระบบ / Reads formulas directly from database so UI follows actual system rules.</p>
-
-    @if (Model.ActiveFormulas.Count == 0)
-    {
-        <div class="adj-empty-state">
-            <span class="text-muted small">No active formulas from vw_active_adjustment_formulas.</span>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-sm table-hover enterprise-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Name</th>
-                        <th>Config</th>
-                        <th>Approval</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var f in Model.ActiveFormulas)
-                    {
-                        <tr>
-                            <td><span class="badge bg-dark">@f.CalcOrderLabel</span></td>
-                            <td class="fw-semibold">@f.AdjustmentCode</td>
-                            <td>@f.AdjustmentType</td>
-                            <td>
-                                <div class="fw-semibold">@f.AdjustmentName</div>
-                                @if (!string.IsNullOrWhiteSpace(f.Description))
-                                {
-                                    <div class="small text-muted">@f.Description</div>
-                                }
-                            </td>
-                            <td>
-                                @if (f.RequiresConfig)
-                                {
-                                    <span class="badge bg-warning text-dark">Required (@f.ConfigKey)</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">-</span>
-                                }
-                            </td>
-                            <td>
-                                @if (f.RequiresApproval)
-                                {
-                                    <span class="badge bg-info text-dark">Required</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">-</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
 </div>
 
 <!-- SP Simulation -->
-<div class="content-panel mb-4 adj-shell">
+<div class="content-panel mb-4 adj-shell d-none">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-semibold mb-0">SP Simulation (usp_apply_adjustments)</h6>
-        <span class="badge bg-primary-subtle text-primary-emphasis">Shortage → Special → Prorate</span>
+        <h6 class="fw-semibold mb-0">SP Simulation</h6>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary-emphasis">Shortage → Special → Prorate</span>
+            <button id="spSimToggle"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#sp-sim-body"
+                    aria-expanded="true"
+                    aria-controls="sp-sim-body">Hide</button>
+        </div>
     </div>
-    <p class="text-muted small mb-3">จำลองการคำนวณตามลำดับจริงของ Stored Procedure และแสดง log รายขั้นตอน / Simulate exact stored-procedure order with step-by-step log.</p>
+    <div id="sp-sim-body" class="collapse show">
+    <p class="text-muted small mb-3">Simulate <code>usp_apply_adjustments</code> with custom inputs and view the step-by-step adjustment log.</p>
 
     <form method="post" asp-page-handler="ApplyAdjustments" class="row g-2 align-items-end mb-3">
         <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
@@ -255,102 +386,119 @@
         </div>
         <pre class="p-2 bg-light border rounded small mb-0" style="white-space: pre-wrap;">@Model.LastCalcResult.AdjustmentLogJson</pre>
     }
+    </div><!-- /sp-sim-body -->
 </div>
 
-<!-- Test Summary & Run -->
-<div class="content-panel mb-4 adj-shell">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-semibold mb-0">Adjustment Test Summary (vw_adjustment_test_summary)</h6>
-        <span class="badge bg-secondary">@Model.TestSummaries.Count test cases</span>
+<!-- Logic QA (hidden by default) -->
+<div class="content-panel mb-4 adj-shell d-none">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
+        <h6 class="fw-semibold mb-0">Logic QA</h6>
+        <button id="testSummaryToggle"
+                class="btn btn-outline-secondary btn-sm"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#adjustment-test-summary"
+                aria-expanded="false"
+                aria-controls="adjustment-test-summary">
+            Show Test Summary
+        </button>
     </div>
-    <p class="text-muted small mb-3">ผลทดสอบจาก view กลาง และรันทดสอบรายเคสได้ทันที / Test status from central view and run each case on demand.</p>
+    <p class="text-muted small mb-3">Hidden by default — expand to validate adjustment logic quality.</p>
 
-    @if (Model.TestSummaries.Count == 0)
-    {
-        <div class="adj-empty-state">
-            <span class="text-muted small">No test cases from vw_adjustment_test_summary.</span>
+    <div class="collapse" id="adjustment-test-summary">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-semibold mb-0">Adjustment Test Summary (vw_adjustment_test_summary)</h6>
+            <span class="badge bg-secondary">@Model.TestSummaries.Count test cases</span>
         </div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-sm table-hover enterprise-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Group</th>
-                        <th>Case</th>
-                        <th>Type</th>
-                        <th>Expected</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var t in Model.TestSummaries)
-                    {
-                        var statusClass = t.TestStatus switch
-                        {
-                            "PASS" => "bg-success",
-                            "FAIL" => "bg-danger",
-                            "SKIP" => "bg-warning text-dark",
-                            _ => "bg-secondary"
-                        };
+        <p class="text-muted small mb-3">Test status from <code>vw_adjustment_test_summary</code>; run each case individually on demand.</p>
 
+        @if (Model.TestSummaries.Count == 0)
+        {
+            <div class="adj-empty-state">
+                <span class="text-muted small">No test cases from vw_adjustment_test_summary.</span>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover enterprise-table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td class="fw-semibold">@t.TestCaseCode</td>
-                            <td>@t.TestGroupLabel</td>
-                            <td>
-                                @t.TestCaseName
-                                @if (t.IsEdgeCase)
-                                {
-                                    <span class="badge bg-dark ms-1">EDGE</span>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(t.FailReason))
-                                {
-                                    <div class="small text-danger">@t.FailReason</div>
-                                }
-                            </td>
-                            <td>@t.AdjustmentType</td>
-                            <td>
-                                @if (t.ExpectedOutput.HasValue)
-                                {
-                                    @t.ExpectedOutput.Value.ToString("N2")
-                                }
-                                else
-                                {
-                                    @t.ExpectedCondition
-                                }
-                            </td>
-                            <td><span class="badge @statusClass">@t.TestStatus</span></td>
-                            <td>
-                                <form method="post" asp-page-handler="RunTest" class="d-inline">
-                                    <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
-                                    <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
-                                    <input type="hidden" name="TestCaseCode" value="@t.TestCaseCode" />
-                                    <button type="submit" class="btn btn-outline-primary btn-sm py-0 px-2">Run</button>
-                                </form>
-                            </td>
+                            <th>Code</th>
+                            <th>Group</th>
+                            <th>Case</th>
+                            <th>Type</th>
+                            <th>Expected</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model.TestSummaries)
+                        {
+                            var statusClass = t.TestStatus switch
+                            {
+                                "PASS" => "bg-success",
+                                "FAIL" => "bg-danger",
+                                "SKIP" => "bg-warning text-dark",
+                                _ => "bg-secondary"
+                            };
+
+                            <tr>
+                                <td class="fw-semibold">@t.TestCaseCode</td>
+                                <td>@t.TestGroupLabel</td>
+                                <td>
+                                    @t.TestCaseName
+                                    @if (t.IsEdgeCase)
+                                    {
+                                        <span class="badge bg-dark ms-1">EDGE</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(t.FailReason))
+                                    {
+                                        <div class="small text-danger">@t.FailReason</div>
+                                    }
+                                </td>
+                                <td>@t.AdjustmentType</td>
+                                <td>
+                                    @if (t.ExpectedOutput.HasValue)
+                                    {
+                                        @t.ExpectedOutput.Value.ToString("N2")
+                                    }
+                                    else
+                                    {
+                                        @t.ExpectedCondition
+                                    }
+                                </td>
+                                <td><span class="badge @statusClass">@t.TestStatus</span></td>
+                                <td>
+                                    <form method="post" asp-page-handler="RunTest" class="d-inline">
+                                        <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                                        <input type="hidden" name="TestCaseCode" value="@t.TestCaseCode" />
+                                        <button type="submit" class="btn btn-outline-primary btn-sm py-0 px-2">Run</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </div>
 
-<!-- Existing Records -->
+<!-- Prorate Records -->
 <div class="content-panel mb-4 adj-shell">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-semibold mb-0">Prorate Records — @Model.SelectedChannelCode / @Model.SelectedPeriodCode</h6>
-        <span class="badge bg-secondary">@Model.ProrateRecords.Count records</span>
+        <h6 class="fw-semibold mb-0">Prorate Records <span class="text-muted fw-normal">— @Model.SelectedChannelCode / @Model.SelectedPeriodCode</span></h6>
+        <span class="badge bg-secondary">@Model.ProrateRecords.Count record@(Model.ProrateRecords.Count != 1 ? "s" : "")</span>
     </div>
-    <p class="text-muted small mb-3">ข้อมูลที่บันทึกเพื่อใช้ในรอบคำนวณจริง / Operational records used in real calculation cycle.</p>
+    <p class="text-muted small mb-3">Operational records applied during the real calculation cycle for this period.</p>
 
     @if (Model.ProrateRecords.Count == 0)
     {
         <div class="adj-empty-state">
-            <span class="text-muted small">No prorate records for this channel/period.</span>
+            <span class="text-muted small">No prorate records for this channel / period. Use the form below to add one.</span>
         </div>
     }
     else
@@ -409,66 +557,215 @@
     }
 </div>
 
-<!-- Add New Record Form -->
+<!-- Add Record -->
 <div class="content-panel adj-shell">
-    <h6 class="fw-semibold mb-3">Add Prorate Record</h6>
-    <p class="text-muted small mb-3">เพิ่มรายการปรับวันทำงานเพื่อสะท้อนสถานการณ์จริงของพนักงาน / Add prorate records to reflect real employee movement scenarios.</p>
-    <form method="post" asp-page-handler="Save" class="row g-3">
+    <h6 class="fw-semibold mb-2">Add Prorate Record</h6>
+    <p class="text-muted small mb-3">Use a case shortcut above to pre-fill the form, then select the employee and approver before saving.</p>
+    <form method="post" asp-page-handler="Save">
         <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
         <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
 
-        <div class="col-md-3">
-            <label class="form-label small fw-semibold">Employee</label>
-            <select name="EmployeeCode" class="form-select form-select-sm" required>
-                <option value="">-- Select Employee --</option>
-                @foreach (var e in Model.Employees)
-                {
-                    <option value="@e.EmployeeCode">@e.EmployeeCode – @e.EmployeeNameTh</option>
-                }
-            </select>
+        <!-- Row 1: Type radio buttons -->
+        <div class="mb-3">
+            <label class="form-label small fw-semibold d-block mb-2">Type</label>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input js-type-radio" type="radio" name="ProrateType" id="typeJoin" value="JOIN" checked required />
+                    <label class="form-check-label" for="typeJoin">
+                        <span class="badge bg-success me-1">JOIN</span>Started mid-month
+                    </label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input js-type-radio" type="radio" name="ProrateType" id="typeResign" value="RESIGN" required />
+                    <label class="form-check-label" for="typeResign">
+                        <span class="badge bg-danger me-1">RESIGN</span>Left mid-month
+                    </label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input js-type-radio" type="radio" name="ProrateType" id="typeTransfer" value="TRANSFER" required />
+                    <label class="form-check-label" for="typeTransfer">
+                        <span class="badge bg-warning text-dark me-1">TRANSFER</span>Cross-region transfer
+                    </label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input js-type-radio" type="radio" name="ProrateType" id="typePosition" value="POSITION_CHANGE" required />
+                    <label class="form-check-label" for="typePosition">
+                        <span class="badge bg-info text-dark me-1">POSITION_CHANGE</span>Position change
+                    </label>
+                </div>
+            </div>
         </div>
 
-        <div class="col-md-2">
-            <label class="form-label small fw-semibold">Type</label>
-            <select name="ProrateType" class="form-select form-select-sm" required>
-                <option value="JOIN">JOIN – Started mid-month</option>
-                <option value="RESIGN">RESIGN – Left mid-month</option>
-                <option value="TRANSFER">TRANSFER – Cross-region transfer</option>
-                <option value="POSITION_CHANGE">POSITION_CHANGE – Position change</option>
-            </select>
-        </div>
-
-        <div class="col-md-1">
-            <label class="form-label small fw-semibold">Actual Days</label>
-            <input type="number" name="ActualDays" class="form-control form-control-sm text-center"
-                   min="0" max="31" value="11" required />
-        </div>
-
-        <div class="col-md-1">
-            <label class="form-label small fw-semibold">Total Days</label>
-            <input type="number" name="TotalDays" class="form-control form-control-sm text-center"
-                   min="1" max="31" value="22" required />
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label small fw-semibold">Approved By</label>
-            <input type="text" name="ApprovedBy" class="form-control form-control-sm"
-                   placeholder="Approver name" />
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label small fw-semibold">Remarks</label>
-            <input type="text" name="Remarks" class="form-control form-control-sm"
-                   placeholder="Remarks" />
-        </div>
-
-        <div class="col-md-1 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
+        <!-- Row 2: Employee + Days + Factor preview + Approved By + Remarks + Save -->
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="form-label small fw-semibold">Employee</label>
+                <select id="prorateEmployeeCode" name="EmployeeCode" class="form-select form-select-sm" required>
+                    <option value="">-- Select employee --</option>
+                    @foreach (var e in Model.Employees)
+                    {
+                        <option value="@e.EmployeeCode">@e.EmployeeCode – @e.EmployeeNameTh</option>
+                    }
+                </select>
+            </div>
+            <div class="col-4 col-md-1">
+                <label class="form-label small fw-semibold">Actual Days</label>
+                <input id="prorateActualDays" type="number" name="ActualDays" class="form-control form-control-sm text-center"
+                       min="0" max="31" value="15" placeholder="e.g. 15" required />
+            </div>
+            <div class="col-4 col-md-1">
+                <label class="form-label small fw-semibold">Total Days</label>
+                <input id="prorateTotalDays" type="number" name="TotalDays" class="form-control form-control-sm text-center"
+                       min="1" max="31" value="30" placeholder="e.g. 30" required />
+            </div>
+            <div class="col-4 col-md-1 d-flex flex-column align-items-center">
+                <label class="form-label small fw-semibold text-center w-100">Factor</label>
+                <span id="prorateFactor" class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle fs-6 px-2 py-1" style="min-width:4.5rem;text-align:center;">50%</span>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label small fw-semibold">Approved By</label>
+                <input type="text" name="ApprovedBy" class="form-control form-control-sm"
+                       placeholder="e.g. HR Manager" />
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label small fw-semibold">Remarks</label>
+                <input id="prorateRemarks" type="text" name="Remarks" class="form-control form-control-sm"
+                       placeholder="Joined on day 16 of month" />
+            </div>
+            <div class="col-12 col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
+            </div>
         </div>
     </form>
 
     <div class="adj-note mt-3">
-        <strong>Note:</strong> Factor = Actual Days / Total Days
-        (เช่น 11/22 = 50% / e.g. 11/22 = 50%). ตัวคูณนี้ใช้กับ incentive เต็มเดือน / This factor multiplies the full-month calculated incentive.
+        <strong>Factor</strong> = Actual Days ÷ Total Days &nbsp;— e.g. 15 / 30 = <strong>50%</strong>, or 20 / 30 = <strong>67%</strong>. Applied to full-month calculated incentive before posting to HR output.
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const actualEl   = document.getElementById("prorateActualDays");
+            const totalEl    = document.getElementById("prorateTotalDays");
+            const remarksEl  = document.getElementById("prorateRemarks");
+            const factorEl   = document.getElementById("prorateFactor");
+            const testSummaryToggle  = document.getElementById("testSummaryToggle");
+            const testSummaryCollapse = document.getElementById("adjustment-test-summary");
+            const formulasToggle  = document.getElementById("formulasToggle");
+            const formulasCollapse = document.getElementById("active-formulas-body");
+            const spSimToggle  = document.getElementById("spSimToggle");
+            const spSimCollapse = document.getElementById("sp-sim-body");
+
+            // Default remarks hint per type
+            const remarksHints = {
+                "JOIN":            "e.g. Joined on day 16 — prorated by actual working days",
+                "RESIGN":          "e.g. Resigned on day 10 — awaiting HR pay/withhold decision",
+                "TRANSFER":        "e.g. Region A 10 days + Region B 20 days — specify per region",
+                "POSITION_CHANGE": "e.g. Old rate days 12 + new rate days 18 — HR/Finance sign-off required"
+            };
+
+            function updateFactor() {
+                if (!factorEl || !actualEl || !totalEl) return;
+                const a = parseFloat(actualEl.value);
+                const t = parseFloat(totalEl.value);
+                if (t > 0 && !isNaN(a) && !isNaN(t)) {
+                    const pct = Math.round((a / t) * 100);
+                    factorEl.textContent = pct + "%";
+                    factorEl.classList.toggle("bg-success-subtle",  pct >= 80);
+                    factorEl.classList.toggle("text-success-emphasis", pct >= 80);
+                    factorEl.classList.toggle("bg-warning-subtle",  pct > 0 && pct < 50);
+                    factorEl.classList.toggle("text-warning-emphasis", pct > 0 && pct < 50);
+                    factorEl.classList.toggle("bg-primary-subtle",  pct >= 50 && pct < 80);
+                    factorEl.classList.toggle("text-primary-emphasis", pct >= 50 && pct < 80);
+                    factorEl.classList.toggle("border-success-subtle", pct >= 80);
+                    factorEl.classList.toggle("border-warning-subtle", pct > 0 && pct < 50);
+                    factorEl.classList.toggle("border-primary-subtle", pct >= 50 && pct < 80);
+                } else {
+                    factorEl.textContent = "–";
+                }
+            }
+
+            function updateRemarksHint() {
+                if (!remarksEl) return;
+                const checked = document.querySelector(".js-type-radio:checked");
+                if (checked && remarksHints[checked.value]) {
+                    remarksEl.placeholder = remarksHints[checked.value];
+                }
+            }
+
+            if (actualEl) actualEl.addEventListener("input", updateFactor);
+            if (totalEl)  totalEl.addEventListener("input",  updateFactor);
+            document.querySelectorAll(".js-type-radio").forEach(function (r) {
+                r.addEventListener("change", updateRemarksHint);
+            });
+
+            // Init on load
+            updateFactor();
+            updateRemarksHint();
+
+            document.querySelectorAll(".js-case-preset").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    // Set matching radio button for Type
+                    const targetType = btn.dataset.prorateType || "JOIN";
+                    const matchingRadio = document.querySelector('.js-type-radio[value="' + targetType + '"]');
+                    if (matchingRadio) {
+                        matchingRadio.checked = true;
+                        updateRemarksHint();
+                    }
+                    if (actualEl && btn.dataset.actualDays) {
+                        actualEl.value = btn.dataset.actualDays;
+                    }
+                    if (totalEl && btn.dataset.totalDays) {
+                        totalEl.value = btn.dataset.totalDays;
+                    }
+                    updateFactor();
+                    if (remarksEl && btn.dataset.remarks) {
+                        remarksEl.value = btn.dataset.remarks;
+                    }
+
+                    const employeeEl = document.getElementById("prorateEmployeeCode");
+                    if (employeeEl) {
+                        employeeEl.focus();
+                    }
+                });
+            });
+
+            if (testSummaryToggle && testSummaryCollapse) {
+                testSummaryCollapse.addEventListener("show.bs.collapse", function () {
+                    testSummaryToggle.textContent = "Hide Test Summary";
+                    testSummaryToggle.setAttribute("aria-expanded", "true");
+                });
+
+                testSummaryCollapse.addEventListener("hide.bs.collapse", function () {
+                    testSummaryToggle.textContent = "Show Test Summary";
+                    testSummaryToggle.setAttribute("aria-expanded", "false");
+                });
+            }
+
+            if (formulasToggle && formulasCollapse) {
+                formulasCollapse.addEventListener("show.bs.collapse", function () {
+                    formulasToggle.textContent = "Hide Formulas";
+                    formulasToggle.setAttribute("aria-expanded", "true");
+                });
+
+                formulasCollapse.addEventListener("hide.bs.collapse", function () {
+                    formulasToggle.textContent = "Show Formulas";
+                    formulasToggle.setAttribute("aria-expanded", "false");
+                });
+            }
+
+            if (spSimToggle && spSimCollapse) {
+                spSimCollapse.addEventListener("show.bs.collapse", function () {
+                    spSimToggle.textContent = "Hide";
+                    spSimToggle.setAttribute("aria-expanded", "true");
+                });
+
+                spSimCollapse.addEventListener("hide.bs.collapse", function () {
+                    spSimToggle.textContent = "Show";
+                    spSimToggle.setAttribute("aria-expanded", "false");
+                });
+            }
+        });
+    </script>
+}
