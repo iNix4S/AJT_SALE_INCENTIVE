@@ -10,12 +10,16 @@ public interface IPortalDataService
     Task<IReadOnlyList<ChannelItem>> GetChannelsAsync();
     Task<IReadOnlyList<CalcRunItem>> GetRecentRunsAsync(int top = 12);
     Task<IReadOnlyList<ForHrRow>> GetForHrRowsAsync(int calcRunId, int top = 200);
+    Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrTtSheetAsync(int calcRunId, int top = 1000);
+    Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrMtSheetAsync(int calcRunId, int top = 1000);
+    Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrSiSheetAsync(int calcRunId, int top = 1000);
     Task<IReadOnlyList<CalcRunDetailItem>> GetCalcRunDetailAsync(int calcRunId, int top = 200);
     Task<IReadOnlyList<FormulaExpression>> GetFormulasByChannelAsync(string channelCode);
     Task<IReadOnlyList<CalcRunHistoryItem>> GetCalcRunHistoryAsync(int channelId, int top = 10);
     Task<IReadOnlyList<FormulaPreviewRow>> GetFormulaPreviewAsync(int periodId, string channelCode);
     Task<int?> GetLatestCalcRunIdAsync(int channelId);
     Task<int?> GetLatestCalcRunIdByPeriodAsync(int channelId, int periodId);
+    Task<IReadOnlyList<ProrateDetailItem>> GetProrateDetailsAsync(int periodId, int channelId, string employeeCode);
     Task<IReadOnlyList<string>> GetTtWsTypesAsync();
     Task<IReadOnlyDictionary<int, PeriodReadiness>> GetPeriodReadinessAsync(int channelId);
     Task<IReadOnlyList<DashboardChannelSummary>> GetDashboardChannelSummariesAsync();
@@ -133,13 +137,183 @@ ORDER BY r.calc_run_id DESC;";
 SELECT TOP (@Top)
        h.calc_run_id AS CalcRunId,
        h.employee_code AS EmployeeCode,
+        h.employee_name_th AS EmployeeNameTh,
        h.position_level_code AS PositionLevelCode,
+        h.variable_pay_month AS VariablePayMonth,
+        h.payment_method AS PaymentMethod,
+        h.incentive_staff AS IncentiveStaff,
+        h.incentive_sect AS IncentiveSect,
+        h.incentive_dept AS IncentiveDept,
+        h.incentive_div AS IncentiveDiv,
+        h.incentive_ad AS IncentiveAd,
+        h.gd_incentive_total AS GdIncentiveTotal,
        h.total_variable AS TotalVariable
 FROM dbo.out_for_hr_variable h
 WHERE h.calc_run_id = @CalcRunId
 ORDER BY h.employee_code;";
 
         var rows = await conn.QueryAsync<ForHrRow>(sql, new { CalcRunId = calcRunId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrMtSheetAsync(int calcRunId, int top = 1000)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT TOP (@Top)
+    s.calc_run_id         AS CalcRunId,
+    s.period_code         AS PeriodCode,
+    s.sales_month         AS SalesMonth,
+    s.user_employee_id    AS UserEmployeeId,
+    s.salesman_code       AS SalesmanCode,
+    s.employee_name_th    AS EmployeeNameTh,
+    s.position_level_code AS PositionLevelCode,
+    s.position_name_en    AS PositionNameEn,
+    s.hierarchy_level     AS HierarchyLevel,
+    s.job_function_code   AS JobFunctionCode,
+    s.job_function_name_en AS JobFunctionNameEn,
+    s.division_name       AS DivisionName,
+    s.department_name     AS DepartmentName,
+    s.section_name        AS SectionName,
+    s.variable_pay_month  AS VariablePayMonth,
+    s.payment_method      AS PaymentMethod,
+    s.total_variable      AS TotalVariable,
+    s.incentive_staff     AS IncentiveStaff,
+    s.incentive_sect      AS IncentiveSect,
+    s.incentive_dept      AS IncentiveDept,
+    s.incentive_div       AS IncentiveDiv,
+    s.direct_sup_code     AS DirectSupCode,
+    s.direct_sup_ach_pct  AS DirectSupAchPct,
+    s.direct_sup_incentive AS DirectSupIncentive,
+    s.dept_mgr_code       AS DeptMgrCode,
+    s.dept_mgr_ach_pct    AS DeptMgrAchPct,
+    s.dept_mgr_incentive  AS DeptMgrIncentive,
+    s.div_mgr_code        AS DivMgrCode,
+    s.div_mgr_ach_pct     AS DivMgrAchPct,
+    s.div_mgr_incentive   AS DivMgrIncentive,
+    s.is_std_formula      AS IsStdFormula,
+    s.has_prorate         AS HasProrate,
+    s.has_special_adj     AS HasSpecialAdj
+FROM dbo.vw_for_hr_mt_sheet s
+WHERE s.calc_run_id = @CalcRunId
+ORDER BY s.salesman_code;";
+
+        var rows = await conn.QueryAsync<ForHrTtSheetRow>(sql, new { CalcRunId = calcRunId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrSiSheetAsync(int calcRunId, int top = 1000)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT TOP (@Top)
+    s.calc_run_id          AS CalcRunId,
+    s.period_code          AS PeriodCode,
+    s.sales_month          AS SalesMonth,
+    s.user_employee_id     AS UserEmployeeId,
+    s.salesman_code        AS SalesmanCode,
+    s.employee_name_th     AS EmployeeNameTh,
+    s.position_level_code  AS PositionLevelCode,
+    s.position_name_en     AS PositionNameEn,
+    s.hierarchy_level      AS HierarchyLevel,
+    s.job_function_code    AS JobFunctionCode,
+    s.job_function_name_en AS JobFunctionNameEn,
+    s.division_name        AS DivisionName,
+    s.department_name      AS DepartmentName,
+    s.section_name         AS SectionName,
+    s.variable_pay_month   AS VariablePayMonth,
+    s.payment_method       AS PaymentMethod,
+    s.total_variable       AS TotalVariable,
+    s.incentive_staff      AS IncentiveStaff,
+    s.incentive_sect       AS IncentiveSect,
+    s.incentive_dept       AS IncentiveDept,
+    s.incentive_div        AS IncentiveDiv,
+    s.direct_sup_code      AS DirectSupCode,
+    s.direct_sup_ach_pct   AS DirectSupAchPct,
+    s.direct_sup_incentive AS DirectSupIncentive,
+    s.dept_mgr_code        AS DeptMgrCode,
+    s.dept_mgr_ach_pct     AS DeptMgrAchPct,
+    s.dept_mgr_incentive   AS DeptMgrIncentive,
+    s.div_mgr_code         AS DivMgrCode,
+    s.div_mgr_ach_pct      AS DivMgrAchPct,
+    s.div_mgr_incentive    AS DivMgrIncentive,
+    s.is_std_formula       AS IsStdFormula,
+    s.has_prorate          AS HasProrate,
+    s.has_special_adj      AS HasSpecialAdj
+FROM dbo.vw_for_hr_si_sheet s
+WHERE s.calc_run_id = @CalcRunId
+ORDER BY s.salesman_code;";
+
+        var rows = await conn.QueryAsync<ForHrTtSheetRow>(sql, new { CalcRunId = calcRunId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<ProrateDetailItem>> GetProrateDetailsAsync(int periodId, int channelId, string employeeCode)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT
+    pa.prorate_id   AS ProrateId,
+    pa.prorate_type AS ProrateType,
+    pa.actual_days  AS ActualDays,
+    pa.total_days   AS TotalDays,
+    pa.remarks      AS Remarks,
+    pa.approved_by  AS ApprovedBy,
+    pa.created_at   AS CreatedAt
+FROM dbo.trn_prorate_adjustment pa
+WHERE pa.period_id    = @PeriodId
+  AND pa.channel_id   = @ChannelId
+  AND pa.employee_code = @EmployeeCode
+  AND pa.is_active    = 1
+ORDER BY pa.prorate_id;";
+
+        var rows = await conn.QueryAsync<ProrateDetailItem>(sql, new { PeriodId = periodId, ChannelId = channelId, EmployeeCode = employeeCode });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrTtSheetAsync(int calcRunId, int top = 1000)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT TOP (@Top)
+    s.calc_run_id         AS CalcRunId,
+    s.period_code         AS PeriodCode,
+    s.sales_month         AS SalesMonth,
+    s.user_employee_id    AS UserEmployeeId,
+    s.salesman_code       AS SalesmanCode,
+    s.employee_name_th    AS EmployeeNameTh,
+    s.position_level_code AS PositionLevelCode,
+    s.position_name_en    AS PositionNameEn,
+    s.hierarchy_level     AS HierarchyLevel,
+    s.job_function_code   AS JobFunctionCode,
+    s.job_function_name_en AS JobFunctionNameEn,
+    s.division_name       AS DivisionName,
+    s.department_name     AS DepartmentName,
+    s.section_name        AS SectionName,
+    s.variable_pay_month  AS VariablePayMonth,
+    s.payment_method      AS PaymentMethod,
+    s.total_variable      AS TotalVariable,
+    s.incentive_staff     AS IncentiveStaff,
+    s.incentive_sect      AS IncentiveSect,
+    s.incentive_dept      AS IncentiveDept,
+    s.incentive_div       AS IncentiveDiv,
+    s.direct_sup_code     AS DirectSupCode,
+    s.direct_sup_ach_pct  AS DirectSupAchPct,
+    s.direct_sup_incentive AS DirectSupIncentive,
+    s.dept_mgr_code       AS DeptMgrCode,
+    s.dept_mgr_ach_pct    AS DeptMgrAchPct,
+    s.dept_mgr_incentive  AS DeptMgrIncentive,
+    s.div_mgr_code        AS DivMgrCode,
+    s.div_mgr_ach_pct     AS DivMgrAchPct,
+    s.div_mgr_incentive   AS DivMgrIncentive,
+    s.is_std_formula      AS IsStdFormula,
+    s.has_prorate         AS HasProrate,
+    s.has_special_adj     AS HasSpecialAdj
+FROM dbo.vw_for_hr_tt_sheet s
+WHERE s.calc_run_id = @CalcRunId
+ORDER BY s.salesman_code;";
+
+        var rows = await conn.QueryAsync<ForHrTtSheetRow>(sql, new { CalcRunId = calcRunId, Top = top });
         return rows.ToList();
     }
 
@@ -507,8 +681,54 @@ public sealed class ForHrRow
 {
     public int CalcRunId { get; init; }
     public string EmployeeCode { get; init; } = string.Empty;
+    public string EmployeeNameTh { get; init; } = string.Empty;
     public string PositionLevelCode { get; init; } = string.Empty;
+    public DateTime? VariablePayMonth { get; init; }
+    public string PaymentMethod { get; init; } = string.Empty;
+    public decimal IncentiveStaff { get; init; }
+    public decimal IncentiveSect { get; init; }
+    public decimal IncentiveDept { get; init; }
+    public decimal IncentiveDiv { get; init; }
+    public decimal IncentiveAd { get; init; }
+    public decimal GdIncentiveTotal { get; init; }
     public decimal TotalVariable { get; init; }
+}
+
+public sealed class ForHrTtSheetRow
+{
+    public int CalcRunId { get; init; }
+    public string PeriodCode { get; init; } = string.Empty;
+    public DateTime SalesMonth { get; init; }
+    public string UserEmployeeId { get; init; } = string.Empty;
+    public string SalesmanCode { get; init; } = string.Empty;
+    public string EmployeeNameTh { get; init; } = string.Empty;
+    public string PositionLevelCode { get; init; } = string.Empty;
+    public string PositionNameEn { get; init; } = string.Empty;
+    public int HierarchyLevel { get; init; }
+    public string JobFunctionCode { get; init; } = string.Empty;
+    public string JobFunctionNameEn { get; init; } = string.Empty;
+    public string DivisionName { get; init; } = string.Empty;
+    public string DepartmentName { get; init; } = string.Empty;
+    public string SectionName { get; init; } = string.Empty;
+    public DateTime? VariablePayMonth { get; init; }
+    public string PaymentMethod { get; init; } = string.Empty;
+    public decimal TotalVariable { get; init; }
+    public decimal IncentiveStaff { get; init; }
+    public decimal IncentiveSect { get; init; }
+    public decimal IncentiveDept { get; init; }
+    public decimal IncentiveDiv { get; init; }
+    public string DirectSupCode { get; init; } = string.Empty;
+    public decimal DirectSupAchPct { get; init; }
+    public decimal DirectSupIncentive { get; init; }
+    public string DeptMgrCode { get; init; } = string.Empty;
+    public decimal DeptMgrAchPct { get; init; }
+    public decimal DeptMgrIncentive { get; init; }
+    public string DivMgrCode { get; init; } = string.Empty;
+    public decimal DivMgrAchPct { get; init; }
+    public decimal DivMgrIncentive { get; init; }
+    public bool IsStdFormula { get; init; }
+    public bool HasProrate { get; init; }
+    public bool HasSpecialAdj { get; init; }
 }
 
 public sealed class CalcRunDetailItem
@@ -612,4 +832,15 @@ public sealed class DashboardChannelSummary
     public string LatestRunStatus { get; init; } = string.Empty;
     public DateTime? LatestRunUpdatedAt { get; init; }
     public int LatestForHrRowCount { get; init; }
+}
+
+public sealed class ProrateDetailItem
+{
+    public int ProrateId { get; init; }
+    public string ProrateType { get; init; } = string.Empty;
+    public int ActualDays { get; init; }
+    public int TotalDays { get; init; }
+    public string? Remarks { get; init; }
+    public string? ApprovedBy { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

@@ -2,6 +2,7 @@
 @model AjtIncentive.Web.Pages.ForHR.IndexModel
 @{
     ViewData["Title"] = "For HR";
+    int rowCount = Model.UseSheetLayout ? Model.ActiveSheetRows.Count : Model.Rows.Count;
 }
 
 <div class="content-panel">
@@ -43,8 +44,8 @@
     </form>
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2">
-        <div class="small text-muted">Loaded rows: @Model.Rows.Count | Calc Run: @(Model.CalcRunId?.ToString() ?? "-")</div>
-        @if (Model.CalcRunId.HasValue && Model.Rows.Count > 0)
+        <div class="small text-muted">Loaded rows: @rowCount | Calc Run: @(Model.CalcRunId?.ToString() ?? "-")</div>
+        @if (Model.CalcRunId.HasValue && rowCount > 0)
         {
             <a class="btn btn-sm btn-outline-primary"
                asp-page="/ForHR/Index"
@@ -57,27 +58,590 @@
         }
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-sm enterprise-table align-middle mb-0">
-            <thead>
-                <tr>
-                    <th>Calc Run ID</th>
-                    <th>Employee Code</th>
-                    <th>Position Level</th>
-                    <th class="text-end">Total Variable</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var row in Model.Rows)
-            {
-                <tr>
-                    <td>@row.CalcRunId</td>
-                    <td class="fw-semibold">@row.EmployeeCode</td>
-                    <td>@row.PositionLevelCode</td>
-                    <td class="text-end">@row.TotalVariable.ToString("N2")</td>
-                </tr>
+    <!-- Override container to full-width for wide table (TT / MT / SI) -->
+    <style>
+        main.main-shell > .container { max-width: none !important; padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+
+        .tt-hr-table { font-size: 0.72rem; white-space: nowrap; border-collapse: collapse; width: 100%; }
+        .tt-hr-table th, .tt-hr-table td { padding: 0.28rem 0.42rem; vertical-align: middle; }
+        .tt-hr-table thead tr.grp-row th {
+            background: #0f172a; color: #cbd5e1;
+            text-align: center; font-size: 0.63rem;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            padding: 0.22rem 0.42rem; border-bottom: 1px solid #334155;
+        }
+        .tt-hr-table thead tr.col-row th {
+            background: #1e293b; color: #e2e8f0;
+            font-size: 0.68rem; position: sticky; top: 0; z-index: 2;
+            border-bottom: 2px solid #334155;
+        }
+        .tt-hr-table .grp-sep   { border-left: 2px solid #475569 !important; }
+        .tt-hr-table .grp-sep-r { border-right: 2px solid #475569 !important; }
+        .tt-hr-table tbody tr:hover td { background: #f0f9ff; }
+        .tt-hr-table tbody td { border-bottom: 1px solid #f1f5f9; }
+        .tt-hr-table tfoot td { background: #f8fafc; font-size: 0.72rem; border-top: 2px solid #0f172a; }
+    </style>
+
+    @if (Model.UseSheetLayout)
+    {
+        <!-- Calc Flags Legend -->
+        <div class="alert alert-info border-0 mb-3" style="background: #e0f2fe; border-left: 4px solid #0369a1;">
+            <div class="fw-semibold mb-2" style="color: #0c4a6e;">📋 Calculation Flags Legend:</div>
+            <div class="row g-2 small" style="color: #0c4a6e;">
+                <div class="col-md-4">
+                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle" style="font-size:0.70rem">STD</span>
+                    <span class="ms-1"><strong>Standard Formula</strong> — Calculated using standard incentive formula only (no prorate or special adjustments)</span>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.70rem">PRO</span>
+                    <span class="ms-1"><strong>Prorate Adjustment</strong> — Has prorate configuration (e.g., actual working days adjusted from total days)</span>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.70rem">ADJ</span>
+                    <span class="ms-1"><strong>Special Adjustment</strong> — Has special adjustment applied (e.g., override achievement, adjusted target or weight)</span>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            :root {
+                --pr-bg-soft: linear-gradient(135deg, #fff7ed 0%, #fffbeb 46%, #fefce8 100%);
+                --pr-panel: #ffffff;
+                --pr-border: rgba(15, 23, 42, 0.14);
+                --pr-head: linear-gradient(118deg, #0f172a 0%, #1d4ed8 58%, #0ea5e9 100%);
+                --pr-title: #f8fafc;
+                --pr-subtle: #64748b;
             }
-            </tbody>
-        </table>
+
+            .tt-hr-table { font-size: 0.72rem; white-space: nowrap; border-collapse: collapse; width: 100%; }
+            .tt-hr-table th, .tt-hr-table td { padding: 0.28rem 0.42rem; vertical-align: middle; }
+
+            /* Group header row */
+            .tt-hr-table thead tr.grp-row th {
+                background: #0f172a; color: #cbd5e1;
+                text-align: center; font-size: 0.63rem;
+                letter-spacing: 0.06em; text-transform: uppercase;
+                padding: 0.22rem 0.42rem;
+                border-bottom: 1px solid #334155;
+            }
+            /* Column header row */
+            .tt-hr-table thead tr.col-row th {
+                background: #1e293b; color: #e2e8f0;
+                font-size: 0.68rem; position: sticky; top: 0; z-index: 2;
+                border-bottom: 2px solid #334155;
+            }
+
+            /* Group separator borders */
+            .tt-hr-table .grp-sep   { border-left: 2px solid #475569 !important; }
+            .tt-hr-table .grp-sep-r { border-right: 2px solid #475569 !important; }
+
+            /* Body */
+            .tt-hr-table tbody tr:hover td { background: #f0f9ff; }
+            .tt-hr-table tbody td { border-bottom: 1px solid #f1f5f9; }
+
+            /* Footer */
+            .tt-hr-table tfoot td {
+                background: #f8fafc; font-size: 0.72rem;
+                border-top: 2px solid #0f172a;
+            }
+
+            .btn-prorate-detail {
+                border-radius: 999px;
+                padding: 0.15rem 0.45rem;
+                letter-spacing: 0.05em;
+                font-weight: 700;
+                transition: transform .16s ease, box-shadow .2s ease, filter .2s ease;
+            }
+
+            .btn-prorate-detail:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 16px rgba(217, 119, 6, 0.24);
+                filter: saturate(1.15);
+            }
+
+            /* POSITION_CHANGE badge — violet/purple tone */
+            .bg-purple-subtle  { background-color: #f3e8ff !important; }
+            .text-purple-emphasis { color: #6b21a8 !important; }
+            .border-purple-subtle { border-color: #d8b4fe !important; }
+
+            #prorateModal .modal-dialog {
+                max-width: 940px;
+            }
+
+            #prorateModal .modal-content {
+                border: 1px solid var(--pr-border);
+                border-radius: 1rem;
+                overflow: hidden;
+                background: var(--pr-bg-soft);
+                box-shadow: 0 24px 54px rgba(15, 23, 42, 0.28);
+            }
+
+            #prorateModal .modal-header {
+                background: var(--pr-head);
+                color: var(--pr-title);
+                border-bottom: 0;
+                padding: 0.95rem 1.1rem;
+            }
+
+            .pr-title-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                border: 1px solid rgba(255, 255, 255, 0.24);
+                background: rgba(255, 255, 255, 0.14);
+                border-radius: 999px;
+                padding: 0.1rem 0.5rem;
+                font-size: 0.72rem;
+                letter-spacing: 0.02em;
+            }
+
+            #prorateModal .modal-body {
+                padding: 1rem 1.1rem 1.05rem;
+            }
+
+            #prorateModal .modal-footer {
+                border-top: 0;
+                background: transparent;
+                padding-top: 0.4rem;
+            }
+
+            .pr-surface {
+                background: var(--pr-panel);
+                border: 1px solid rgba(15, 23, 42, 0.08);
+                border-radius: 0.85rem;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            }
+
+            .pr-kpi-card {
+                background: #ffffff;
+                border: 1px solid rgba(15, 23, 42, 0.08);
+                border-radius: 0.75rem;
+                padding: 0.7rem 0.75rem;
+                height: 100%;
+            }
+
+            .pr-kpi-label {
+                font-size: 0.71rem;
+                color: var(--pr-subtle);
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                margin-bottom: 0.18rem;
+            }
+
+            .pr-kpi-value {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #0f172a;
+                line-height: 1.2;
+            }
+
+            .pr-detail-table {
+                font-size: 0.81rem;
+            }
+
+            .pr-detail-table thead th {
+                background: #0f172a;
+                color: #dbeafe;
+                border-bottom: 0;
+                font-size: 0.72rem;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+            }
+
+            .pr-detail-table tbody tr:hover td {
+                background: #eff6ff;
+            }
+
+            .pr-formula-card {
+                border-radius: 0.85rem;
+                background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+                border: 1px solid rgba(217, 119, 6, 0.24);
+                padding: 0.85rem 0.95rem;
+            }
+
+            .pr-formula-title {
+                color: #9a3412;
+                font-weight: 700;
+                margin-bottom: 0.36rem;
+            }
+
+            .pr-formula-eq {
+                font-size: 0.95rem;
+                color: #7c2d12;
+                font-weight: 700;
+                background: rgba(255, 255, 255, 0.58);
+                border: 1px solid rgba(194, 65, 12, 0.16);
+                border-radius: 0.6rem;
+                padding: 0.4rem 0.55rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .pr-detail-list {
+                margin-bottom: 0;
+                padding-left: 1.2rem;
+                color: #7c2d12;
+                font-size: 0.82rem;
+            }
+
+            @@media (max-width: 768px) {
+                #prorateModal .modal-dialog {
+                    max-width: calc(100vw - 1rem);
+                    margin: 0.5rem auto;
+                }
+
+                #prorateModal .modal-body {
+                    padding: 0.75rem;
+                }
+
+                .pr-kpi-value {
+                    font-size: 0.93rem;
+                }
+            }
+        </style>
+
+        <div style="overflow-x: auto; border-radius: 0.875rem; border: 1px solid rgba(15,23,42,0.12); box-shadow: 0 4px 20px rgba(15,23,42,0.06);">
+            <table class="tt-hr-table table table-sm mb-0">
+                <thead>
+                    <tr class="grp-row">
+                        <th colspan="8" class="grp-sep-r">Employee Information</th>
+                        <th colspan="3" class="grp-sep-r" title="STD=Standard Formula only, PRO=Has Prorate, ADJ=Has Special Adjust">Calc Flags</th>
+                        <th colspan="2" class="grp-sep-r">Payment</th>
+                        <th colspan="5" class="grp-sep-r">Incentive Breakdown</th>
+                        <th colspan="3" class="grp-sep-r">Direct Supervisor</th>
+                        <th colspan="3" class="grp-sep-r">Dept Manager</th>
+                        <th colspan="3">Div Manager</th>
+                    </tr>
+                    <tr class="col-row">
+                        <th style="min-width:62px">User ID</th>
+                        <th style="min-width:62px">Sal Code</th>
+                        <th style="min-width:110px">Name</th>
+                        <th style="min-width:60px">Level</th>
+                        <th style="min-width:88px">Job Function</th>
+                        <th style="min-width:88px">Division</th>
+                        <th style="min-width:88px">Department</th>
+                        <th style="min-width:78px" class="grp-sep-r">Section</th>
+                        <th style="min-width:38px" class="grp-sep text-center" title="Standard Formula (no prorate, no special adjust)">STD</th>
+                        <th style="min-width:38px" class="text-center" title="Has Prorate adjustment">PRO</th>
+                        <th style="min-width:38px" class="grp-sep-r text-center" title="Has Special Adjustment">ADJ</th>
+                        <th style="min-width:62px" class="grp-sep">Pay Month</th>
+                        <th style="min-width:52px" class="grp-sep-r">Type</th>
+                        <th style="min-width:78px" class="grp-sep text-end">Total</th>
+                        <th style="min-width:68px" class="text-end">Staff</th>
+                        <th style="min-width:62px" class="text-end">Sect</th>
+                        <th style="min-width:62px" class="text-end">Dept</th>
+                        <th style="min-width:62px" class="grp-sep-r text-end">Div</th>
+                        <th style="min-width:62px" class="grp-sep">Code</th>
+                        <th style="min-width:48px" class="text-end">Ach%</th>
+                        <th style="min-width:68px" class="grp-sep-r text-end">Incentive</th>
+                        <th style="min-width:62px" class="grp-sep">Code</th>
+                        <th style="min-width:48px" class="text-end">Ach%</th>
+                        <th style="min-width:68px" class="grp-sep-r text-end">Incentive</th>
+                        <th style="min-width:62px" class="grp-sep">Code</th>
+                        <th style="min-width:48px" class="text-end">Ach%</th>
+                        <th style="min-width:68px" class="text-end">Incentive</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var r in Model.ActiveSheetRows)
+                {
+                    <tr>
+                        <td class="fw-semibold text-primary">@r.UserEmployeeId</td>
+                        <td class="text-muted">@(r.SalesmanCode != r.UserEmployeeId ? r.SalesmanCode : "—")</td>
+                        <td>@r.EmployeeNameTh</td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" style="font-size:0.62rem">
+                                @(!string.IsNullOrEmpty(r.PositionNameEn) ? r.PositionNameEn : r.PositionLevelCode)
+                            </span>
+                        </td>
+                        <td class="text-truncate" style="max-width:88px" title="@r.JobFunctionNameEn">@(string.IsNullOrEmpty(r.JobFunctionNameEn) ? "—" : r.JobFunctionNameEn)</td>
+                        <td>@(string.IsNullOrEmpty(r.DivisionName) ? "—" : r.DivisionName)</td>
+                        <td>@(string.IsNullOrEmpty(r.DepartmentName) ? "—" : r.DepartmentName)</td>
+                        <td class="grp-sep-r">@(string.IsNullOrEmpty(r.SectionName) ? "—" : r.SectionName)</td>
+                        <td class="grp-sep text-center">
+                            @if (r.IsStdFormula) { <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle" style="font-size:0.60rem" title="Standard Formula: Calculated using standard incentive formula only (no prorate or special adjustments)">STD</span> }
+                            else { <span class="text-muted" style="font-size:0.65rem">—</span> }
+                        </td>
+                        <td class="text-center">
+                            @if (r.HasProrate) {
+                                <button type="button"
+                                        class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle btn-prorate-detail"
+                                        style="font-size:0.60rem; cursor:pointer;"
+                                        title="คลิกเพื่อดูรายละเอียดการคำนวณ Prorate"
+                                        data-emp-id="@r.UserEmployeeId"
+                                        data-emp-name="@r.EmployeeNameTh"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#prorateModal">PRO</button>
+                            }
+                            else { <span class="text-muted" style="font-size:0.65rem">—</span> }
+                        </td>
+                        <td class="grp-sep-r text-center">
+                            @if (r.HasSpecialAdj) { <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.60rem" title="Special Adjustment: Employee has special adjustment applied (e.g., override achievement, adjusted target or weight)">ADJ</span> }
+                            else { <span class="text-muted" style="font-size:0.65rem">—</span> }
+                        </td>
+                        <td class="grp-sep">@(r.VariablePayMonth?.ToString("yy-MM") ?? "—")</td>
+                        <td class="grp-sep-r">
+                            <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle" style="font-size:0.60rem">@r.PaymentMethod</span>
+                        </td>
+                        <td class="grp-sep text-end fw-semibold">@r.TotalVariable.ToString("N0")</td>
+                        <td class="text-end @(r.IncentiveStaff > 0 ? "text-success fw-semibold" : "text-muted")">@(r.IncentiveStaff > 0 ? r.IncentiveStaff.ToString("N0") : "—")</td>
+                        <td class="text-end @(r.IncentiveSect > 0 ? "text-info fw-semibold" : "text-muted")">@(r.IncentiveSect > 0 ? r.IncentiveSect.ToString("N0") : "—")</td>
+                        <td class="text-end @(r.IncentiveDept > 0 ? "text-warning fw-semibold" : "text-muted")">@(r.IncentiveDept > 0 ? r.IncentiveDept.ToString("N0") : "—")</td>
+                        <td class="grp-sep-r text-end @(r.IncentiveDiv > 0 ? "text-danger fw-semibold" : "text-muted")">@(r.IncentiveDiv > 0 ? r.IncentiveDiv.ToString("N0") : "—")</td>
+                        <td class="grp-sep">@(string.IsNullOrEmpty(r.DirectSupCode) ? "—" : r.DirectSupCode)</td>
+                        <td class="text-end">@(r.DirectSupAchPct > 0 ? r.DirectSupAchPct.ToString("N1") + "%" : "—")</td>
+                        <td class="grp-sep-r text-end">@(r.DirectSupIncentive > 0 ? r.DirectSupIncentive.ToString("N0") : "—")</td>
+                        <td class="grp-sep">@(string.IsNullOrEmpty(r.DeptMgrCode) ? "—" : r.DeptMgrCode)</td>
+                        <td class="text-end">@(r.DeptMgrAchPct > 0 ? r.DeptMgrAchPct.ToString("N1") + "%" : "—")</td>
+                        <td class="grp-sep-r text-end">@(r.DeptMgrIncentive > 0 ? r.DeptMgrIncentive.ToString("N0") : "—")</td>
+                        <td class="grp-sep">@(string.IsNullOrEmpty(r.DivMgrCode) ? "—" : r.DivMgrCode)</td>
+                        <td class="text-end">@(r.DivMgrAchPct > 0 ? r.DivMgrAchPct.ToString("N1") + "%" : "—")</td>
+                        <td class="text-end">@(r.DivMgrIncentive > 0 ? r.DivMgrIncentive.ToString("N0") : "—")</td>
+                    </tr>
+                }
+                </tbody>
+                @if (Model.ActiveSheetRows.Count > 0)
+                {
+                    <tfoot class="table-group-divider">
+                        <tr class="fw-bold">
+                            <td colspan="13" class="text-end text-muted">Total (@Model.ActiveSheetRows.Count rows)</td>
+                            <td class="text-end">@Model.ActiveSheetRows.Sum(r => r.TotalVariable).ToString("N0")</td>
+                            <td class="text-end">@Model.ActiveSheetRows.Sum(r => r.IncentiveStaff).ToString("N0")</td>
+                            <td class="text-end">@Model.ActiveSheetRows.Sum(r => r.IncentiveSect).ToString("N0")</td>
+                            <td class="text-end">@Model.ActiveSheetRows.Sum(r => r.IncentiveDept).ToString("N0")</td>
+                            <td class="text-end">@Model.ActiveSheetRows.Sum(r => r.IncentiveDiv).ToString("N0")</td>
+                            <td colspan="9"></td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    }
+    else
+    {
+        <!-- LAOS / Other channels — compact fallback table -->
+        <div style="overflow-x: auto; border-radius: 0.875rem; border: 1px solid rgba(15,23,42,0.12); box-shadow: 0 4px 20px rgba(15,23,42,0.06);">
+            <table class="tt-hr-table table table-sm mb-0">
+                <thead>
+                    <tr class="grp-row">
+                        <th colspan="5" class="grp-sep-r">Employee Information</th>
+                        <th colspan="2" class="grp-sep-r">Payment</th>
+                        <th colspan="5">Incentive Breakdown</th>
+                    </tr>
+                    <tr class="col-row">
+                        <th style="min-width:80px">Emp Code</th>
+                        <th style="min-width:140px">Name</th>
+                        <th style="min-width:62px">Level</th>
+                        <th style="min-width:88px">Job Function</th>
+                        <th style="min-width:88px" class="grp-sep-r">Section</th>
+                        <th style="min-width:62px" class="grp-sep">Pay Month</th>
+                        <th style="min-width:52px" class="grp-sep-r">Type</th>
+                        <th style="min-width:82px" class="grp-sep text-end">Total</th>
+                        <th style="min-width:66px" class="text-end">Staff</th>
+                        <th style="min-width:60px" class="text-end">Sect</th>
+                        <th style="min-width:60px" class="text-end">Dept</th>
+                        <th style="min-width:60px" class="text-end">AD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        <td class="fw-semibold text-primary">@row.EmployeeCode</td>
+                        <td>@(string.IsNullOrEmpty(row.EmployeeNameTh) ? "—" : row.EmployeeNameTh)</td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle" style="font-size:0.62rem">@row.PositionLevelCode</span>
+                        </td>
+                        <td class="text-muted" style="font-size:0.70rem">—</td>
+                        <td class="grp-sep-r text-muted" style="font-size:0.70rem">—</td>
+                        <td class="grp-sep">@(row.VariablePayMonth?.ToString("yy-MM") ?? "—")</td>
+                        <td class="grp-sep-r">
+                            <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle" style="font-size:0.60rem">@row.PaymentMethod</span>
+                        </td>
+                        <td class="grp-sep text-end fw-semibold">@row.TotalVariable.ToString("N0")</td>
+                        <td class="text-end @(row.IncentiveStaff > 0 ? "text-success fw-semibold" : "text-muted")">@(row.IncentiveStaff > 0 ? row.IncentiveStaff.ToString("N0") : "—")</td>
+                        <td class="text-end @(row.IncentiveSect > 0 ? "text-info fw-semibold" : "text-muted")">@(row.IncentiveSect > 0 ? row.IncentiveSect.ToString("N0") : "—")</td>
+                        <td class="text-end @(row.IncentiveDept > 0 ? "text-warning fw-semibold" : "text-muted")">@(row.IncentiveDept > 0 ? row.IncentiveDept.ToString("N0") : "—")</td>
+                        <td class="text-end @(row.IncentiveAd > 0 ? "text-purple-emphasis fw-semibold" : "text-muted")">@(row.IncentiveAd > 0 ? row.IncentiveAd.ToString("N0") : "—")</td>
+                    </tr>
+                }
+                </tbody>
+                @if (Model.Rows.Count > 0)
+                {
+                    <tfoot class="table-group-divider">
+                        <tr class="fw-bold">
+                            <td colspan="7" class="text-end text-muted">Total (@Model.Rows.Count rows)</td>
+                            <td class="text-end">@Model.Rows.Sum(r => r.TotalVariable).ToString("N0")</td>
+                            <td class="text-end">@Model.Rows.Sum(r => r.IncentiveStaff).ToString("N0")</td>
+                            <td class="text-end">@Model.Rows.Sum(r => r.IncentiveSect).ToString("N0")</td>
+                            <td class="text-end">@Model.Rows.Sum(r => r.IncentiveDept).ToString("N0")</td>
+                            <td class="text-end">@Model.Rows.Sum(r => r.IncentiveAd).ToString("N0")</td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Prorate Detail Modal -->
+<div class="modal fade" id="prorateModal" tabindex="-1" aria-labelledby="prorateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-semibold d-flex align-items-center gap-2" id="prorateModalLabel">
+                    <span class="pr-title-tag">PRORATE</span>
+                    <span>Adjustment Details</span>
+                    <span class="text-white-50" id="prorateModalEmpName"></span>
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="prorateModalBody">
+                <div class="text-center py-3 text-muted">
+                    <span class="spinner-border spinner-border-sm me-2"></span> กำลังโหลดข้อมูล...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+(function () {
+    const channelId = @Model.ChannelId;
+    const periodId  = @Model.PeriodId;
+
+    const TYPE_LABELS = {
+        'JOIN':            { label: 'JOIN',            cls: 'bg-success-subtle text-success-emphasis border-success-subtle',   desc: 'พนักงานเข้างานกลางเดือน' },
+        'RESIGN':          { label: 'RESIGN',          cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',     desc: 'พนักงานลาออกกลางเดือน' },
+        'TRANSFER':        { label: 'TRANSFER',        cls: 'bg-info-subtle text-info-emphasis border-info-subtle',           desc: 'Transfer ข้าม Region กลางงวด' },
+        'POSITION_CHANGE': { label: 'POSITION CHANGE', cls: 'bg-purple-subtle text-purple-emphasis border-purple-subtle',    desc: 'เปลี่ยน Position กลางงวด' }
+    };
+
+    function getTypeBadge(type) {
+        const t = TYPE_LABELS[type] || { label: type, cls: 'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle', desc: '' };
+        return `<span class="badge ${t.cls} border me-1">${t.label}</span><small class="text-muted">${t.desc}</small>`;
+    }
+
+    function safeRatio(actualDays, totalDays) {
+        if (!totalDays || totalDays <= 0) {
+            return { ratio: '0.0000', pct: '0.00' };
+        }
+        const ratio = (actualDays / totalDays).toFixed(4);
+        const pct = ((actualDays / totalDays) * 100).toFixed(2);
+        return { ratio, pct };
+    }
+
+    function buildModalContent(empId, empName, data) {
+        let html = `<div class="pr-surface p-3 mb-3">
+            <div class="small text-secondary mb-2">Employee Profile</div>
+            <div class="fw-semibold text-dark" style="font-size:0.95rem">${empId} - ${empName}</div>
+        </div>`;
+
+        if (!data || data.length === 0) {
+            html += '<div class="pr-surface p-3"><div class="alert alert-secondary mb-0">ไม่พบข้อมูล Prorate</div></div>';
+            return html;
+        }
+
+        const latest = data[0];
+        const latestCalc = safeRatio(latest.actualDays, latest.totalDays);
+
+        html += `<div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Prorate Type</div>
+                    <div class="pr-kpi-value">${latest.prorateType}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Working Days Ratio</div>
+                    <div class="pr-kpi-value">${latest.actualDays} / ${latest.totalDays}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Effective Incentive</div>
+                    <div class="pr-kpi-value text-primary">${latestCalc.pct}%</div>
+                </div>
+            </div>
+        </div>`;
+
+        // Detail table
+        html += `<div class="pr-surface p-2 mb-3"><div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle pr-detail-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="min-width:132px">Type</th>
+                        <th class="text-end" style="min-width:78px">Actual Days</th>
+                        <th class="text-end" style="min-width:78px">Total Days</th>
+                        <th class="text-center" style="min-width:130px">Factor</th>
+                        <th class="text-end" style="min-width:76px">Percent</th>
+                        <th style="min-width:128px">Remarks</th>
+                        <th style="min-width:96px">Approved By</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        for (const row of data) {
+            const calc = safeRatio(row.actualDays, row.totalDays);
+            html += `<tr>
+                <td>${getTypeBadge(row.prorateType)}</td>
+                <td class="text-end fw-semibold">${row.actualDays}</td>
+                <td class="text-end text-muted">${row.totalDays}</td>
+                <td class="text-center"><code class="text-dark" style="font-size:0.77rem">${row.actualDays}&nbsp;/&nbsp;${row.totalDays}&nbsp;=&nbsp;${calc.ratio}</code></td>
+                <td class="text-end fw-bold text-primary">${calc.pct}%</td>
+                <td class="text-muted">${row.remarks || '—'}</td>
+                <td class="text-muted">${row.approvedBy || '—'}</td>
+            </tr>`;
+        }
+        html += '</tbody></table></div></div>';
+
+        // Formula explanation box
+        html += `<div class="pr-formula-card">
+            <div class="pr-formula-title">Formula Explanation</div>
+            <div class="pr-formula-eq">Incentive Received = Base Incentive x (Actual Working Days / Total Days in Period)</div>
+            <ul class="pr-detail-list">`;
+
+        for (const row of data) {
+            const calc = safeRatio(row.actualDays, row.totalDays);
+            const typeInfo = TYPE_LABELS[row.prorateType] || { desc: row.prorateType };
+            html += `<li>ประเภท <strong>${row.prorateType}</strong> (${typeInfo.desc})
+                     — ทำงานจริง <strong>${row.actualDays}</strong> วัน
+                     จาก <strong>${row.totalDays}</strong> วัน
+                     = คิด Incentive ที่ <strong class="text-primary">${calc.pct}%</strong> ของ Incentive เต็ม</li>`;
+        }
+
+        html += '</ul></div>';
+        return html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('prorateModal');
+        if (!modal) return;
+
+        modal.addEventListener('show.bs.modal', async (event) => {
+            const btn     = event.relatedTarget;
+            const empId   = btn?.dataset?.empId   || '';
+            const empName = btn?.dataset?.empName || '';
+
+            document.getElementById('prorateModalEmpName').textContent = `${empId} — ${empName}`;
+            const body = document.getElementById('prorateModalBody');
+            body.innerHTML = '<div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> กำลังโหลดข้อมูล...</div>';
+
+            try {
+                const url = `?handler=ProrateDetail&ChannelId=${channelId}&PeriodId=${periodId}&employeeCode=${encodeURIComponent(empId)}`;
+                const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                body.innerHTML = buildModalContent(empId, empName, data);
+            } catch (err) {
+                body.innerHTML = `<div class="alert alert-danger">ไม่สามารถโหลดข้อมูลได้: ${err.message}</div>`;
+            }
+        });
+    });
+}());
+</script>
+}
