@@ -29,15 +29,18 @@ public class IndexModel : PageModel
     public IReadOnlyList<ForHrTtSheetRow> TtSheetRows { get; private set; } = Array.Empty<ForHrTtSheetRow>();
     public IReadOnlyList<ForHrTtSheetRow> MtSheetRows { get; private set; } = Array.Empty<ForHrTtSheetRow>();
     public IReadOnlyList<ForHrTtSheetRow> SiSheetRows { get; private set; } = Array.Empty<ForHrTtSheetRow>();
+    public IReadOnlyList<ForHrTtSheetRow> LaosSheetRows { get; private set; } = Array.Empty<ForHrTtSheetRow>();
 
     public bool IsTtChannel => ChannelId == 2;
     public bool IsMtChannel => ChannelId == 1;
     public bool IsSiChannel => ChannelId == 3;
-    public bool UseSheetLayout => IsTtChannel || IsMtChannel || IsSiChannel;
+    public bool IsLaosChannel => ChannelId == 4;
+    public bool UseSheetLayout => IsTtChannel || IsMtChannel || IsSiChannel || IsLaosChannel;
     public IReadOnlyList<ForHrTtSheetRow> ActiveSheetRows =>
         IsTtChannel ? TtSheetRows :
         IsMtChannel ? MtSheetRows :
         IsSiChannel ? SiSheetRows :
+        IsLaosChannel ? LaosSheetRows :
         Array.Empty<ForHrTtSheetRow>();
 
     public async Task OnGetAsync()
@@ -60,7 +63,7 @@ public class IndexModel : PageModel
         if (UseSheetLayout && ActiveSheetRows.Count > 0)
         {
             csv = BuildTtCsv(ActiveSheetRows);
-            var channelCode = IsTtChannel ? "tt" : IsMtChannel ? "mt" : "si";
+            var channelCode = IsTtChannel ? "tt" : IsMtChannel ? "mt" : IsSiChannel ? "si" : "laos";
             fileName = $"for-hr-{channelCode}-period-{PeriodId}-run-{CalcRunId}.csv";
         }
         else
@@ -100,6 +103,10 @@ public class IndexModel : PageModel
             else if (IsSiChannel)
             {
                 SiSheetRows = await _portalDataService.GetForHrSiSheetAsync(effectiveCalcRunId.Value, 1000);
+            }
+            else if (IsLaosChannel)
+            {
+                LaosSheetRows = await _portalDataService.GetForHrLaosSheetAsync(effectiveCalcRunId.Value, 1000);
             }
             else
             {
@@ -185,6 +192,18 @@ public class IndexModel : PageModel
             return new JsonResult(Array.Empty<object>());
 
         var details = await _portalDataService.GetProrateDetailsAsync(PeriodId, ChannelId, employeeCode);
+        return new JsonResult(details, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        });
+    }
+
+    public async Task<IActionResult> OnGetSpecialAdjDetailAsync(string employeeCode)
+    {
+        if (string.IsNullOrWhiteSpace(employeeCode) || PeriodId <= 0)
+            return new JsonResult(Array.Empty<object>());
+
+        var details = await _portalDataService.GetSpecialAdjDetailsAsync(PeriodId, ChannelId, employeeCode);
         return new JsonResult(details, new System.Text.Json.JsonSerializerOptions
         {
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase

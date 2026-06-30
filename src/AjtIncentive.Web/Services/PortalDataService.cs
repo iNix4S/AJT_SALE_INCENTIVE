@@ -13,6 +13,7 @@ public interface IPortalDataService
     Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrTtSheetAsync(int calcRunId, int top = 1000);
     Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrMtSheetAsync(int calcRunId, int top = 1000);
     Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrSiSheetAsync(int calcRunId, int top = 1000);
+    Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrLaosSheetAsync(int calcRunId, int top = 1000);
     Task<IReadOnlyList<CalcRunDetailItem>> GetCalcRunDetailAsync(int calcRunId, int top = 200);
     Task<IReadOnlyList<FormulaExpression>> GetFormulasByChannelAsync(string channelCode);
     Task<IReadOnlyList<CalcRunHistoryItem>> GetCalcRunHistoryAsync(int channelId, int top = 10);
@@ -20,6 +21,7 @@ public interface IPortalDataService
     Task<int?> GetLatestCalcRunIdAsync(int channelId);
     Task<int?> GetLatestCalcRunIdByPeriodAsync(int channelId, int periodId);
     Task<IReadOnlyList<ProrateDetailItem>> GetProrateDetailsAsync(int periodId, int channelId, string employeeCode);
+    Task<IReadOnlyList<SpecialAdjDetailItem>> GetSpecialAdjDetailsAsync(int periodId, int channelId, string employeeCode);
     Task<IReadOnlyList<string>> GetTtWsTypesAsync();
     Task<IReadOnlyDictionary<int, PeriodReadiness>> GetPeriodReadinessAsync(int channelId);
     Task<IReadOnlyList<DashboardChannelSummary>> GetDashboardChannelSummariesAsync();
@@ -268,6 +270,77 @@ WHERE pa.period_id    = @PeriodId
 ORDER BY pa.prorate_id;";
 
         var rows = await conn.QueryAsync<ProrateDetailItem>(sql, new { PeriodId = periodId, ChannelId = channelId, EmployeeCode = employeeCode });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<ForHrTtSheetRow>> GetForHrLaosSheetAsync(int calcRunId, int top = 1000)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT TOP (@Top)
+    s.calc_run_id         AS CalcRunId,
+    s.period_code         AS PeriodCode,
+    s.sales_month         AS SalesMonth,
+    s.user_employee_id    AS UserEmployeeId,
+    s.salesman_code       AS SalesmanCode,
+    s.employee_name_th    AS EmployeeNameTh,
+    s.position_level_code AS PositionLevelCode,
+    s.position_name_en    AS PositionNameEn,
+    s.hierarchy_level     AS HierarchyLevel,
+    s.job_function_code   AS JobFunctionCode,
+    s.job_function_name_en AS JobFunctionNameEn,
+    s.division_name       AS DivisionName,
+    s.department_name     AS DepartmentName,
+    s.section_name        AS SectionName,
+    s.variable_pay_month  AS VariablePayMonth,
+    s.payment_method      AS PaymentMethod,
+    s.total_variable      AS TotalVariable,
+    s.incentive_staff     AS IncentiveStaff,
+    s.incentive_sect      AS IncentiveSect,
+    s.incentive_dept      AS IncentiveDept,
+    s.incentive_div       AS IncentiveDiv,
+    s.direct_sup_code     AS DirectSupCode,
+    s.direct_sup_ach_pct  AS DirectSupAchPct,
+    s.direct_sup_incentive AS DirectSupIncentive,
+    s.dept_mgr_code       AS DeptMgrCode,
+    s.dept_mgr_ach_pct    AS DeptMgrAchPct,
+    s.dept_mgr_incentive  AS DeptMgrIncentive,
+    s.div_mgr_code        AS DivMgrCode,
+    s.div_mgr_ach_pct     AS DivMgrAchPct,
+    s.div_mgr_incentive   AS DivMgrIncentive,
+    s.is_std_formula      AS IsStdFormula,
+    s.has_prorate         AS HasProrate,
+    s.has_special_adj     AS HasSpecialAdj
+FROM dbo.vw_for_hr_laos_sheet s
+WHERE s.calc_run_id = @CalcRunId
+ORDER BY s.salesman_code;";
+
+        var rows = await conn.QueryAsync<ForHrTtSheetRow>(sql, new { CalcRunId = calcRunId, Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<SpecialAdjDetailItem>> GetSpecialAdjDetailsAsync(int periodId, int channelId, string employeeCode)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+        var sql = @"
+SELECT
+    sa.adjustment_id           AS AdjustmentId,
+    sa.adjustment_type         AS AdjustmentType,
+    sa.product_code            AS ProductCode,
+    sa.override_achievement    AS OverrideAchievement,
+    sa.adjusted_target_amount  AS AdjustedTargetAmount,
+    sa.adjusted_weight_percent AS AdjustedWeightPercent,
+    sa.reason                  AS Reason,
+    sa.approved_by             AS ApprovedBy,
+    sa.created_at              AS CreatedAt
+FROM dbo.trn_special_adjustment sa
+WHERE sa.period_id    = @PeriodId
+  AND sa.channel_id   = @ChannelId
+  AND sa.employee_code = @EmployeeCode
+  AND sa.is_active    = 1
+ORDER BY sa.adjustment_id;";
+
+        var rows = await conn.QueryAsync<SpecialAdjDetailItem>(sql, new { PeriodId = periodId, ChannelId = channelId, EmployeeCode = employeeCode });
         return rows.ToList();
     }
 
@@ -841,6 +914,19 @@ public sealed class ProrateDetailItem
     public int ActualDays { get; init; }
     public int TotalDays { get; init; }
     public string? Remarks { get; init; }
+    public string? ApprovedBy { get; init; }
+    public DateTime CreatedAt { get; init; }
+}
+
+public sealed class SpecialAdjDetailItem
+{
+    public int AdjustmentId { get; init; }
+    public string AdjustmentType { get; init; } = string.Empty;
+    public string? ProductCode { get; init; }
+    public decimal? OverrideAchievement { get; init; }
+    public decimal? AdjustedTargetAmount { get; init; }
+    public decimal? AdjustedWeightPercent { get; init; }
+    public string? Reason { get; init; }
     public string? ApprovedBy { get; init; }
     public DateTime CreatedAt { get; init; }
 }

@@ -375,7 +375,16 @@
                             else { <span class="text-muted" style="font-size:0.65rem">—</span> }
                         </td>
                         <td class="grp-sep-r text-center">
-                            @if (r.HasSpecialAdj) { <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.60rem" title="Special Adjustment: Employee has special adjustment applied (e.g., override achievement, adjusted target or weight)">ADJ</span> }
+                            @if (r.HasSpecialAdj) {
+                                <button type="button"
+                                        class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle btn-adj-detail"
+                                        style="font-size:0.60rem; cursor:pointer;"
+                                        title="คลิกเพื่อดูรายละเอียด Special Adjustment"
+                                        data-emp-id="@r.UserEmployeeId"
+                                        data-emp-name="@r.EmployeeNameTh"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#specialAdjModal">ADJ</button>
+                            }
                             else { <span class="text-muted" style="font-size:0.65rem">—</span> }
                         </td>
                         <td class="grp-sep">@(r.VariablePayMonth?.ToString("yy-MM") ?? "—")</td>
@@ -507,6 +516,30 @@
     </div>
 </div>
 
+<!-- Special Adj Detail Modal -->
+<div class="modal fade" id="specialAdjModal" tabindex="-1" aria-labelledby="specialAdjModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e293b 0%, #2d1b69 100%);">
+                <h6 class="modal-title fw-semibold d-flex align-items-center gap-2 text-white" id="specialAdjModalLabel">
+                    <span class="badge bg-danger border border-danger-subtle" style="font-size:0.68rem">ADJ</span>
+                    <span>Special Adjustment Details</span>
+                    <span class="text-white-50" id="specialAdjModalEmpName"></span>
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="specialAdjModalBody" style="background:#f8fafc">
+                <div class="text-center py-3 text-muted">
+                    <span class="spinner-border spinner-border-sm me-2"></span> กำลังโหลดข้อมูล...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">ปิด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
 (function () {
@@ -618,6 +651,7 @@
         return html;
     }
 
+    // ── Prorate modal ──────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('prorateModal');
         if (!modal) return;
@@ -637,6 +671,83 @@
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
                 body.innerHTML = buildModalContent(empId, empName, data);
+            } catch (err) {
+                body.innerHTML = `<div class="alert alert-danger">ไม่สามารถโหลดข้อมูลได้: ${err.message}</div>`;
+            }
+        });
+    });
+
+    // ── Special Adj modal ──────────────────────────────────────────────────────
+    const ADJ_TYPE_LABELS = {
+        'SPECIAL_SITUATION': { label: 'SPECIAL SITUATION', cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',   desc: 'การปรับพิเศษกรณีสถานการณ์พิเศษ' },
+        'SHORTAGE':          { label: 'SHORTAGE',          cls: 'bg-warning-subtle text-warning-emphasis border-warning-subtle', desc: 'การปรับกรณีสินค้าขาดแคลน' }
+    };
+
+    function buildAdjModalContent(empId, empName, data) {
+        let html = `<div class="bg-white rounded-3 border p-3 mb-3 shadow-sm">
+            <div class="small text-secondary mb-1">Employee</div>
+            <div class="fw-semibold" style="font-size:0.95rem">${empId} — ${empName}</div>
+        </div>`;
+
+        if (!data || data.length === 0) {
+            html += '<div class="bg-white rounded-3 border p-3"><div class="alert alert-secondary mb-0">ไม่พบข้อมูล Special Adjustment</div></div>';
+            return html;
+        }
+
+        html += '<div class="bg-white rounded-3 border shadow-sm overflow-hidden"><table class="table table-sm mb-0"><thead class="table-dark"><tr><th>#</th><th>Type</th><th>Product</th><th>Override Ach</th><th>Adj Weight %</th><th>Adj Target</th><th>Approved By</th></tr></thead><tbody>';
+
+        data.forEach((adj, i) => {
+            const typeInfo = ADJ_TYPE_LABELS[adj.adjustmentType] || { label: adj.adjustmentType, cls: 'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle', desc: '' };
+            const achCell  = adj.overrideAchievement != null  ? `<strong class="text-danger">${(adj.overrideAchievement * 100).toFixed(1)}%</strong>` : '<span class="text-muted">—</span>';
+            const wtCell   = adj.adjustedWeightPercent != null ? `<strong class="text-warning">${(adj.adjustedWeightPercent * 100).toFixed(1)}%</strong>` : '<span class="text-muted">—</span>';
+            const tgtCell  = adj.adjustedTargetAmount != null  ? `<strong>${Number(adj.adjustedTargetAmount).toLocaleString()}</strong>` : '<span class="text-muted">—</span>';
+            html += `<tr>
+                <td class="text-muted">${i+1}</td>
+                <td><span class="badge border ${typeInfo.cls}" style="font-size:0.62rem">${typeInfo.label}</span></td>
+                <td><span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">${adj.productCode || '—'}</span></td>
+                <td>${achCell}</td>
+                <td>${wtCell}</td>
+                <td>${tgtCell}</td>
+                <td class="small">${adj.approvedBy || '—'}</td>
+            </tr>`;
+            if (adj.reason) {
+                html += `<tr class="table-secondary"><td></td><td colspan="6" class="small text-muted fst-italic">📝 ${adj.reason}</td></tr>`;
+            }
+        });
+
+        html += '</tbody></table></div>';
+
+        html += `<div class="bg-white rounded-3 border p-3 mt-3 shadow-sm">
+            <div class="fw-semibold small mb-2 text-danger">Special Adjustment Types:</div>
+            <ul class="mb-0 small text-muted">
+                <li><strong>Override Achievement</strong> — แทนที่ค่า achievement จริงด้วยค่าที่กำหนด เช่น กรณี regional policy</li>
+                <li><strong>Adjusted Weight %</strong> — ปรับ product weight ที่ใช้คำนวณ incentive จาก default เป็นค่าพิเศษ</li>
+                <li><strong>Adjusted Target</strong> — ปรับ target amount ที่ใช้คำนวณ achievement</li>
+            </ul>
+        </div>`;
+
+        return html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const adjModal = document.getElementById('specialAdjModal');
+        if (!adjModal) return;
+
+        adjModal.addEventListener('show.bs.modal', async (event) => {
+            const btn     = event.relatedTarget;
+            const empId   = btn?.dataset?.empId   || '';
+            const empName = btn?.dataset?.empName || '';
+
+            document.getElementById('specialAdjModalEmpName').textContent = `${empId} — ${empName}`;
+            const body = document.getElementById('specialAdjModalBody');
+            body.innerHTML = '<div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> กำลังโหลดข้อมูล...</div>';
+
+            try {
+                const url = `?handler=SpecialAdjDetail&ChannelId=${channelId}&PeriodId=${periodId}&employeeCode=${encodeURIComponent(empId)}`;
+                const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                body.innerHTML = buildAdjModalContent(empId, empName, data);
             } catch (err) {
                 body.innerHTML = `<div class="alert alert-danger">ไม่สามารถโหลดข้อมูลได้: ${err.message}</div>`;
             }
