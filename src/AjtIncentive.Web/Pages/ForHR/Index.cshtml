@@ -164,11 +164,13 @@
             .text-purple-emphasis { color: #6b21a8 !important; }
             .border-purple-subtle { border-color: #d8b4fe !important; }
 
-            #prorateModal .modal-dialog {
+            #prorateModal .modal-dialog,
+            #specialAdjModal .modal-dialog {
                 max-width: 940px;
             }
 
-            #prorateModal .modal-content {
+            #prorateModal .modal-content,
+            #specialAdjModal .modal-content {
                 border: 1px solid var(--pr-border);
                 border-radius: 1rem;
                 overflow: hidden;
@@ -178,6 +180,13 @@
 
             #prorateModal .modal-header {
                 background: var(--pr-head);
+                color: var(--pr-title);
+                border-bottom: 0;
+                padding: 0.95rem 1.1rem;
+            }
+
+            #specialAdjModal .modal-header {
+                background: linear-gradient(120deg, #0f172a 0%, #b91c1c 55%, #f97316 100%);
                 color: var(--pr-title);
                 border-bottom: 0;
                 padding: 0.95rem 1.1rem;
@@ -195,11 +204,13 @@
                 letter-spacing: 0.02em;
             }
 
-            #prorateModal .modal-body {
+            #prorateModal .modal-body,
+            #specialAdjModal .modal-body {
                 padding: 1rem 1.1rem 1.05rem;
             }
 
-            #prorateModal .modal-footer {
+            #prorateModal .modal-footer,
+            #specialAdjModal .modal-footer {
                 border-top: 0;
                 background: transparent;
                 padding-top: 0.4rem;
@@ -284,12 +295,14 @@
             }
 
             @@media (max-width: 768px) {
-                #prorateModal .modal-dialog {
+                #prorateModal .modal-dialog,
+                #specialAdjModal .modal-dialog {
                     max-width: calc(100vw - 1rem);
                     margin: 0.5rem auto;
                 }
 
-                #prorateModal .modal-body {
+                #prorateModal .modal-body,
+                #specialAdjModal .modal-body {
                     padding: 0.75rem;
                 }
 
@@ -520,15 +533,15 @@
 <div class="modal fade" id="specialAdjModal" tabindex="-1" aria-labelledby="specialAdjModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #1e293b 0%, #2d1b69 100%);">
-                <h6 class="modal-title fw-semibold d-flex align-items-center gap-2 text-white" id="specialAdjModalLabel">
-                    <span class="badge bg-danger border border-danger-subtle" style="font-size:0.68rem">ADJ</span>
+            <div class="modal-header">
+                <h6 class="modal-title fw-semibold d-flex align-items-center gap-2" id="specialAdjModalLabel">
+                    <span class="pr-title-tag">ADJ</span>
                     <span>Special Adjustment Details</span>
                     <span class="text-white-50" id="specialAdjModalEmpName"></span>
                 </h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="specialAdjModalBody" style="background:#f8fafc">
+            <div class="modal-body" id="specialAdjModalBody">
                 <div class="text-center py-3 text-muted">
                     <span class="spinner-border spinner-border-sm me-2"></span> กำลังโหลดข้อมูล...
                 </div>
@@ -547,10 +560,10 @@
     const periodId  = @Model.PeriodId;
 
     const TYPE_LABELS = {
-        'JOIN':            { label: 'JOIN',            cls: 'bg-success-subtle text-success-emphasis border-success-subtle',   desc: 'พนักงานเข้างานกลางเดือน' },
-        'RESIGN':          { label: 'RESIGN',          cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',     desc: 'พนักงานลาออกกลางเดือน' },
-        'TRANSFER':        { label: 'TRANSFER',        cls: 'bg-info-subtle text-info-emphasis border-info-subtle',           desc: 'Transfer ข้าม Region กลางงวด' },
-        'POSITION_CHANGE': { label: 'POSITION CHANGE', cls: 'bg-purple-subtle text-purple-emphasis border-purple-subtle',    desc: 'เปลี่ยน Position กลางงวด' }
+        'JOIN':            { label: 'Join',            cls: 'bg-success-subtle text-success-emphasis border-success-subtle',   desc: 'พนักงานเข้างานกลางเดือน' },
+        'RESIGN':          { label: 'Resign',          cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',     desc: 'พนักงานลาออกกลางเดือน' },
+        'TRANSFER':        { label: 'Transfer',        cls: 'bg-info-subtle text-info-emphasis border-info-subtle',           desc: 'Transfer ข้าม Region กลางงวด' },
+        'POSITION_CHANGE': { label: 'Position Change', cls: 'bg-purple-subtle text-purple-emphasis border-purple-subtle',    desc: 'เปลี่ยน Position กลางงวด' }
     };
 
     function getTypeBadge(type) {
@@ -580,12 +593,16 @@
 
         const latest = data[0];
         const latestCalc = safeRatio(latest.actualDays, latest.totalDays);
+        const latestType = TYPE_LABELS[latest.prorateType] || { label: latest.prorateType, cls: 'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle', desc: '' };
 
         html += `<div class="row g-2 mb-3">
             <div class="col-md-4">
                 <div class="pr-kpi-card">
                     <div class="pr-kpi-label">Prorate Type</div>
-                    <div class="pr-kpi-value">${latest.prorateType}</div>
+                    <div class="pr-kpi-value">
+                        <span class="badge ${latestType.cls} border" style="font-size:0.68rem">${latestType.label}</span>
+                    </div>
+                    <div class="small text-muted mt-1">${latestType.desc || latest.prorateType}</div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -640,8 +657,8 @@
 
         for (const row of data) {
             const calc = safeRatio(row.actualDays, row.totalDays);
-            const typeInfo = TYPE_LABELS[row.prorateType] || { desc: row.prorateType };
-            html += `<li>ประเภท <strong>${row.prorateType}</strong> (${typeInfo.desc})
+            const typeInfo = TYPE_LABELS[row.prorateType] || { label: row.prorateType, desc: row.prorateType };
+            html += `<li>ประเภท <strong>${typeInfo.label}</strong> (${typeInfo.desc})
                      — ทำงานจริง <strong>${row.actualDays}</strong> วัน
                      จาก <strong>${row.totalDays}</strong> วัน
                      = คิด Incentive ที่ <strong class="text-primary">${calc.pct}%</strong> ของ Incentive เต็ม</li>`;
@@ -679,50 +696,93 @@
 
     // ── Special Adj modal ──────────────────────────────────────────────────────
     const ADJ_TYPE_LABELS = {
-        'SPECIAL_SITUATION': { label: 'SPECIAL SITUATION', cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',   desc: 'การปรับพิเศษกรณีสถานการณ์พิเศษ' },
-        'SHORTAGE':          { label: 'SHORTAGE',          cls: 'bg-warning-subtle text-warning-emphasis border-warning-subtle', desc: 'การปรับกรณีสินค้าขาดแคลน' }
+        'SPECIAL_SITUATION': { label: 'Special Situation', cls: 'bg-danger-subtle text-danger-emphasis border-danger-subtle',   desc: 'ปรับ Sales Target และ/หรือ % Allocation Weight' },
+        'SHORTAGE':          { label: 'Shortage',          cls: 'bg-warning-subtle text-warning-emphasis border-warning-subtle', desc: 'สินค้าขาดแคลน → ปรับ Actual เป็น 100%' }
     };
 
+    function getAdjTypeBadge(type) {
+        const t = ADJ_TYPE_LABELS[type] || { label: type, cls: 'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle', desc: '' };
+        return `<span class="badge ${t.cls} border me-1">${t.label}</span><small class="text-muted">${t.desc}</small>`;
+    }
+
     function buildAdjModalContent(empId, empName, data) {
-        let html = `<div class="bg-white rounded-3 border p-3 mb-3 shadow-sm">
-            <div class="small text-secondary mb-1">Employee</div>
-            <div class="fw-semibold" style="font-size:0.95rem">${empId} — ${empName}</div>
+        let html = `<div class="pr-surface p-3 mb-3">
+            <div class="small text-secondary mb-2">Employee Profile</div>
+            <div class="fw-semibold text-dark" style="font-size:0.95rem">${empId} — ${empName}</div>
         </div>`;
 
         if (!data || data.length === 0) {
-            html += '<div class="bg-white rounded-3 border p-3"><div class="alert alert-secondary mb-0">ไม่พบข้อมูล Special Adjustment</div></div>';
+            html += '<div class="pr-surface p-3"><div class="alert alert-secondary mb-0">ไม่พบข้อมูล Special Adjustment</div></div>';
             return html;
         }
 
-        html += '<div class="bg-white rounded-3 border shadow-sm overflow-hidden"><table class="table table-sm mb-0"><thead class="table-dark"><tr><th>#</th><th>Type</th><th>Product</th><th>Override Ach</th><th>Adj Weight %</th><th>Adj Target</th><th>Approved By</th></tr></thead><tbody>';
+        const totalRows = data.length;
+        const overrideRows = data.filter(a => a.overrideAchievement != null).length;
+        const weightOrTargetRows = data.filter(a => a.adjustedWeightPercent != null || a.adjustedTargetAmount != null).length;
+
+        html += `<div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Adjustment Records</div>
+                    <div class="pr-kpi-value text-danger">${totalRows}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Override Achievement</div>
+                    <div class="pr-kpi-value">${overrideRows}</div>
+                    <div class="small text-muted mt-1">จำนวนรายการที่ override achievement</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pr-kpi-card">
+                    <div class="pr-kpi-label">Weight / Target Adjust</div>
+                    <div class="pr-kpi-value text-primary">${weightOrTargetRows}</div>
+                    <div class="small text-muted mt-1">จำนวนรายการที่ปรับ weight หรือ target</div>
+                </div>
+            </div>
+        </div>`;
+
+        html += `<div class="pr-surface p-2 mb-3"><div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle pr-detail-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="min-width:44px">#</th>
+                        <th style="min-width:170px">Type</th>
+                        <th style="min-width:74px">Product</th>
+                        <th class="text-end" style="min-width:110px">Override Ach</th>
+                        <th class="text-end" style="min-width:110px">Adj Weight %</th>
+                        <th class="text-end" style="min-width:120px">Adj Target</th>
+                        <th style="min-width:110px">Approved By</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
         data.forEach((adj, i) => {
-            const typeInfo = ADJ_TYPE_LABELS[adj.adjustmentType] || { label: adj.adjustmentType, cls: 'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle', desc: '' };
             const achCell  = adj.overrideAchievement != null  ? `<strong class="text-danger">${(adj.overrideAchievement * 100).toFixed(1)}%</strong>` : '<span class="text-muted">—</span>';
             const wtCell   = adj.adjustedWeightPercent != null ? `<strong class="text-warning">${(adj.adjustedWeightPercent * 100).toFixed(1)}%</strong>` : '<span class="text-muted">—</span>';
             const tgtCell  = adj.adjustedTargetAmount != null  ? `<strong>${Number(adj.adjustedTargetAmount).toLocaleString()}</strong>` : '<span class="text-muted">—</span>';
             html += `<tr>
                 <td class="text-muted">${i+1}</td>
-                <td><span class="badge border ${typeInfo.cls}" style="font-size:0.62rem">${typeInfo.label}</span></td>
+                <td>${getAdjTypeBadge(adj.adjustmentType)}</td>
                 <td><span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle">${adj.productCode || '—'}</span></td>
-                <td>${achCell}</td>
-                <td>${wtCell}</td>
-                <td>${tgtCell}</td>
+                <td class="text-end">${achCell}</td>
+                <td class="text-end">${wtCell}</td>
+                <td class="text-end">${tgtCell}</td>
                 <td class="small">${adj.approvedBy || '—'}</td>
             </tr>`;
             if (adj.reason) {
-                html += `<tr class="table-secondary"><td></td><td colspan="6" class="small text-muted fst-italic">📝 ${adj.reason}</td></tr>`;
+                html += `<tr class="table-light"><td></td><td colspan="6" class="small text-muted fst-italic">${adj.reason}</td></tr>`;
             }
         });
 
-        html += '</tbody></table></div>';
+        html += '</tbody></table></div></div>';
 
-        html += `<div class="bg-white rounded-3 border p-3 mt-3 shadow-sm">
-            <div class="fw-semibold small mb-2 text-danger">Special Adjustment Types:</div>
-            <ul class="mb-0 small text-muted">
-                <li><strong>Override Achievement</strong> — แทนที่ค่า achievement จริงด้วยค่าที่กำหนด เช่น กรณี regional policy</li>
-                <li><strong>Adjusted Weight %</strong> — ปรับ product weight ที่ใช้คำนวณ incentive จาก default เป็นค่าพิเศษ</li>
-                <li><strong>Adjusted Target</strong> — ปรับ target amount ที่ใช้คำนวณ achievement</li>
+        html += `<div class="pr-formula-card">
+            <div class="pr-formula-title">Special Adjustment Logic</div>
+            <ul class="pr-detail-list">
+                <li><strong>Shortage (สินค้าขาด)</strong> — ยอดขายต่ำกว่า Target เพราะสินค้าขาดแคลน ไม่ใช่ Performance ต่ำ → ปรับ Actual เป็น Standard 100% (Override Ach = 1.00)</li>
+                <li><strong>Special Situation</strong> — มีสถานการณ์พิเศษ เช่น ดีลชั่วคราว สินค้าเพิ่มขึ้น → ปรับ Sales Target และ/หรือ % Allocation Weight</li>
             </ul>
         </div>`;
 
