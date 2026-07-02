@@ -3,34 +3,44 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using AjtIncentive.Application.Interfaces;
 using AjtIncentive.Domain.Entities;
+using AjtIncentive.Infrastructure.CalculationEngines;
 
 namespace AjtIncentive.Infrastructure.StoredProcedures;
 
 public class MtCalculationRunner : ICalculationService
 {
     private readonly string _connectionString;
+    private readonly IMtCalculationEngine _mtEngine;
+    private readonly ISiCalculationEngine _siEngine;
+    private readonly ITtCalculationEngine _ttEngine;
+    private readonly ILaosCalculationEngine _laosEngine;
 
-    public MtCalculationRunner(string connectionString)
+    public MtCalculationRunner(
+        string connectionString,
+        IMtCalculationEngine? mtEngine = null,
+        ISiCalculationEngine? siEngine = null,
+        ITtCalculationEngine? ttEngine = null,
+        ILaosCalculationEngine? laosEngine = null)
     {
         _connectionString = connectionString;
+        _mtEngine = mtEngine ?? new MtStoredProcedureEngine(connectionString);
+        _siEngine = siEngine ?? new SiStoredProcedureEngine(connectionString);
+        _ttEngine = ttEngine ?? new TtStoredProcedureEngine(connectionString);
+        _laosEngine = laosEngine ?? new LaosStoredProcedureEngine(connectionString);
     }
 
     public async Task<int> RunMtCalculationAsync(int periodId)
     {
-        return await RunPeriodBasedCalculationAsync(
-            procName: "usp_run_mt_incentive_calculation",
-            periodId: periodId,
-            channelId: 1,
-            channelName: "MT");
+        // Delegate ไปยัง engine ที่เลือกไว้ (StoredProcedure/SqlFunction/NCalc)
+        // ผ่าน config "CalculationEngine:MT" — ดู MtCalculationEngineFactory
+        return await _mtEngine.RunAsync(periodId, approvedBy: "system");
     }
 
     public async Task<int> RunSiCalculationAsync(int periodId)
     {
-        return await RunPeriodBasedCalculationAsync(
-            procName: "usp_run_si_incentive_calculation",
-            periodId: periodId,
-            channelId: 3,
-            channelName: "S&I");
+        // Delegate ไปยัง engine ที่เลือกไว้ (StoredProcedure/SqlFunction/NCalc)
+        // ผ่าน config "CalculationEngine:SI" — ดู SiCalculationEngineFactory
+        return await _siEngine.RunAsync(periodId, approvedBy: "system");
     }
 
     public async Task<int> RunLaosCalculationAsync(int periodId)
@@ -45,76 +55,16 @@ public class MtCalculationRunner : ICalculationService
             throw new InvalidOperationException($"Period ID {periodId} not found in master data.");
         }
 
-        var exists = await conn.ExecuteScalarAsync<int>(
-            "SELECT CASE WHEN OBJECT_ID(N'dbo.usp_run_laos_incentive_calculation', N'P') IS NULL THEN 0 ELSE 1 END;");
-
-        if (exists == 0)
-        {
-            throw new InvalidOperationException("Laos calculation is not available because SP usp_run_laos_incentive_calculation is not deployed.");
-        }
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@PeriodCode", periodCode, DbType.String);
-        parameters.Add("@WsType", "TOP_WS", DbType.String);
-        parameters.Add("@ApprovedBy", "system", DbType.String);
-
-        await conn.ExecuteAsync(
-            "usp_run_laos_incentive_calculation",
-            parameters,
-            commandType: CommandType.StoredProcedure);
-
-        var calcRunId = await conn.ExecuteScalarAsync<int?>(
-            @"SELECT TOP (1) calc_run_id
-              FROM dbo.trn_calc_run
-              WHERE channel_id = 4
-                AND period_id = @PeriodId
-              ORDER BY calc_run_id DESC;",
-            new { PeriodId = periodId });
-
-        if (!calcRunId.HasValue)
-        {
-            throw new InvalidOperationException("Laos calculation finished but calc_run_id was not found.");
-        }
-
-        return calcRunId.Value;
+        // Delegate ไปยัง engine ที่เลือกไว้ (StoredProcedure/SqlFunction/NCalc)
+        // ผ่าน config "CalculationEngine:LAOS" — ดู LaosCalculationEngineFactory
+        return await _laosEngine.RunAsync(periodCode, approvedBy: "system");
     }
 
     public async Task<int> RunTtCalculationAsync(string periodCode, string wsType)
     {
-        await using var conn = new SqlConnection(_connectionString);
-        var exists = await conn.ExecuteScalarAsync<int>(
-            "SELECT CASE WHEN OBJECT_ID(N'dbo.usp_run_tt_incentive_calculation', N'P') IS NULL THEN 0 ELSE 1 END;");
-
-        if (exists == 0)
-        {
-            throw new InvalidOperationException("TT calculation is not available because SP usp_run_tt_incentive_calculation is not deployed.");
-        }
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@PeriodCode", periodCode, DbType.String);
-        parameters.Add("@WsType", wsType, DbType.String);
-        parameters.Add("@ApprovedBy", "system", DbType.String);
-
-        await conn.ExecuteAsync(
-            "usp_run_tt_incentive_calculation",
-            parameters,
-            commandType: CommandType.StoredProcedure);
-
-        var calcRunId = await conn.ExecuteScalarAsync<int?>(
-            @"SELECT TOP (1) calc_run_id
-              FROM dbo.trn_calc_run r
-              INNER JOIN dbo.mst_period p ON p.period_id = r.period_id
-              WHERE r.channel_id = 2
-                AND p.period_code = @PeriodCode
-              ORDER BY r.calc_run_id DESC;",
-            new { PeriodCode = periodCode });
-
-        if (!calcRunId.HasValue)
-        {
-            throw new InvalidOperationException("TT calculation finished but calc_run_id was not found.");
-        }
-
-        return calcRunId.Value;
+        // Delegate ไปยัง engine ที่เลือกไว้ (StoredProcedure/SqlFunction/NCalc)
+        // ผ่าน config "CalculationEngine:TT" — ดู TtCalculationEngineFactory
+        return await _ttEngine.RunAsync(periodCode, wsType, approvedBy: "system");
     }
 
     private async Task<int> RunPeriodBasedCalculationAsync(string procName, int periodId, int channelId, string channelName)
@@ -169,7 +119,7 @@ public class MtCalculationRunner : ICalculationService
                         SELECT h.calc_run_id AS CalcRunId,
                                      @PeriodId     AS PeriodId,
                                      h.employee_code AS EmployeeCode,
-                                     e.full_name   AS FullName,
+                                     COALESCE(e.employee_name_th, h.employee_code) AS FullName,
                                      @ChannelId    AS ChannelId,
                                      h.total_variable AS IncentiveAmount,
                                      N'CALCULATED' AS Status

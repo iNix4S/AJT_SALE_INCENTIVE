@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="AjtIncentive.Api/AjtIncentive.Api.csproj" />
+  <Project Path="AjtIncentive.Api.Tests/AjtIncentive.Api.Tests.csproj" />
   <Project Path="AjtIncentive.Application/AjtIncentive.Application.csproj" />
   <Project Path="AjtIncentive.Domain/AjtIncentive.Domain.csproj" />
   <Project Path="AjtIncentive.Infrastructure/AjtIncentive.Infrastructure.csproj" />

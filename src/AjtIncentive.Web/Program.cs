@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using AjtIncentive.Infrastructure.Data;
 using AjtIncentive.Application.Interfaces;
 using AjtIncentive.Infrastructure.StoredProcedures;
+using AjtIncentive.Infrastructure.CalculationEngines;
 using AjtIncentive.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,8 +82,37 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<AjtIncentiveDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<ICalculationService>(sp => 
-    new MtCalculationRunner(connectionString));
+// Engine ที่ใช้คำนวณ TT — เลือกผ่าน appsettings.json "CalculationEngine:TT"
+// ค่าที่รองรับ: StoredProcedure (default) | SqlFunction | NCalc
+var mtEngineName = builder.Configuration["CalculationEngine:MT"];
+builder.Services.AddScoped<IMtCalculationEngine>(sp =>
+    MtCalculationEngineFactory.Create(connectionString, mtEngineName));
+
+// Engine ที่ใช้คำนวณ S&I — เลือกผ่าน appsettings.json "CalculationEngine:SI"
+// ค่าที่รองรับ: StoredProcedure (default) | SqlFunction | NCalc
+var siEngineName = builder.Configuration["CalculationEngine:SI"];
+builder.Services.AddScoped<ISiCalculationEngine>(sp =>
+    SiCalculationEngineFactory.Create(connectionString, siEngineName));
+
+// Engine ที่ใช้คำนวณ TT — เลือกผ่าน appsettings.json "CalculationEngine:TT"
+// ค่าที่รองรับ: StoredProcedure (default) | SqlFunction | NCalc
+var ttEngineName = builder.Configuration["CalculationEngine:TT"];
+builder.Services.AddScoped<ITtCalculationEngine>(sp =>
+    TtCalculationEngineFactory.Create(connectionString, ttEngineName));
+
+// Engine ที่ใช้คำนวณ LAOS — เลือกผ่าน appsettings.json "CalculationEngine:LAOS"
+// ค่าที่รองรับ: StoredProcedure (default) | SqlFunction | NCalc
+var laosEngineName = builder.Configuration["CalculationEngine:LAOS"];
+builder.Services.AddScoped<ILaosCalculationEngine>(sp =>
+    LaosCalculationEngineFactory.Create(connectionString, laosEngineName));
+
+builder.Services.AddScoped<ICalculationService>(sp =>
+    new MtCalculationRunner(
+        connectionString,
+        sp.GetRequiredService<IMtCalculationEngine>(),
+        sp.GetRequiredService<ISiCalculationEngine>(),
+        sp.GetRequiredService<ITtCalculationEngine>(),
+        sp.GetRequiredService<ILaosCalculationEngine>()));
 
 builder.Services.AddScoped<IPortalDataService>(sp =>
     new PortalDataService(connectionString));
