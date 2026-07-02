@@ -25,6 +25,13 @@ public interface IPortalDataService
     Task<IReadOnlyList<string>> GetTtWsTypesAsync();
     Task<IReadOnlyDictionary<int, PeriodReadiness>> GetPeriodReadinessAsync(int channelId);
     Task<IReadOnlyList<DashboardChannelSummary>> GetDashboardChannelSummariesAsync();
+    Task<ExecutiveSummary> GetExecutiveSummaryAsync();
+    Task<IReadOnlyList<PeriodIncentiveTrendItem>> GetIncentiveTrendAsync(int topPeriods = 6);
+    Task<IReadOnlyList<TopEmployeeItem>> GetTopEmployeesAsync(int top = 10);
+    Task<EmployeeIncentiveProfile?> GetEmployeeIncentiveProfileAsync(string employeeCode);
+    Task<IReadOnlyList<ChannelSalesPerformance>> GetChannelSalesPerformanceAsync();
+    Task<IReadOnlyList<PeriodSalesTrendItem>> GetSalesTrendAsync(int topPeriods = 12);
+    Task<IReadOnlyList<EmployeeListItem>> GetActiveEmployeesAsync();
 }
 
 public sealed class PortalDataService : IPortalDataService
@@ -681,6 +688,291 @@ ORDER BY c.channel_id;";
         return rows.ToList();
     }
 
+    public async Task<ExecutiveSummary> GetExecutiveSummaryAsync()
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+;WITH latest_runs AS (
+    SELECT r.calc_run_id, r.channel_id, r.period_id,
+           ROW_NUMBER() OVER (PARTITION BY r.channel_id ORDER BY r.calc_run_id DESC) AS rn
+    FROM dbo.trn_calc_run r
+    WHERE r.channel_id IN (1, 2, 3, 4)
+),
+latest_hr AS (
+    SELECT h.*
+    FROM dbo.out_for_hr_variable h
+    INNER JOIN latest_runs lr ON lr.calc_run_id = h.calc_run_id AND lr.rn = 1
+)
+SELECT
+    ISNULL((SELECT SUM(total_variable) FROM latest_hr), 0) AS TotalIncentivePaid,
+    ISNULL((SELECT COUNT(DISTINCT employee_code) FROM latest_hr), 0) AS TotalEmployeesPaid,
+    (SELECT COUNT(*) FROM dbo.trn_calc_run) AS TotalCalcRuns,
+    (SELECT COUNT(*) FROM dbo.trn_calc_run WHERE approved_at IS NOT NULL) AS ApprovedRunCount,
+    (SELECT COUNT(*) FROM dbo.trn_calc_run WHERE approved_at IS NULL) AS PendingApprovalCount;
+
+;WITH latest_runs AS (
+    SELECT r.calc_run_id, r.channel_id, r.period_id,
+           ROW_NUMBER() OVER (PARTITION BY r.channel_id ORDER BY r.calc_run_id DESC) AS rn
+    FROM dbo.trn_calc_run r
+    WHERE r.channel_id IN (1, 2, 3, 4)
+)
+SELECT
+    c.channel_id AS ChannelId,
+    c.channel_code AS ChannelCode,
+    c.channel_name_en AS ChannelNameEn,
+    ISNULL(p.period_code, '-') AS LatestPeriodCode,
+    ISNULL(COUNT(DISTINCT h.employee_code), 0) AS EmployeeCount,
+    ISNULL(SUM(h.total_variable), 0) AS TotalIncentive,
+    CASE WHEN COUNT(DISTINCT h.employee_code) = 0 THEN 0
+         ELSE SUM(h.total_variable) / COUNT(DISTINCT h.employee_code) END AS AvgIncentive
+FROM dbo.mst_channel c
+LEFT JOIN latest_runs lr ON lr.channel_id = c.channel_id AND lr.rn = 1
+LEFT JOIN dbo.mst_period p ON p.period_id = lr.period_id
+LEFT JOIN dbo.out_for_hr_variable h ON h.calc_run_id = lr.calc_run_id
+WHERE c.channel_id IN (1, 2, 3, 4)
+GROUP BY c.channel_id, c.channel_code, c.channel_name_en, p.period_code
+ORDER BY c.channel_id;";
+
+        using var multi = await conn.QueryMultipleAsync(sql);
+        var summaryRow = await multi.ReadSingleAsync<ExecutiveSummaryRow>();
+        var channelRows = (await multi.ReadAsync<ChannelIncentiveSummary>()).ToList();
+
+        return new ExecutiveSummary
+        {
+            TotalIncentivePaid = summaryRow.TotalIncentivePaid,
+            TotalEmployeesPaid = summaryRow.TotalEmployeesPaid,
+            TotalCalcRuns = summaryRow.TotalCalcRuns,
+            ApprovedRunCount = summaryRow.ApprovedRunCount,
+            PendingApprovalCount = summaryRow.PendingApprovalCount,
+            ChannelBreakdown = channelRows
+        };
+    }
+
+    public async Task<IReadOnlyList<PeriodIncentiveTrendItem>> GetIncentiveTrendAsync(int topPeriods = 6)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT TOP (@TopPeriods)
+    p.period_code AS PeriodCode,
+    p.sales_month AS SalesMonth,
+    ISNULL(SUM(h.total_variable), 0) AS TotalIncentive,
+    ISNULL(COUNT(DISTINCT h.employee_code), 0) AS EmployeeCount
+FROM dbo.mst_period p
+INNER JOIN dbo.trn_calc_run r ON r.period_id = p.period_id
+INNER JOIN dbo.out_for_hr_variable h ON h.calc_run_id = r.calc_run_id
+GROUP BY p.period_id, p.period_code, p.sales_month
+ORDER BY p.period_id DESC;";
+
+        var rows = (await conn.QueryAsync<PeriodIncentiveTrendItem>(sql, new { TopPeriods = topPeriods })).ToList();
+        rows.Reverse();
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<TopEmployeeItem>> GetTopEmployeesAsync(int top = 10)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+;WITH latest_runs AS (
+    SELECT r.calc_run_id, r.channel_id,
+           ROW_NUMBER() OVER (PARTITION BY r.channel_id ORDER BY r.calc_run_id DESC) AS rn
+    FROM dbo.trn_calc_run r
+    WHERE r.channel_id IN (1, 2, 3, 4)
+)
+SELECT TOP (@Top)
+    h.employee_code AS EmployeeCode,
+    h.employee_name_th AS EmployeeNameTh,
+    h.channel_code AS ChannelCode,
+    h.position_level_code AS PositionLevelCode,
+    p.period_code AS PeriodCode,
+    h.total_variable AS TotalVariable
+FROM dbo.out_for_hr_variable h
+INNER JOIN latest_runs lr ON lr.calc_run_id = h.calc_run_id AND lr.rn = 1
+INNER JOIN dbo.trn_calc_run r ON r.calc_run_id = h.calc_run_id
+INNER JOIN dbo.mst_period p ON p.period_id = r.period_id
+ORDER BY h.total_variable DESC;";
+
+        var rows = await conn.QueryAsync<TopEmployeeItem>(sql, new { Top = top });
+        return rows.ToList();
+    }
+
+    public async Task<EmployeeIncentiveProfile?> GetEmployeeIncentiveProfileAsync(string employeeCode)
+    {
+        if (string.IsNullOrWhiteSpace(employeeCode))
+            return null;
+
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT TOP (1)
+    e.employee_code AS EmployeeCode,
+    e.employee_name_th AS EmployeeNameTh,
+    ISNULL(c.channel_code, '-') AS ChannelCode,
+    ISNULL(e.cost_center, '-') AS CostCenter,
+    e.is_active AS IsActive
+FROM dbo.mst_employee e
+LEFT JOIN dbo.mst_channel c ON c.channel_id = e.channel_id
+WHERE e.employee_code = @EmployeeCode OR e.salesman_code = @EmployeeCode;
+
+SELECT
+    p.period_code AS PeriodCode,
+    h.variable_pay_month AS VariablePayMonth,
+    h.channel_code AS ChannelCode,
+    h.payment_method AS PaymentMethod,
+    h.incentive_staff AS IncentiveStaff,
+    h.incentive_sect AS IncentiveSect,
+    h.incentive_dept AS IncentiveDept,
+    h.incentive_div AS IncentiveDiv,
+    h.incentive_ad AS IncentiveAd,
+    h.gd_incentive_total AS GdIncentiveTotal,
+    h.total_variable AS TotalVariable,
+    r.run_status AS RunStatus
+FROM dbo.out_for_hr_variable h
+INNER JOIN dbo.trn_calc_run r ON r.calc_run_id = h.calc_run_id
+INNER JOIN dbo.mst_period p ON p.period_id = r.period_id
+WHERE h.employee_code = @EmployeeCode
+   OR h.employee_code = (SELECT TOP (1) employee_code FROM dbo.mst_employee WHERE salesman_code = @EmployeeCode)
+ORDER BY p.period_id DESC;";
+
+        using var multi = await conn.QueryMultipleAsync(sql, new { EmployeeCode = employeeCode });
+        var profile = await multi.ReadSingleOrDefaultAsync<EmployeeProfileRow>();
+        var history = (await multi.ReadAsync<EmployeeIncentiveHistoryItem>()).ToList();
+
+        if (profile is null)
+            return null;
+
+        return new EmployeeIncentiveProfile
+        {
+            EmployeeCode = profile.EmployeeCode,
+            EmployeeNameTh = profile.EmployeeNameTh,
+            ChannelCode = profile.ChannelCode,
+            CostCenter = profile.CostCenter,
+            IsActive = profile.IsActive,
+            LifetimeTotalIncentive = history.Sum(h => h.TotalVariable),
+            History = history
+        };
+    }
+
+    public async Task<IReadOnlyList<ChannelSalesPerformance>> GetChannelSalesPerformanceAsync()
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+;WITH period_stats AS (
+    SELECT c.channel_id,
+           p.period_id,
+           p.period_code,
+           ISNULL(tgt.target_sum, 0) AS target_sum,
+           ISNULL(act.actual_sum, 0) AS actual_sum,
+           ISNULL(tgt.target_rows, 0) AS target_rows,
+           ISNULL(act.actual_rows, 0) AS actual_rows
+    FROM dbo.mst_channel c
+    CROSS JOIN dbo.mst_period p
+    LEFT JOIN (
+        SELECT channel_id, period_id, SUM(target_amount) AS target_sum, COUNT(*) AS target_rows
+        FROM dbo.trn_sales_target
+        GROUP BY channel_id, period_id
+    ) tgt ON tgt.channel_id = c.channel_id AND tgt.period_id = p.period_id
+    LEFT JOIN (
+        SELECT channel_id, period_id, SUM(actual_amount) AS actual_sum, COUNT(*) AS actual_rows
+        FROM dbo.trn_sales_actual
+        GROUP BY channel_id, period_id
+    ) act ON act.channel_id = c.channel_id AND act.period_id = p.period_id
+    WHERE c.channel_id IN (1, 2, 3, 4)
+),
+latest_ready AS (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY channel_id ORDER BY period_id DESC) AS rn
+    FROM period_stats
+    WHERE target_rows > 0 AND actual_rows > 0
+)
+SELECT
+    c.channel_id AS ChannelId,
+    c.channel_code AS ChannelCode,
+    c.channel_name_en AS ChannelNameEn,
+    ISNULL(lr.period_code, '-') AS LatestPeriodCode,
+    ISNULL(lr.target_sum, 0) AS TargetAmount,
+    ISNULL(lr.actual_sum, 0) AS ActualAmount,
+    CASE WHEN ISNULL(lr.target_sum, 0) = 0 THEN 0
+         ELSE ISNULL(lr.actual_sum, 0) / lr.target_sum * 100 END AS AchievementPct
+FROM dbo.mst_channel c
+LEFT JOIN latest_ready lr ON lr.channel_id = c.channel_id AND lr.rn = 1
+WHERE c.channel_id IN (1, 2, 3, 4)
+ORDER BY c.channel_id;";
+
+        var rows = await conn.QueryAsync<ChannelSalesPerformance>(sql);
+        return rows.ToList();
+    }
+
+    public async Task<IReadOnlyList<PeriodSalesTrendItem>> GetSalesTrendAsync(int topPeriods = 12)
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+;WITH tgt AS (
+    SELECT period_id, SUM(target_amount) AS target_sum
+    FROM dbo.trn_sales_target
+    GROUP BY period_id
+),
+act AS (
+    SELECT period_id, SUM(actual_amount) AS actual_sum
+    FROM dbo.trn_sales_actual
+    GROUP BY period_id
+)
+SELECT TOP (@TopPeriods)
+    p.period_code AS PeriodCode,
+    ISNULL(tgt.target_sum, 0) AS TargetAmount,
+    ISNULL(act.actual_sum, 0) AS ActualAmount
+FROM dbo.mst_period p
+LEFT JOIN tgt ON tgt.period_id = p.period_id
+LEFT JOIN act ON act.period_id = p.period_id
+WHERE tgt.target_sum IS NOT NULL OR act.actual_sum IS NOT NULL
+ORDER BY p.period_id DESC;";
+
+        var rows = (await conn.QueryAsync<PeriodSalesTrendItem>(sql, new { TopPeriods = topPeriods })).ToList();
+        rows.Reverse();
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<EmployeeListItem>> GetActiveEmployeesAsync()
+    {
+        await using var conn = new SqlConnection(_connectionString);
+
+        var sql = @"
+SELECT
+    e.employee_code AS EmployeeCode,
+    e.employee_name_th AS EmployeeNameTh,
+    ISNULL(c.channel_code, '-') AS ChannelCode,
+    e.salesman_code AS SalesmanCode
+FROM dbo.mst_employee e
+LEFT JOIN dbo.mst_channel c ON c.channel_id = e.channel_id
+WHERE e.is_active = 1
+ORDER BY c.channel_code, e.employee_code;";
+
+        var rows = await conn.QueryAsync<EmployeeListItem>(sql);
+        return rows.ToList();
+    }
+
+    private sealed class ExecutiveSummaryRow
+    {
+        public decimal TotalIncentivePaid { get; init; }
+        public int TotalEmployeesPaid { get; init; }
+        public int TotalCalcRuns { get; init; }
+        public int ApprovedRunCount { get; init; }
+        public int PendingApprovalCount { get; init; }
+    }
+
+    private sealed class EmployeeProfileRow
+    {
+        public string EmployeeCode { get; init; } = string.Empty;
+        public string EmployeeNameTh { get; init; } = string.Empty;
+        public string ChannelCode { get; init; } = string.Empty;
+        public string CostCenter { get; init; } = string.Empty;
+        public bool IsActive { get; init; }
+    }
+
     private sealed class DashboardSnapshotRow
     {
         public int PeriodCount { get; init; }
@@ -929,4 +1221,96 @@ public sealed class SpecialAdjDetailItem
     public string? Reason { get; init; }
     public string? ApprovedBy { get; init; }
     public DateTime CreatedAt { get; init; }
+}
+
+public sealed class ExecutiveSummary
+{
+    public decimal TotalIncentivePaid { get; init; }
+    public int TotalEmployeesPaid { get; init; }
+    public int TotalCalcRuns { get; init; }
+    public int ApprovedRunCount { get; init; }
+    public int PendingApprovalCount { get; init; }
+    public IReadOnlyList<ChannelIncentiveSummary> ChannelBreakdown { get; init; } = Array.Empty<ChannelIncentiveSummary>();
+}
+
+public sealed class ChannelIncentiveSummary
+{
+    public int ChannelId { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string ChannelNameEn { get; init; } = string.Empty;
+    public string LatestPeriodCode { get; init; } = string.Empty;
+    public int EmployeeCount { get; init; }
+    public decimal TotalIncentive { get; init; }
+    public decimal AvgIncentive { get; init; }
+}
+
+public sealed class PeriodIncentiveTrendItem
+{
+    public string PeriodCode { get; init; } = string.Empty;
+    public DateTime SalesMonth { get; init; }
+    public decimal TotalIncentive { get; init; }
+    public int EmployeeCount { get; init; }
+}
+
+public sealed class TopEmployeeItem
+{
+    public string EmployeeCode { get; init; } = string.Empty;
+    public string EmployeeNameTh { get; init; } = string.Empty;
+    public string ChannelCode { get; init; } = string.Empty;
+    public string PositionLevelCode { get; init; } = string.Empty;
+    public string PeriodCode { get; init; } = string.Empty;
+    public decimal TotalVariable { get; init; }
+}
+
+public sealed class EmployeeIncentiveProfile
+{
+    public string EmployeeCode { get; init; } = string.Empty;
+    public string EmployeeNameTh { get; init; } = string.Empty;
+    public string ChannelCode { get; init; } = string.Empty;
+    public string CostCenter { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
+    public decimal LifetimeTotalIncentive { get; init; }
+    public IReadOnlyList<EmployeeIncentiveHistoryItem> History { get; init; } = Array.Empty<EmployeeIncentiveHistoryItem>();
+}
+
+public sealed class EmployeeIncentiveHistoryItem
+{
+    public string PeriodCode { get; init; } = string.Empty;
+    public DateTime? VariablePayMonth { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string PaymentMethod { get; init; } = string.Empty;
+    public decimal IncentiveStaff { get; init; }
+    public decimal IncentiveSect { get; init; }
+    public decimal IncentiveDept { get; init; }
+    public decimal IncentiveDiv { get; init; }
+    public decimal IncentiveAd { get; init; }
+    public decimal GdIncentiveTotal { get; init; }
+    public decimal TotalVariable { get; init; }
+    public string RunStatus { get; init; } = string.Empty;
+}
+
+public sealed class ChannelSalesPerformance
+{
+    public int ChannelId { get; init; }
+    public string ChannelCode { get; init; } = string.Empty;
+    public string ChannelNameEn { get; init; } = string.Empty;
+    public string LatestPeriodCode { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public decimal ActualAmount { get; init; }
+    public decimal AchievementPct { get; init; }
+}
+
+public sealed class PeriodSalesTrendItem
+{
+    public string PeriodCode { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public decimal ActualAmount { get; init; }
+}
+
+public sealed class EmployeeListItem
+{
+    public string EmployeeCode { get; init; } = string.Empty;
+    public string EmployeeNameTh { get; init; } = string.Empty;
+    public string ChannelCode { get; init; } = string.Empty;
+    public string? SalesmanCode { get; init; }
 }

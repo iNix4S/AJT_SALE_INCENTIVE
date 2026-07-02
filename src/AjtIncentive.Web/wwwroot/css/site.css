@@ -1000,3 +1000,133 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   Executive View: KPI cards, charts, data grids
+   ══════════════════════════════════════════════════════════ */
+.exec-kpi-card {
+  height: 100%;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1rem;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+  border-left: 5px solid #cbd5e1;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.exec-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+}
+
+.exec-kpi-card--red { border-left-color: #d71920; }
+.exec-kpi-card--blue { border-left-color: #2563eb; }
+.exec-kpi-card--green { border-left-color: #15803d; }
+.exec-kpi-card--amber { border-left-color: #ca8a04; }
+
+.exec-kpi-icon {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.exec-kpi-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.exec-kpi-value {
+  margin-top: 0.3rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.exec-kpi-value-of {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.exec-kpi-sub {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card__canvas-wrap {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+.chart-card__canvas-wrap--doughnut {
+  height: 260px;
+}
+
+.chart-card__canvas-wrap--small {
+  height: 220px;
+}
+
+.grid-bar {
+  height: 8px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.grid-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d71920, #ef4444);
+}
+
+.grid-bar__fill--green {
+  background: linear-gradient(90deg, #15803d, #22c55e);
+}
+
+.grid-bar__fill--amber {
+  background: linear-gradient(90deg, #b45309, #f59e0b);
+}
+
+table.data-grid thead th[data-sort] {
+  user-select: none;
+  position: relative;
+}
+
+table.data-grid thead th[data-sort]:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+table.data-grid thead th[data-sort]::after {
+  content: "⇅";
+  margin-left: 0.35rem;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+
+table.data-grid thead th[data-sort][data-sort-dir="asc"]::after {
+  content: "↑";
+  color: #d71920;
+}
+
+table.data-grid thead th[data-sort][data-sort-dir="desc"]::after {
+  content: "↓";
+  color: #d71920;
+}
+
+@media (max-width: 767.98px) {
+  .chart-card__canvas-wrap {
+    height: 220px;
+  }
+}

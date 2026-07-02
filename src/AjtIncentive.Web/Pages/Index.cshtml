@@ -11,7 +11,7 @@
             <div class="eyebrow">Sales Incentive Control Tower</div>
             <h1 class="display-6 fw-bold mb-2">AJT Sale Incentive Operations</h1>
             <p class="lead text-muted mb-3">
-                Monitor master data readiness, channel calculation status, latest results, and shortcuts to key incentive process pages.
+                Monitor master data readiness, channel calculation status, incentive payout, and personal results in one place.
             </p>
             <div class="d-flex flex-wrap gap-2">
                 <span class="badge badge-soft-red">Master Data Driven</span>
@@ -37,212 +37,825 @@
     </div>
 </section>
 
-<section class="mb-4">
-    <div class="row g-3">
-        <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-                <div class="kpi-label">Master Periods</div>
-                <div class="kpi-value">@Model.Snapshot.PeriodCount</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-                <div class="kpi-label">Active Channels</div>
-                <div class="kpi-value">@Model.Snapshot.ActiveChannelCount</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-                <div class="kpi-label">Latest MT Run</div>
-                <div class="kpi-value">@(Model.Snapshot.LatestMtRunId?.ToString() ?? "-")</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-                <div class="kpi-label">Latest TT Run</div>
-                <div class="kpi-value">@(Model.Snapshot.LatestTtRunId?.ToString() ?? "-")</div>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- Dashboard view tabs -->
+<ul class="nav nav-tabs mb-0" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="ops-tab" data-bs-toggle="tab"
+                data-bs-target="#ops-pane" type="button" role="tab">
+            🗼 ภาพรวมระบบ / System Operations
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="exec-tab" data-bs-toggle="tab"
+                data-bs-target="#exec-pane" type="button" role="tab">
+            📊 มุมมองผู้บริหาร / Executive View
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="staff-tab" data-bs-toggle="tab"
+                data-bs-target="#staff-pane" type="button" role="tab">
+            🔎 ค้นหาพนักงาน / Staff Lookup
+        </button>
+    </li>
+</ul>
 
-<section class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <div class="eyebrow">Channel Operations</div>
-            <h2 class="h5 mb-0">Calculation Readiness by Channel</h2>
-        </div>
-    </div>
+<div class="tab-content content-panel rounded-top-0 border-top-0 mb-4">
 
-    <div class="row g-4">
-        @foreach (var channel in Model.ChannelSummaries)
-        {
-            var statusClass = channel.HasProcedure && channel.ReadyPeriodCount > 0 ? "ready" : channel.HasProcedure ? "warning" : "blocked";
-            var statusText = channel.HasProcedure && channel.ReadyPeriodCount > 0
-                ? "Ready to Calculate"
-                : channel.HasProcedure
-                    ? "SP ready, data incomplete"
-                    : "SP not ready";
-            var formulaNote = channel.ChannelCode switch
-            {
-                "MT"   => "Calculated by product group; each salesman covers multiple product groups.",
-                "TT"   => "Calculated by SKU; processes all WS Types in one run.",
-                "SI"   => "MT-based pattern; used for S&I test channel.",
-                "LAOS" => "TT-like pattern with product mapping A/R/B/Y \u2192 AJ/RD/BD/YY.",
-                _      => "Derived from database master data."
-            };
-            <div class="col-12 col-md-6">
-                <article class="dashboard-channel-card dashboard-channel-card--@statusClass">
-                    <div class="dashboard-channel-card__head">
-                        <div>
-                            <div class="module-kicker mb-1">@channel.ChannelCode</div>
-                            <h3 class="h5 mb-1">@channel.ChannelNameEn Calculation</h3>
-                            <p class="text-muted mb-0 small">@formulaNote</p>
-                        </div>
-                        <span class="dashboard-status-pill dashboard-status-pill--@statusClass">@statusText</span>
+    <!-- ═══════════════════════════════════ SYSTEM OPERATIONS TAB -->
+    <div class="tab-pane fade show active" id="ops-pane" role="tabpanel">
+
+        <section class="mb-4">
+            <div class="row g-3">
+                <div class="col-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Master Periods</div>
+                        <div class="kpi-value">@Model.Snapshot.PeriodCount</div>
                     </div>
-
-                    <div class="dashboard-channel-grid">
-                        <div>
-                            <div class="dashboard-mini-label">Latest Ready Period</div>
-                            <div class="dashboard-mini-value">@((channel.LatestReadyPeriodCode != string.Empty ? channel.LatestReadyPeriodCode : "-"))</div>
-                            <div class="dashboard-mini-sub">Target @channel.LatestReadyTargetRows / Actual @channel.LatestReadyActualRows</div>
-                        </div>
-                        <div>
-                            <div class="dashboard-mini-label">Latest Calc Run</div>
-                            <div class="dashboard-mini-value">@(channel.LatestCalcRunId?.ToString() ?? "-")</div>
-                            <div class="dashboard-mini-sub">@((channel.LatestRunStatus != string.Empty ? channel.LatestRunStatus : "No run yet"))</div>
-                        </div>
-                        <div>
-                            <div class="dashboard-mini-label">Ready Period Count</div>
-                            <div class="dashboard-mini-value">@channel.ReadyPeriodCount</div>
-                            <div class="dashboard-mini-sub">Periods with target + actual</div>
-                        </div>
-                        <div>
-                            <div class="dashboard-mini-label">For HR Rows</div>
-                            <div class="dashboard-mini-value">@channel.LatestForHrRowCount</div>
-                            <div class="dashboard-mini-sub">Latest output row count</div>
-                        </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Active Channels</div>
+                        <div class="kpi-value">@Model.Snapshot.ActiveChannelCount</div>
                     </div>
-
-                    <div class="dashboard-channel-actions">
-                        <a class="btn btn-sm btn-outline-dark" asp-page="/Calculation/Index">Run Calculation</a>
-                        <a class="btn btn-sm btn-outline-secondary" asp-page="/ForHR/Index">Review For HR</a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Latest MT Run</div>
+                        <div class="kpi-value">@(Model.Snapshot.LatestMtRunId?.ToString() ?? "-")</div>
                     </div>
-                </article>
-            </div>
-        }
-    </div>
-</section>
-
-<section class="mb-4">
-    <div class="row g-4">
-        <div class="col-12 col-xl-4">
-            <div class="content-panel dashboard-process-card h-100">
-                <div class="eyebrow">Step 1</div>
-                <h2 class="h5">Master Setup</h2>
-                <p class="text-muted mb-3">Manage period master, parameters, and source data readiness.</p>
-                <div class="dashboard-process-links">
-                    <a class="module-card dashboard-mini-card" asp-page="/Periods/Index">
-                        <h3>Periods</h3>
-                        <p>Add, close, and configure calculation periods in the database.</p>
-                    </a>
-                    <a class="module-card dashboard-mini-card" asp-page="/Parameters/Index">
-                        <h3>Parameters</h3>
-                        <p>View incentive calculation parameters from master data.</p>
-                    </a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Latest TT Run</div>
+                        <div class="kpi-value">@(Model.Snapshot.LatestTtRunId?.ToString() ?? "-")</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="content-panel dashboard-process-card h-100">
-                <div class="eyebrow">Step 2</div>
-                <h2 class="h5">Calculation & Adjustment</h2>
-                <p class="text-muted mb-3">Run calculations by channel and record special cases affecting incentive.</p>
-                <div class="dashboard-process-links">
-                    <a class="module-card dashboard-mini-card" asp-page="/Calculation/Index">
-                        <h3>Calculation</h3>
-                        <p>Run MT, TT, S&amp;I and LAOS with live parameters.</p>
-                    </a>
-                    <a class="module-card dashboard-mini-card" asp-page="/Prorate/Index">
-                        <h3>Adjustments</h3>
-                        <p>Manage Prorate and Special Adjustment per business case.</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="content-panel dashboard-process-card h-100">
-                <div class="eyebrow">Step 3</div>
-                <h2 class="h5">Review & Output</h2>
-                <p class="text-muted mb-3">Review latest results, HR rows, and approval status before publishing.</p>
-                <div class="dashboard-process-links">
-                    <a class="module-card dashboard-mini-card" asp-page="/ForHR/Index">
-                        <h3>For HR</h3>
-                        <p>Review <code>out_for_hr_variable</code> and per-employee results.</p>
-                    </a>
-                    <a class="module-card dashboard-mini-card" asp-page="/Approvals/Index">
-                        <h3>Approvals</h3>
-                        <p>Track calc runs and approval of the latest calculation results.</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-<div class="row g-4">
-    <div class="col-xl-7">
-        <div class="content-panel h-100">
+        <section class="mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <div class="eyebrow">Recent Process Runs</div>
-                    <h2 class="h5 mb-0">Latest Calc Runs</h2>
+                    <div class="eyebrow">Channel Operations</div>
+                    <h2 class="h5 mb-0">Calculation Readiness by Channel</h2>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var channel in Model.ChannelSummaries)
+                {
+                    var statusClass = channel.HasProcedure && channel.ReadyPeriodCount > 0 ? "ready" : channel.HasProcedure ? "warning" : "blocked";
+                    var statusText = channel.HasProcedure && channel.ReadyPeriodCount > 0
+                        ? "Ready to Calculate"
+                        : channel.HasProcedure
+                            ? "SP ready, data incomplete"
+                            : "SP not ready";
+                    var formulaNote = channel.ChannelCode switch
+                    {
+                        "MT"   => "Calculated by product group; each salesman covers multiple product groups.",
+                        "TT"   => "Calculated by SKU; processes all WS Types in one run.",
+                        "SI"   => "MT-based pattern; used for S&I test channel.",
+                        "LAOS" => "TT-like pattern with product mapping A/R/B/Y \u2192 AJ/RD/BD/YY.",
+                        _      => "Derived from database master data."
+                    };
+                    <div class="col-12 col-md-6">
+                        <article class="dashboard-channel-card dashboard-channel-card--@statusClass">
+                            <div class="dashboard-channel-card__head">
+                                <div>
+                                    <div class="module-kicker mb-1">@channel.ChannelCode</div>
+                                    <h3 class="h5 mb-1">@channel.ChannelNameEn Calculation</h3>
+                                    <p class="text-muted mb-0 small">@formulaNote</p>
+                                </div>
+                                <span class="dashboard-status-pill dashboard-status-pill--@statusClass">@statusText</span>
+                            </div>
+
+                            <div class="dashboard-channel-grid">
+                                <div>
+                                    <div class="dashboard-mini-label">Latest Ready Period</div>
+                                    <div class="dashboard-mini-value">@((channel.LatestReadyPeriodCode != string.Empty ? channel.LatestReadyPeriodCode : "-"))</div>
+                                    <div class="dashboard-mini-sub">Target @channel.LatestReadyTargetRows / Actual @channel.LatestReadyActualRows</div>
+                                </div>
+                                <div>
+                                    <div class="dashboard-mini-label">Latest Calc Run</div>
+                                    <div class="dashboard-mini-value">@(channel.LatestCalcRunId?.ToString() ?? "-")</div>
+                                    <div class="dashboard-mini-sub">@((channel.LatestRunStatus != string.Empty ? channel.LatestRunStatus : "No run yet"))</div>
+                                </div>
+                                <div>
+                                    <div class="dashboard-mini-label">Ready Period Count</div>
+                                    <div class="dashboard-mini-value">@channel.ReadyPeriodCount</div>
+                                    <div class="dashboard-mini-sub">Periods with target + actual</div>
+                                </div>
+                                <div>
+                                    <div class="dashboard-mini-label">For HR Rows</div>
+                                    <div class="dashboard-mini-value">@channel.LatestForHrRowCount</div>
+                                    <div class="dashboard-mini-sub">Latest output row count</div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-channel-actions">
+                                <a class="btn btn-sm btn-outline-dark" asp-page="/Calculation/Index">Run Calculation</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="/ForHR/Index">Review For HR</a>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <div class="row g-4">
+                <div class="col-12 col-xl-4">
+                    <div class="content-panel dashboard-process-card h-100">
+                        <div class="eyebrow">Step 1</div>
+                        <h2 class="h5">Master Setup</h2>
+                        <p class="text-muted mb-3">Manage period master, parameters, and source data readiness.</p>
+                        <div class="dashboard-process-links">
+                            <a class="module-card dashboard-mini-card" asp-page="/Periods/Index">
+                                <h3>Periods</h3>
+                                <p>Add, close, and configure calculation periods in the database.</p>
+                            </a>
+                            <a class="module-card dashboard-mini-card" asp-page="/Parameters/Index">
+                                <h3>Parameters</h3>
+                                <p>View incentive calculation parameters from master data.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="content-panel dashboard-process-card h-100">
+                        <div class="eyebrow">Step 2</div>
+                        <h2 class="h5">Calculation & Adjustment</h2>
+                        <p class="text-muted mb-3">Run calculations by channel and record special cases affecting incentive.</p>
+                        <div class="dashboard-process-links">
+                            <a class="module-card dashboard-mini-card" asp-page="/Calculation/Index">
+                                <h3>Calculation</h3>
+                                <p>Run MT, TT, S&amp;I and LAOS with live parameters.</p>
+                            </a>
+                            <a class="module-card dashboard-mini-card" asp-page="/Prorate/Index">
+                                <h3>Adjustments</h3>
+                                <p>Manage Prorate and Special Adjustment per business case.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                    <div class="content-panel dashboard-process-card h-100">
+                        <div class="eyebrow">Step 3</div>
+                        <h2 class="h5">Review & Output</h2>
+                        <p class="text-muted mb-3">Review latest results, HR rows, and approval status before publishing.</p>
+                        <div class="dashboard-process-links">
+                            <a class="module-card dashboard-mini-card" asp-page="/ForHR/Index">
+                                <h3>For HR</h3>
+                                <p>Review <code>out_for_hr_variable</code> and per-employee results.</p>
+                            </a>
+                            <a class="module-card dashboard-mini-card" asp-page="/Approvals/Index">
+                                <h3>Approvals</h3>
+                                <p>Track calc runs and approval of the latest calculation results.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row g-4">
+            <div class="col-xl-7">
+                <div class="content-panel h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="eyebrow">Recent Process Runs</div>
+                            <h2 class="h5 mb-0">Latest Calc Runs</h2>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle enterprise-table">
+                            <thead>
+                                <tr>
+                                    <th>Run</th>
+                                    <th>Channel</th>
+                                    <th>Period</th>
+                                    <th>Status</th>
+                                    <th>Approved By</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var run in Model.RecentRuns)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@run.CalcRunId</td>
+                                    <td>@run.ChannelCode</td>
+                                    <td>@run.PeriodCode</td>
+                                    <td><span class="badge rounded-pill bg-light text-dark border">@run.RunStatus</span></td>
+                                    <td>@run.ApprovedBy</td>
+                                    <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="content-panel h-100">
+                    <div class="eyebrow">System Readiness</div>
+                    <h2 class="h5">Capability Checks</h2>
+                    <ul class="list-unstyled mb-0 mt-3 dashboard-checklist">
+                        <li>MT SP: <strong>@(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</strong></li>
+                        <li>TT SP: <strong>@(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</strong></li>
+                        <li>S&I SP: <strong>@(Model.Snapshot.HasSiSp ? "Ready" : "Missing")</strong></li>
+                        <li>Laos SP: <strong>@(Model.Snapshot.HasLaosSp ? "Ready" : "Missing")</strong></li>
+                        <li>Prorate field (`start_date`): <strong>@(Model.Snapshot.HasStartDate ? "Ready" : "Missing")</strong></li>
+                        <li>Adjustment table: <strong>@(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Missing")</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ EXECUTIVE VIEW TAB -->
+    <div class="tab-pane fade" id="exec-pane" role="tabpanel">
+
+        <section class="mb-4">
+            <div class="eyebrow">Executive Overview</div>
+            <h2 class="h5 mb-3">ภาพรวมค่าตอบแทน Incentive ล่าสุด (Latest Calc Run ต่อ Channel)</h2>
+            <div class="row g-3">
+                <div class="col-6 col-lg-3">
+                    <div class="exec-kpi-card exec-kpi-card--red">
+                        <div class="exec-kpi-icon">💰</div>
+                        <div class="exec-kpi-label">Total Incentive Paid</div>
+                        <div class="exec-kpi-value">@Model.ExecutiveSummary.TotalIncentivePaid.ToString("N0")</div>
+                        <div class="exec-kpi-sub">บาท ครอบคลุมทุกช่องทางขาย</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="exec-kpi-card exec-kpi-card--blue">
+                        <div class="exec-kpi-icon">👥</div>
+                        <div class="exec-kpi-label">Employees Paid</div>
+                        <div class="exec-kpi-value">@Model.ExecutiveSummary.TotalEmployeesPaid</div>
+                        <div class="exec-kpi-sub">พนักงานที่ได้รับ Incentive</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="exec-kpi-card exec-kpi-card--green">
+                        <div class="exec-kpi-icon">✅</div>
+                        <div class="exec-kpi-label">Approved Runs</div>
+                        <div class="exec-kpi-value">@Model.ExecutiveSummary.ApprovedRunCount <span class="exec-kpi-value-of">/ @Model.ExecutiveSummary.TotalCalcRuns</span></div>
+                        <div class="exec-kpi-sub">รอบคำนวณที่อนุมัติแล้ว</div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="exec-kpi-card exec-kpi-card--amber">
+                        <div class="exec-kpi-icon">⏳</div>
+                        <div class="exec-kpi-label">Pending Approval</div>
+                        <div class="exec-kpi-value">@Model.ExecutiveSummary.PendingApprovalCount</div>
+                        <div class="exec-kpi-sub">รอบคำนวณที่รอการอนุมัติ</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <div class="eyebrow">Sales Performance</div>
+            <h2 class="h5 mb-3">ภาพรวมยอดขาย Target vs Actual ทั้ง 4 Channel (งวดล่าสุดที่มีข้อมูลครบ)</h2>
+            <div class="row g-4 mb-3">
+                <div class="col-xl-6">
+                    <div class="content-panel h-100 chart-card">
+                        <h3 class="h6 mb-3">Target vs Actual แยกตาม Channel</h3>
+                        <div class="chart-card__canvas-wrap">
+                            <canvas id="channelSalesBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="content-panel h-100 chart-card">
+                        <h3 class="h6 mb-3">แนวโน้มยอดขาย Target vs Actual ตามงวด (ล่าสุด @Model.SalesTrend.Count งวด)</h3>
+                        <div class="chart-card__canvas-wrap">
+                            <canvas id="salesTrendLineChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="table-responsive">
-                <table class="table table-sm align-middle enterprise-table">
+                <table class="table table-sm align-middle enterprise-table data-grid" id="channelSalesGrid">
                     <thead>
                         <tr>
-                            <th>Run</th>
-                            <th>Channel</th>
-                            <th>Period</th>
-                            <th>Status</th>
-                            <th>Approved By</th>
-                            <th>Updated</th>
+                            <th data-sort="text">Channel</th>
+                            <th data-sort="text">Latest Period</th>
+                            <th class="text-end" data-sort="num">Sales Target</th>
+                            <th class="text-end" data-sort="num">Sales Actual</th>
+                            <th class="text-end" data-sort="num">Variance</th>
+                            <th>Achievement %</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var run in Model.RecentRuns)
+                    @foreach (var cs in Model.ChannelSales)
                     {
+                        var variance = cs.ActualAmount - cs.TargetAmount;
+                        var achClass = cs.AchievementPct >= 100 ? "grid-bar__fill--green" : cs.AchievementPct >= 80 ? "" : "grid-bar__fill--amber";
+                        var achPctClamped = Math.Min(100, (double)cs.AchievementPct);
                         <tr>
-                            <td class="fw-semibold">@run.CalcRunId</td>
-                            <td>@run.ChannelCode</td>
-                            <td>@run.PeriodCode</td>
-                            <td><span class="badge rounded-pill bg-light text-dark border">@run.RunStatus</span></td>
-                            <td>@run.ApprovedBy</td>
-                            <td>@(run.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                            <td class="fw-semibold">@cs.ChannelCode <span class="text-muted small">(@cs.ChannelNameEn)</span></td>
+                            <td>@cs.LatestPeriodCode</td>
+                            <td class="text-end" data-value="@cs.TargetAmount">@cs.TargetAmount.ToString("N0")</td>
+                            <td class="text-end" data-value="@cs.ActualAmount">@cs.ActualAmount.ToString("N0")</td>
+                            <td class="text-end @(variance >= 0 ? "text-success" : "text-danger")" data-value="@variance">@variance.ToString("N0")</td>
+                            <td style="min-width:160px">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="grid-bar flex-grow-1"><div class="grid-bar__fill @achClass" style="width:@(achPctClamped.ToString("0.#"))%"></div></div>
+                                    <span class="small fw-semibold" style="min-width:48px">@cs.AchievementPct.ToString("0.#")%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (Model.ChannelSales.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูล Sales Target/Actual ครบทุก Channel</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-5">
+                <div class="content-panel h-100 chart-card">
+                    <div class="eyebrow">Channel Mix</div>
+                    <h2 class="h5 mb-3">สัดส่วน Incentive ตามช่องทางขาย</h2>
+                    <div class="chart-card__canvas-wrap chart-card__canvas-wrap--doughnut">
+                        <canvas id="channelDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-7">
+                <div class="content-panel h-100 chart-card">
+                    <div class="eyebrow">Trend</div>
+                    <h2 class="h5 mb-3">แนวโน้ม Incentive ตามงวด (ล่าสุด @Model.IncentiveTrend.Count งวด)</h2>
+                    <div class="chart-card__canvas-wrap">
+                        <canvas id="trendLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">สรุปตามช่องทางขาย (Channel Breakdown)</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle enterprise-table data-grid" id="channelGrid">
+                    <thead>
+                        <tr>
+                            <th data-sort="text">Channel</th>
+                            <th data-sort="text">Latest Period</th>
+                            <th class="text-end" data-sort="num">Employees</th>
+                            <th class="text-end" data-sort="num">Total Incentive</th>
+                            <th>Share</th>
+                            <th class="text-end" data-sort="num">Avg / Employee</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @{
+                        var maxChannelTotal = Model.ExecutiveSummary.ChannelBreakdown.Count > 0
+                            ? Model.ExecutiveSummary.ChannelBreakdown.Max(c => c.TotalIncentive)
+                            : 0m;
+                    }
+                    @foreach (var ch in Model.ExecutiveSummary.ChannelBreakdown)
+                    {
+                        var pct = maxChannelTotal > 0 ? (double)(ch.TotalIncentive / maxChannelTotal * 100) : 0;
+                        <tr>
+                            <td class="fw-semibold">@ch.ChannelCode <span class="text-muted small">(@ch.ChannelNameEn)</span></td>
+                            <td>@ch.LatestPeriodCode</td>
+                            <td class="text-end" data-value="@ch.EmployeeCount">@ch.EmployeeCount</td>
+                            <td class="text-end" data-value="@ch.TotalIncentive">@ch.TotalIncentive.ToString("N0")</td>
+                            <td style="min-width:120px">
+                                <div class="grid-bar"><div class="grid-bar__fill" style="width:@(pct.ToString("0.#"))%"></div></div>
+                            </td>
+                            <td class="text-end" data-value="@ch.AvgIncentive">@ch.AvgIncentive.ToString("N0")</td>
                         </tr>
                     }
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
+
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h2 class="h5 mb-0">🏆 Top Performers (Latest Run)</h2>
+                <input type="text" id="topEmployeeFilter" class="form-control form-control-sm" style="max-width:220px" placeholder="ค้นหาพนักงาน..." />
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle enterprise-table data-grid" id="topPerformersGrid">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th data-sort="text">Employee</th>
+                            <th data-sort="text">Channel</th>
+                            <th data-sort="text">Position</th>
+                            <th>Relative</th>
+                            <th class="text-end" data-sort="num">Total Incentive</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @{
+                        var maxEmp = Model.TopEmployees.Count > 0 ? Model.TopEmployees.Max(e => e.TotalVariable) : 0m;
+                        var rank = 0;
+                    }
+                    @foreach (var e in Model.TopEmployees)
+                    {
+                        rank++;
+                        var pct = maxEmp > 0 ? (double)(e.TotalVariable / maxEmp * 100) : 0;
+                        var medal = rank switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => rank.ToString() };
+                        <tr data-name="@e.EmployeeCode @e.EmployeeNameTh">
+                            <td class="text-center fw-bold">@medal</td>
+                            <td class="fw-semibold">@e.EmployeeCode <span class="text-muted small d-block">@e.EmployeeNameTh</span></td>
+                            <td>@e.ChannelCode</td>
+                            <td>@e.PositionLevelCode</td>
+                            <td style="min-width:120px">
+                                <div class="grid-bar"><div class="grid-bar__fill grid-bar__fill--green" style="width:@(pct.ToString("0.#"))%"></div></div>
+                            </td>
+                            <td class="text-end fw-semibold" data-value="@e.TotalVariable">@e.TotalVariable.ToString("N0")</td>
+                        </tr>
+                    }
+                    @if (Model.TopEmployees.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูล For HR ในระบบ</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 
-    <div class="col-xl-5">
-        <div class="content-panel h-100">
-            <div class="eyebrow">System Readiness</div>
-            <h2 class="h5">Capability Checks</h2>
-            <ul class="list-unstyled mb-0 mt-3 dashboard-checklist">
-                <li>MT SP: <strong>@(Model.Snapshot.HasMtSp ? "Ready" : "Missing")</strong></li>
-                <li>TT SP: <strong>@(Model.Snapshot.HasTtSp ? "Ready" : "Missing")</strong></li>
-                <li>S&I SP: <strong>@(Model.Snapshot.HasSiSp ? "Ready" : "Missing")</strong></li>
-                <li>Laos SP: <strong>@(Model.Snapshot.HasLaosSp ? "Ready" : "Missing")</strong></li>
-                <li>Prorate field (`start_date`): <strong>@(Model.Snapshot.HasStartDate ? "Ready" : "Missing")</strong></li>
-                <li>Adjustment table: <strong>@(Model.Snapshot.HasAdjustmentTable ? "Ready" : "Missing")</strong></li>
-            </ul>
+    <!-- ═══════════════════════════════════ STAFF LOOKUP TAB -->
+    <div class="tab-pane fade" id="staff-pane" role="tabpanel">
+        <div class="eyebrow">Self Service</div>
+        <h2 class="h5 mb-2">ค้นหาผลตอบแทน Incentive ของฉัน</h2>
+        <p class="text-muted small mb-3">เลือกพนักงานจาก Master Data เพื่อดูประวัติ Incentive ของตนเอง</p>
+
+        <form id="staffLookupForm" class="row g-2 align-items-center mb-4" onsubmit="return false;">
+            <div class="col-auto">
+                <select class="form-select" id="staffEmployeeCode" style="min-width:320px">
+                    <option value="">-- เลือกพนักงาน --</option>
+                    @foreach (var grp in Model.EmployeeOptions.GroupBy(e => e.ChannelCode))
+                    {
+                        <optgroup label="@grp.Key">
+                        @foreach (var emp in grp)
+                        {
+                            <option value="@emp.EmployeeCode">@emp.EmployeeCode — @emp.EmployeeNameTh</option>
+                        }
+                        </optgroup>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="button" id="staffLookupBtn" class="btn btn-outline-dark">ค้นหา</button>
+            </div>
+        </form>
+
+        <div id="staffLookupResult">
+            <div class="adj-empty-state">
+                <span class="text-muted small">เลือกพนักงานแล้วกดค้นหาเพื่อแสดงผลตอบแทน</span>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/lib/chart.js/chart.umd.min.js"></script>
+    <script>
+        const AJT_BRAND_COLORS = ['#d71920', '#2563eb', '#15803d', '#ca8a04', '#7c3aed', '#0891b2'];
+
+        // ── Executive charts ────────────────────────────────────────────────────
+        (function () {
+            const channelData = @Html.Raw(Model.ChannelChartDataJson);
+            const trendData = @Html.Raw(Model.TrendChartDataJson);
+
+            const doughnutCanvas = document.getElementById('channelDoughnutChart');
+            if (doughnutCanvas && channelData.length > 0) {
+                new Chart(doughnutCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: channelData.map(c => c.channelCode),
+                        datasets: [{
+                            data: channelData.map(c => c.totalIncentive),
+                            backgroundColor: AJT_BRAND_COLORS,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${ctx.label}: ${Number(ctx.raw).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const trendCanvas = document.getElementById('trendLineChart');
+            if (trendCanvas && trendData.length > 0) {
+                new Chart(trendCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(t => t.periodCode),
+                        datasets: [{
+                            label: 'Total Incentive',
+                            data: trendData.map(t => t.totalIncentive),
+                            borderColor: '#d71920',
+                            backgroundColor: 'rgba(215, 25, 32, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#d71920'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                ticks: { callback: (v) => Number(v).toLocaleString('en-US') }
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+
+        // ── Sales Target vs Actual charts ────────────────────────────────────────
+        (function () {
+            const channelSalesData = @Html.Raw(Model.ChannelSalesChartDataJson);
+            const salesTrendData = @Html.Raw(Model.SalesTrendChartDataJson);
+
+            const channelSalesCanvas = document.getElementById('channelSalesBarChart');
+            if (channelSalesCanvas && channelSalesData.length > 0) {
+                new Chart(channelSalesCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: channelSalesData.map(c => c.channelCode),
+                        datasets: [
+                            {
+                                label: 'Target',
+                                data: channelSalesData.map(c => c.targetAmount),
+                                backgroundColor: '#94a3b8',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Actual',
+                                data: channelSalesData.map(c => c.actualAmount),
+                                backgroundColor: '#2563eb',
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { ticks: { callback: (v) => Number(v).toLocaleString('en-US') } }
+                        }
+                    }
+                });
+            }
+
+            const salesTrendCanvas = document.getElementById('salesTrendLineChart');
+            if (salesTrendCanvas && salesTrendData.length > 0) {
+                new Chart(salesTrendCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: salesTrendData.map(t => t.periodCode),
+                        datasets: [
+                            {
+                                label: 'Target',
+                                data: salesTrendData.map(t => t.targetAmount),
+                                borderColor: '#94a3b8',
+                                backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                                borderDash: [6, 4],
+                                tension: 0.3,
+                                pointRadius: 3
+                            },
+                            {
+                                label: 'Actual',
+                                data: salesTrendData.map(t => t.actualAmount),
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: {
+                            y: { ticks: { callback: (v) => Number(v).toLocaleString('en-US') } }
+                        }
+                    }
+                });
+            }
+        })();
+
+        // ── Generic sortable data-grid ──────────────────────────────────────────
+        (function () {
+            document.querySelectorAll('table.data-grid').forEach(table => {
+                const headers = table.querySelectorAll('thead th[data-sort]');
+                headers.forEach((th, colIndex) => {
+                    th.style.cursor = 'pointer';
+                    th.addEventListener('click', () => {
+                        const type = th.dataset.sort;
+                        const tbody = table.querySelector('tbody');
+                        const rows = Array.from(tbody.querySelectorAll('tr'));
+                        const asc = th.dataset.sortDir !== 'asc';
+
+                        headers.forEach(h => delete h.dataset.sortDir);
+                        th.dataset.sortDir = asc ? 'asc' : 'desc';
+
+                        rows.sort((a, b) => {
+                            const cellA = a.children[colIndex];
+                            const cellB = b.children[colIndex];
+                            if (!cellA || !cellB) return 0;
+
+                            let valA = cellA.dataset.value ?? cellA.textContent.trim();
+                            let valB = cellB.dataset.value ?? cellB.textContent.trim();
+
+                            if (type === 'num') {
+                                valA = parseFloat(valA) || 0;
+                                valB = parseFloat(valB) || 0;
+                                return asc ? valA - valB : valB - valA;
+                            }
+                            return asc
+                                ? String(valA).localeCompare(String(valB))
+                                : String(valB).localeCompare(String(valA));
+                        });
+
+                        rows.forEach(r => tbody.appendChild(r));
+                    });
+                });
+            });
+
+            const filterInput = document.getElementById('topEmployeeFilter');
+            if (filterInput) {
+                filterInput.addEventListener('input', () => {
+                    const q = filterInput.value.trim().toLowerCase();
+                    document.querySelectorAll('#topPerformersGrid tbody tr[data-name]').forEach(row => {
+                        const name = (row.dataset.name || '').toLowerCase();
+                        row.style.display = name.includes(q) ? '' : 'none';
+                    });
+                });
+            }
+        })();
+
+        // ── Staff lookup ─────────────────────────────────────────────────────────
+        (function () {
+            const btn = document.getElementById('staffLookupBtn');
+            const input = document.getElementById('staffEmployeeCode');
+            const result = document.getElementById('staffLookupResult');
+            if (!btn || !input || !result) return;
+
+            let staffChart = null;
+
+            async function runLookup() {
+                const code = input.value.trim();
+                if (!code) return;
+
+                result.innerHTML = '<div class="text-center py-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> กำลังค้นหา...</div>';
+
+                try {
+                    const url = `?handler=EmployeeProfile&employeeCode=${encodeURIComponent(code)}`;
+                    const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json();
+                    result.innerHTML = renderProfile(data);
+                    renderStaffChart(data);
+                } catch (err) {
+                    result.innerHTML = `<div class="alert alert-danger">ไม่สามารถโหลดข้อมูลได้: ${err.message}</div>`;
+                }
+            }
+
+            function renderProfile(data) {
+                if (!data) {
+                    return '<div class="adj-empty-state"><span class="text-muted small">ไม่พบข้อมูลพนักงานตามรหัสที่ระบุ</span></div>';
+                }
+
+                let html = `<div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="exec-kpi-card exec-kpi-card--blue">
+                            <div class="exec-kpi-label">Employee</div>
+                            <div class="exec-kpi-value" style="font-size:1.05rem">${data.employeeCode} — ${data.employeeNameTh}</div>
+                            <div class="exec-kpi-sub">Channel ${data.channelCode} · Cost Center ${data.costCenter} · ${data.isActive ? 'Active' : 'Inactive'}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="exec-kpi-card exec-kpi-card--red">
+                            <div class="exec-kpi-label">Lifetime Total Incentive</div>
+                            <div class="exec-kpi-value">${Number(data.lifetimeTotalIncentive).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="exec-kpi-card exec-kpi-card--green">
+                            <div class="exec-kpi-label">Periods with Payout</div>
+                            <div class="exec-kpi-value">${data.history.length}</div>
+                        </div>
+                    </div>
+                </div>`;
+
+                if (!data.history || data.history.length === 0) {
+                    html += '<div class="adj-empty-state"><span class="text-muted small">ยังไม่มีประวัติ Incentive สำหรับพนักงานนี้</span></div>';
+                    return html;
+                }
+
+                html += `<div class="content-panel chart-card mb-3">
+                    <div class="eyebrow">Personal Trend</div>
+                    <h3 class="h6 mb-3">Incentive ตามงวด</h3>
+                    <div class="chart-card__canvas-wrap chart-card__canvas-wrap--small">
+                        <canvas id="staffTrendChart"></canvas>
+                    </div>
+                </div>`;
+
+                html += `<div class="table-responsive">
+                    <table class="table table-sm align-middle enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Channel</th>
+                                <th>Payment Method</th>
+                                <th>Run Status</th>
+                                <th class="text-end">Total Incentive</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                data.history.forEach(h => {
+                    html += `<tr>
+                        <td>${h.periodCode}</td>
+                        <td>${h.channelCode}</td>
+                        <td>${h.paymentMethod ?? '-'}</td>
+                        <td><span class="badge rounded-pill bg-light text-dark border">${h.runStatus}</span></td>
+                        <td class="text-end fw-semibold">${Number(h.totalVariable).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                return html;
+            }
+
+            function renderStaffChart(data) {
+                if (staffChart) {
+                    staffChart.destroy();
+                    staffChart = null;
+                }
+                if (!data || !data.history || data.history.length === 0) return;
+
+                const canvas = document.getElementById('staffTrendChart');
+                if (!canvas) return;
+
+                const ordered = [...data.history].reverse();
+                staffChart = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ordered.map(h => h.periodCode),
+                        datasets: [{
+                            label: 'Total Incentive',
+                            data: ordered.map(h => h.totalVariable),
+                            backgroundColor: '#2563eb',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { ticks: { callback: (v) => Number(v).toLocaleString('en-US') } }
+                        }
+                    }
+                });
+            }
+
+            btn.addEventListener('click', runLookup);
+            input.addEventListener('change', runLookup);
+        })();
+    </script>
+}
+
