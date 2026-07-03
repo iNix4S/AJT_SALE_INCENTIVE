@@ -18,15 +18,19 @@ public interface IMasterDataApiService
 
 public sealed class MasterDataApiService(ConnectionStringHolder holder) : IMasterDataApiService
 {
+    // หมายเหตุ: business rule (FK check, duplicate/overlap check ของ effective_from/effective_to)
+    // ถูก centralize ไว้ใน stored procedure ฝั่ง DB แล้ว (usp_master_{table}_upsert / _deactivate)
+    // ดู database/scripts/usp_master_data_management.sql — service ชั้นนี้ทำหน้าที่แค่ map
+    // column ที่อนุญาต (WritableColumns) ไปเป็น parameter ของ SP เท่านั้น ไม่มี business logic ซ้ำซ้อนอีก
     private static readonly Dictionary<string, MasterTableDef> SupportedTables = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["mst_channel"] = new("mst_channel", "channel_id", ["channel_code", "channel_name_th", "channel_name_en", "calc_type", "is_active"], null),
-        ["mst_product"] = new("mst_product", "product_id", ["product_code", "product_name_th", "product_name_en", "product_group_code", "product_group_name", "is_gd_product", "gd_product_code", "is_active"], null),
-        ["mst_product_weight"] = new("mst_product_weight", "product_weight_id", ["channel_id", "product_id", "ws_type", "weight_percent", "effective_from", "effective_to", "is_active"], ["channel_id", "product_id", "ws_type"]),
-        ["mst_incentive_rate"] = new("mst_incentive_rate", "incentive_rate_id", ["channel_id", "position_level_id", "ws_type", "rate_old", "rate_new", "effective_from", "effective_to", "is_active"], ["channel_id", "position_level_id", "ws_type"]),
-        ["mst_goal_threshold"] = new("mst_goal_threshold", "goal_threshold_id", ["achievement_from", "achievement_to", "multiplier", "sequence_no", "is_active"], null),
-        ["mst_shortage_policy"] = new("mst_shortage_policy", "shortage_policy_id", ["product_id", "shortage_month", "override_achievement", "reason_code", "remarks", "is_active"], null),
-        ["mst_org_hierarchy"] = new("mst_org_hierarchy", "hierarchy_id", ["channel_id", "effective_month", "salesman_code", "direct_sup_code", "dept_mgr_code", "div_mgr_code", "ad_code", "is_active"], null)
+        ["mst_channel"] = new("mst_channel", "channel_id", ["channel_code", "channel_name_th", "channel_name_en", "calc_type", "is_active"]),
+        ["mst_product"] = new("mst_product", "product_id", ["product_code", "product_name_th", "product_name_en", "product_group_code", "product_group_name", "is_gd_product", "gd_product_code", "product_group_id", "tt_sheet_code", "is_active"]),
+        ["mst_product_weight"] = new("mst_product_weight", "product_weight_id", ["channel_id", "product_id", "ws_type", "weight_percent", "effective_from", "effective_to", "is_active"]),
+        ["mst_incentive_rate"] = new("mst_incentive_rate", "incentive_rate_id", ["channel_id", "position_level_id", "ws_type", "rate_old", "rate_new", "effective_from", "effective_to", "is_active"]),
+        ["mst_goal_threshold"] = new("mst_goal_threshold", "goal_threshold_id", ["achievement_from", "achievement_to", "multiplier", "sequence_no", "is_active"]),
+        ["mst_shortage_policy"] = new("mst_shortage_policy", "shortage_policy_id", ["product_id", "shortage_month", "override_achievement", "reason_code", "remarks", "is_active"]),
+        ["mst_org_hierarchy"] = new("mst_org_hierarchy", "hierarchy_id", ["channel_id", "effective_month", "salesman_code", "direct_sup_code", "dept_mgr_code", "div_mgr_code", "ad_code", "ws_type", "is_active"])
     };
 
     public async Task<IReadOnlyCollection<dynamic>> ListRowsAsync(string table, int take, CancellationToken cancellationToken)
@@ -51,20 +55,17 @@ public sealed class MasterDataApiService(ConnectionStringHolder holder) : IMaste
         await using var conn = new SqlConnection(holder.Value);
         await conn.OpenAsync(cancellationToken);
 
-        await CheckOverlapAsync(conn, def, filtered, excludeId: null, cancellationToken);
-
-        var columnNames = string.Join(", ", filtered.Keys);
-        var paramNames = string.Join(", ", filtered.Keys.Select(k => $"@{k}"));
-        var sql = $@"
-INSERT INTO dbo.{def.TableName} ({columnNames}, created_at, updated_at)
-VALUES ({paramNames}, SYSUTCDATETIME(), NULL);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
-        var param = ToDynamicParameters(filtered);
+        var param = BuildUpsertParameters(def, filtered, id: null);
 
         try
         {
-            return await conn.ExecuteScalarAsync<int>(new CommandDefinition(sql, param, cancellationToken: cancellationToken));
+            await conn.ExecuteAsync(new CommandDefinition(
+                UpsertSpName(def), param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
+            return param.Get<int>(IdParameterName(def));
+        }
+        catch (SqlException ex) when (IsBusinessRuleViolation(ex))
+        {
+            throw new InvalidOperationException(ex.Message, ex);
         }
         catch (SqlException ex) when (IsConstraintViolation(ex))
         {
@@ -84,22 +85,17 @@ SELECT CAST(SCOPE_IDENTITY() AS INT);";
         await using var conn = new SqlConnection(holder.Value);
         await conn.OpenAsync(cancellationToken);
 
-        await CheckOverlapAsync(conn, def, filtered, excludeId: id, cancellationToken);
-
-        var setters = string.Join(", ", filtered.Keys.Select(k => $"{k} = @{k}"));
-        var sql = $@"
-UPDATE dbo.{def.TableName}
-SET {setters},
-    updated_at = SYSUTCDATETIME()
-WHERE {def.PrimaryKey} = @Id;
-SELECT @@ROWCOUNT;";
-
-        var param = ToDynamicParameters(filtered);
-        param.Add("Id", id, DbType.Int64);
+        var param = BuildUpsertParameters(def, filtered, id: id);
 
         try
         {
-            return await conn.ExecuteScalarAsync<int>(new CommandDefinition(sql, param, cancellationToken: cancellationToken));
+            await conn.ExecuteAsync(new CommandDefinition(
+                UpsertSpName(def), param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
+            return 1;
+        }
+        catch (SqlException ex) when (IsBusinessRuleViolation(ex))
+        {
+            throw new InvalidOperationException(ex.Message, ex);
         }
         catch (SqlException ex) when (IsConstraintViolation(ex))
         {
@@ -108,62 +104,60 @@ SELECT @@ROWCOUNT;";
     }
 
     /// <summary>
-    /// ตรวจ overlap ของช่วง effective_from/effective_to สำหรับ natural key เดียวกัน
-    /// (ป้องกันข้อมูล rate/weight ที่ทับช่วงเวลากันโดยไม่ตั้งใจ ก่อน commit จริง)
+    /// Business rule (FK check, duplicate key, overlap ของ effective_from/effective_to) ทั้งหมดถูก
+    /// centralize ไว้ใน stored procedure ฝั่ง DB แล้ว — SP จะ THROW ด้วย error number ช่วง 51000-51999
+    /// เมื่อ validation ไม่ผ่าน ส่วนนี้แค่แปลง error message ของ SP กลับเป็น 400 BadRequest ที่อ่านง่าย
     /// </summary>
-    private static async Task CheckOverlapAsync(
-        SqlConnection conn,
-        MasterTableDef def,
-        Dictionary<string, object?> values,
-        long? excludeId,
-        CancellationToken cancellationToken)
+    private static bool IsBusinessRuleViolation(SqlException ex) => ex.Number is >= 51000 and < 52000;
+
+    /// <summary>
+    /// สร้าง DynamicParameters สำหรับเรียก usp_master_{table}_upsert โดย map ชื่อ column (snake_case)
+    /// เป็นชื่อ parameter (PascalCase) ให้ตรงกับ stored procedure ฝั่ง DB โดยอัตโนมัติ
+    /// </summary>
+    private static DynamicParameters BuildUpsertParameters(MasterTableDef def, Dictionary<string, object?> filtered, long? id)
     {
-        if (def.NaturalKeyColumns is null || def.NaturalKeyColumns.Count == 0)
+        var parameters = new DynamicParameters();
+        var idParamName = IdParameterName(def);
+
+        if (id.HasValue)
         {
-            return;
+            parameters.Add(idParamName, (int)id.Value, dbType: DbType.Int32, direction: ParameterDirection.InputOutput);
+        }
+        else
+        {
+            parameters.Add(idParamName, dbType: DbType.Int32, direction: ParameterDirection.Output);
         }
 
-        if (!values.ContainsKey("effective_from"))
+        foreach (var kv in filtered)
         {
-            // ไม่มีการเปลี่ยนช่วงวันที่ในคำขอนี้ ข้ามการตรวจ overlap
-            return;
+            parameters.Add(ToPascalCase(kv.Key), kv.Value);
         }
 
-        var missingKeyColumn = def.NaturalKeyColumns.FirstOrDefault(k => !values.ContainsKey(k));
-        if (missingKeyColumn is not null)
+        return parameters;
+    }
+
+    private static string SpSuffix(MasterTableDef def) => def.TableName["mst_".Length..];
+
+    private static string UpsertSpName(MasterTableDef def) => $"dbo.usp_master_{SpSuffix(def)}_upsert";
+
+    private static string DeactivateSpName(MasterTableDef def) => $"dbo.usp_master_{SpSuffix(def)}_deactivate";
+
+    private static string IdParameterName(MasterTableDef def) => ToPascalCase(def.PrimaryKey);
+
+    /// <summary>แปลงชื่อ column แบบ snake_case (เช่น "ws_type") เป็น PascalCase ("WsType") ให้ตรงกับชื่อ parameter ของ SP</summary>
+    private static string ToPascalCase(string snakeCase)
+    {
+        var sb = new StringBuilder();
+        foreach (var part in snakeCase.Split('_', StringSplitOptions.RemoveEmptyEntries))
         {
-            throw new InvalidOperationException(
-                $"Column '{missingKeyColumn}' is required together with effective_from to validate overlapping date ranges.");
+            sb.Append(char.ToUpperInvariant(part[0]));
+            if (part.Length > 1)
+            {
+                sb.Append(part[1..]);
+            }
         }
 
-        var keyWhere = string.Join(" AND ", def.NaturalKeyColumns.Select(k => $"{k} = @{k}"));
-        var excludeClause = excludeId.HasValue ? $"AND {def.PrimaryKey} <> @ExcludeId" : string.Empty;
-
-        var sql = $@"
-SELECT COUNT(1)
-FROM dbo.{def.TableName}
-WHERE {keyWhere}
-  AND is_active = 1
-  {excludeClause}
-  AND effective_from <= @NewEffectiveTo
-  AND (effective_to IS NULL OR effective_to >= @NewEffectiveFrom);";
-
-        var param = ToDynamicParameters(values);
-        param.Add("NewEffectiveFrom", values["effective_from"]);
-        param.Add("NewEffectiveTo", values.TryGetValue("effective_to", out var to) && to is not null ? to : new DateTime(9999, 12, 31));
-        if (excludeId.HasValue)
-        {
-            param.Add("ExcludeId", excludeId.Value, DbType.Int64);
-        }
-
-        var overlapCount = await conn.ExecuteScalarAsync<int>(
-            new CommandDefinition(sql, param, cancellationToken: cancellationToken));
-
-        if (overlapCount > 0)
-        {
-            throw new InvalidOperationException(
-                $"Overlapping effective date range detected for the same key ({string.Join(", ", def.NaturalKeyColumns)}) in table '{def.TableName}'.");
-        }
+        return sb.ToString();
     }
 
     private static bool IsConstraintViolation(SqlException ex) =>
@@ -180,37 +174,42 @@ WHERE {keyWhere}
     public async Task<int> DeactivateRowAsync(string table, long id, CancellationToken cancellationToken)
     {
         var def = GetTable(table);
-        var sql = $@"
-UPDATE dbo.{def.TableName}
-SET is_active = 0,
-    updated_at = SYSUTCDATETIME()
-WHERE {def.PrimaryKey} = @Id;
-SELECT @@ROWCOUNT;";
+        var param = new DynamicParameters();
+        param.Add(IdParameterName(def), (int)id);
 
         await using var conn = new SqlConnection(holder.Value);
-        return await conn.ExecuteScalarAsync<int>(new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+        try
+        {
+            return await conn.ExecuteScalarAsync<int>(new CommandDefinition(
+                DeactivateSpName(def), param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
+        }
+        catch (SqlException ex) when (IsBusinessRuleViolation(ex))
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
     }
 
     public async Task<int> CreateChannelAsync(string channelCode, string channelNameTh, string channelNameEn, string calcType, CancellationToken cancellationToken)
     {
-        const string sql = @"
-INSERT INTO dbo.mst_channel
-(channel_code, channel_name_th, channel_name_en, calc_type, is_active, created_at, updated_at)
-VALUES
-(@ChannelCode, @ChannelNameTh, @ChannelNameEn, @CalcType, 1, SYSUTCDATETIME(), NULL);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
+        var param = new DynamicParameters();
+        param.Add("ChannelId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        param.Add("ChannelCode", channelCode.Trim().ToUpperInvariant());
+        param.Add("ChannelNameTh", channelNameTh.Trim());
+        param.Add("ChannelNameEn", channelNameEn.Trim());
+        param.Add("CalcType", calcType.Trim().ToUpperInvariant());
+        param.Add("IsActive", true);
 
         await using var conn = new SqlConnection(holder.Value);
-        return await conn.ExecuteScalarAsync<int>(
-            new CommandDefinition(sql,
-                new
-                {
-                    ChannelCode = channelCode.Trim().ToUpperInvariant(),
-                    ChannelNameTh = channelNameTh.Trim(),
-                    ChannelNameEn = channelNameEn.Trim(),
-                    CalcType = calcType.Trim().ToUpperInvariant()
-                },
-                cancellationToken: cancellationToken));
+        try
+        {
+            await conn.ExecuteAsync(new CommandDefinition(
+                "dbo.usp_master_channel_upsert", param, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken));
+            return param.Get<int>("ChannelId");
+        }
+        catch (SqlException ex) when (IsBusinessRuleViolation(ex))
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
     }
 
     public async Task<int> CloneMasterByChannelAsync(string targetChannel, string sourceChannel, CancellationToken cancellationToken)
@@ -328,6 +327,5 @@ SELECT @rows;";
     private sealed record MasterTableDef(
         string TableName,
         string PrimaryKey,
-        IReadOnlyCollection<string> WritableColumns,
-        IReadOnlyCollection<string>? NaturalKeyColumns);
+        IReadOnlyCollection<string> WritableColumns);
 }
