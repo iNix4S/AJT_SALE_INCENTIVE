@@ -39,30 +39,45 @@
         _       => "vg-overall--pending"
     };
 }
-
-
-<section class="content-panel mb-4 mt-modern-hero">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
-        <div>
-            <div class="eyebrow">Data Interface</div>
-            <h1 class="h3 mb-2">Validation Gate</h1>
-            <p class="mb-0 mt-hero-copy">
+<div class="data-interface-page">
+<section class="content-panel enterprise-hero mb-4">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+            <div class="eyebrow mb-2">Data Interface</div>
+            <h1 class="display-6 fw-semibold mb-3">Validation Gate</h1>
+            <p class="lead mb-3">
                 Verify imported BI Sales &amp; HR Employee data quality before running calculations.
             </p>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="dashboard-status-pill dashboard-status-pill--ready">BI Sales @biTotal.ToString("N0") rows</span>
+                <span class="dashboard-status-pill dashboard-status-pill--warning">HR Employees @hrTotal.ToString("N0") rows</span>
+                <span class="dashboard-status-pill dashboard-status-pill--blocked">Last validation @lastRunText</span>
+            </div>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <span class="mt-kpi-chip">
-                <span class="mt-kpi-label">BI Sales</span>
-                <span class="mt-kpi-value">@biTotal.ToString("N0") rows</span>
-            </span>
-            <span class="mt-kpi-chip">
-                <span class="mt-kpi-label">HR Employees</span>
-                <span class="mt-kpi-value">@hrTotal.ToString("N0") rows</span>
-            </span>
-            <span class="mt-kpi-chip">
-                <span class="mt-kpi-label">Last Validation</span>
-                <span class="mt-kpi-value">@lastRunText</span>
-            </span>
+        <div class="col-lg-5">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="kpi-card h-100">
+                        <div class="kpi-label">BI Sales</div>
+                        <div class="kpi-value">@biTotal.ToString("N0")</div>
+                        <div class="stat-sub small">Rows loaded for the selected period</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="kpi-card h-100">
+                        <div class="kpi-label">HR Employees</div>
+                        <div class="kpi-value">@hrTotal.ToString("N0")</div>
+                        <div class="stat-sub small">Employee rows checked for readiness</div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Last Validation</div>
+                        <div class="kpi-value">@lastRunText</div>
+                        <div class="stat-sub small">Latest completed run for the selected period</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -74,113 +89,105 @@
 }
 
 
-<section class="row g-4 mb-4 mt-modern-grid">
-
-    
+<section class="row g-4 mb-4">
     <div class="col-12 col-xl-5">
-        <article class="content-panel calc-card h-100 mt-modern-card mt-fade-in">
-            <header class="calc-card__header">
-                <div class="module-kicker mb-1">Validation Gate</div>
-                <h2 class="h5 mb-1">Run Data Validation</h2>
-                <p class="text-muted mb-0">
-                    Select a period and run the 4-group validation check before calculating incentives.
-                </p>
-            </header>
+        <article class="dashboard-channel-card dashboard-channel-card--warning h-100">
+            <div class="dashboard-channel-card__head">
+                <div>
+                    <div class="eyebrow mb-1">Validation Gate</div>
+                    <h2 class="h5 mb-1">Run Data Validation</h2>
+                    <p class="text-muted mb-0">
+                        Select a period and run the 4-group validation check before calculating incentives.
+                    </p>
+                </div>
+                <span class="dashboard-status-pill dashboard-status-pill--warning">Input surface</span>
+            </div>
 
-            <div class="mt-3 mt-controls-form">
-                <div class="mt-controls-shell">
-
-                    
-                    <div class="mt-control-block">
-                        <label for="vg-period" class="form-label mt-control-label">Period</label>
-                        <select id="vg-period" class="form-select mt-period-select"
-                                onchange="location.href='?PeriodId='+this.value+'&ShowDetails=@Model.ShowDetails.ToString().ToLower()'">
-                            @foreach (var period in Model.Periods)
+            <div class="mt-3">
+                <div class="mb-3">
+                    <label for="vg-period" class="form-label fw-semibold">Period</label>
+                    <select id="vg-period" class="form-select mt-period-select"
+                            onchange="location.href='?PeriodId='+this.value+'&ShowDetails=@Model.ShowDetails.ToString().ToLower()'">
+                        @foreach (var period in Model.Periods)
+                        {
+                            if (period.PeriodId == Model.PeriodId)
                             {
-                                if (period.PeriodId == Model.PeriodId)
-                                {
-                                    <option value="@period.PeriodId" selected>@period.PeriodCode</option>
-                                }
-                                else
-                                {
-                                    <option value="@period.PeriodId">@period.PeriodCode</option>
-                                }
-                            }
-                        </select>
-                        <div class="form-text mt-1">
-                            Validation checks BI Sales and HR Employee data for the selected period's sales month.
-                        </div>
-                    </div>
-
-                    <div class="alert alert-light border small mb-0">
-                        <div class="fw-semibold mb-2">Remark</div>
-                        <ol class="mb-0 ps-3">
-                            <li class="mb-2">
-                                <strong>Period Alignment</strong><br />
-                                เช็กว่า BI Sales กับ HR Employee มีข้อมูลอยู่ใน period ที่เลือก และตรงกับ <code>sales_month</code> ของ period นั้น
-                            </li>
-                            <li class="mb-2">
-                                <strong>Required Fields Completeness</strong><br />
-                                เช็กว่าฟิลด์สำคัญของแต่ละแถวไม่ว่างหรือไม่เป็น error เช่นข้อมูลยอดขาย, employee code, และฟิลด์บังคับอื่น ๆ
-                            </li>
-                            <li class="mb-2">
-                                <strong>Hierarchy Consistency</strong><br />
-                                เช็กว่า employee หรือข้อมูลองค์กร resolve ไปหา <code>mst_org_hierarchy</code> ได้ และโครงสร้าง hierarchy ไม่ขาด
-                            </li>
-                            <li>
-                                <strong>Mapping Completeness (MT)</strong><br />
-                                เช็กว่าแถวฝั่ง MT map <code>bi_sales_code</code> ไป <code>salesman_code</code> ได้ครบ ไม่มี mapping gap
-                            </li>
-                        </ol>
-                    </div>
-
-                    
-                    @if (summary != null)
-                    {
-                        <div class="@OverallBgCss() vg-overall-status-block">
-                            @if (isPassing)
-                            {
-                                <span>✅ All checks passed — ready for calculation.</span>
-                            }
-                            else if (isFailing)
-                            {
-                                var failCount = checks.Count(c => c.Status == "FAIL");
-                                <span>❌ @failCount check@(failCount != 1 ? "s" : "") failed — fix errors before calculating.</span>
+                                <option value="@period.PeriodId" selected>@period.PeriodCode</option>
                             }
                             else
                             {
-                                <span>⏳ Pending</span>
+                                <option value="@period.PeriodId">@period.PeriodCode</option>
                             }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="vg-overall-status-block vg-overall--pending">
-                            <span>⏳ No validation run yet for this period.</span>
-                        </div>
-                    }
+                        }
+                    </select>
+                    <div class="form-text mt-1">
+                        Validation checks BI Sales and HR Employee data for the selected period's sales month.
+                    </div>
                 </div>
 
-                
-                <div class="mt-actions-row mt-3">
-                    <form method="post" asp-page-handler="RunValidation" style="display:contents">
-                        <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
-                        <input type="hidden" name="ShowDetails" value="@Model.ShowDetails" />
-                        <button type="submit" class="btn btn-outline-secondary mt-btn-preview">
-                            Preview Data
-                        </button>
-                        <button type="submit" class="btn btn-danger mt-btn-run">
-                            🔍 Run Validation Gate
-                        </button>
-                    </form>
+                <div class="vg-workflow-callout p-3 mb-3">
+                    <div class="text-muted small fw-semibold mb-2">Remark</div>
+                    <ol class="mb-0 ps-3 small">
+                        <li class="mb-2">
+                            <strong>Period Alignment</strong><br />
+                            เช็กว่า BI Sales กับ HR Employee มีข้อมูลอยู่ใน period ที่เลือก และตรงกับ <code>sales_month</code> ของ period นั้น
+                        </li>
+                        <li class="mb-2">
+                            <strong>Required Fields Completeness</strong><br />
+                            เช็กว่าฟิลด์สำคัญของแต่ละแถวไม่ว่างหรือไม่เป็น error เช่นข้อมูลยอดขาย, employee code, และฟิลด์บังคับอื่น ๆ
+                        </li>
+                        <li class="mb-2">
+                            <strong>Hierarchy Consistency</strong><br />
+                            เช็กว่า employee หรือข้อมูลองค์กร resolve ไปหา <code>mst_org_hierarchy</code> ได้ และโครงสร้าง hierarchy ไม่ขาด
+                        </li>
+                        <li>
+                            <strong>Mapping Completeness (MT)</strong><br />
+                            เช็กว่าแถวฝั่ง MT map <code>bi_sales_code</code> ไป <code>salesman_code</code> ได้ครบ ไม่มี mapping gap
+                        </li>
+                    </ol>
                 </div>
 
-                
+                @if (summary != null)
+                {
+                    <div class="@OverallBgCss() vg-overall-status-block mb-3">
+                        @if (isPassing)
+                        {
+                            <span>✅ All checks passed — ready for calculation.</span>
+                        }
+                        else if (isFailing)
+                        {
+                            var failCount = checks.Count(c => c.Status == "FAIL");
+                            <span>❌ @failCount check@(failCount != 1 ? "s" : "") failed — fix errors before calculating.</span>
+                        }
+                        else
+                        {
+                            <span>⏳ Pending</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="vg-overall-status-block vg-overall--pending mb-3">
+                        <span>⏳ No validation run yet for this period.</span>
+                    </div>
+                }
+
+                <form method="post" asp-page-handler="RunValidation" class="d-grid gap-2">
+                    <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
+                    <input type="hidden" name="ShowDetails" value="@Model.ShowDetails" />
+                    <button type="submit" class="btn btn-outline-primary">
+                        Preview Data
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        🔍 Run Validation Gate
+                    </button>
+                </form>
+
                 @if (isPassing)
                 {
                     <form method="post" asp-page-handler="Proceed" class="mt-3">
                         <input type="hidden" name="PeriodId" value="@Model.PeriodId" />
-                        <button type="submit" class="btn btn-success w-100 mt-btn-run">
+                        <button type="submit" class="btn btn-primary w-100">
                             ▶ Proceed to Calculation
                         </button>
                     </form>
@@ -189,12 +196,11 @@
         </article>
     </div>
 
-    
     <div class="col-12 col-xl-7">
-        <article class="content-panel h-100 mt-modern-card mt-fade-in mt-fade-in-delay">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+        <article class="dashboard-channel-card dashboard-channel-card--ready h-100">
+            <div class="dashboard-channel-card__head">
                 <div>
-                    <div class="eyebrow">4-Group Check</div>
+                    <div class="eyebrow mb-1">4-Group Check</div>
                     <h2 class="h5 mb-0">Validation Status</h2>
                 </div>
                 @if (summary != null)
@@ -263,7 +269,6 @@
                 }
             </div>
 
-            
             <div class="mt-4 p-3 vg-workflow-callout">
                 <div class="text-muted small fw-semibold mb-1">Workflow</div>
                 <div class="small">
@@ -278,6 +283,8 @@
     </div>
 </section>
 
+</div>
+
 
 @if (Model.ShowDetails && summary != null)
 {
@@ -291,8 +298,8 @@
                     <h2 class="h5 mb-0">BI Sales Import Status</h2>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <span class="badge bg-secondary">Period: @summary.PeriodCode</span>
-                    <span class="badge bg-secondary">
+                    <span class="badge badge-soft-gray">Period: @summary.PeriodCode</span>
+                    <span class="badge badge-soft-gray">
                         Sales Month: @summary.SalesMonth.ToString("yyyy-MM")
                     </span>
                 </div>
@@ -406,7 +413,7 @@
                     <h2 class="h5 mb-0">HR Employee Import Status</h2>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <span class="badge bg-secondary">Period: @summary.PeriodCode</span>
+                    <span class="badge badge-soft-gray">Period: @summary.PeriodCode</span>
                 </div>
             </div>
 

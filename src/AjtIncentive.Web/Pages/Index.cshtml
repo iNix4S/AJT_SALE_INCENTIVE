@@ -5,6 +5,7 @@
     var readyChannels = Model.ChannelSummaries.Count(c => c.HasProcedure && c.ReadyPeriodCount > 0);
 }
 
+<div class="dashboard-page">
 <section class="hero-banner mb-4 enterprise-hero dashboard-hero">
     <div class="row align-items-center g-4">
         <div class="col-xl-8">
@@ -527,7 +528,7 @@
 @section Scripts {
     <script src="~/lib/chart.js/chart.umd.min.js"></script>
     <script>
-        const AJT_BRAND_COLORS = ['#d71920', '#2563eb', '#15803d', '#ca8a04', '#7c3aed', '#0891b2'];
+        const AJT_BRAND_COLORS = ['#0078d4', '#2563eb', '#64748b', '#94a3b8', '#0f172a', '#5b6472'];
 
         // ── Executive charts ────────────────────────────────────────────────────
         (function () {
@@ -571,12 +572,12 @@
                         datasets: [{
                             label: 'Total Incentive',
                             data: trendData.map(t => t.totalIncentive),
-                            borderColor: '#d71920',
-                            backgroundColor: 'rgba(215, 25, 32, 0.12)',
+                            borderColor: '#0078d4',
+                            backgroundColor: 'rgba(0, 120, 212, 0.10)',
                             fill: true,
                             tension: 0.35,
                             pointRadius: 4,
-                            pointBackgroundColor: '#d71920'
+                            pointBackgroundColor: '#0078d4'
                         }]
                     },
                     options: {
@@ -614,7 +615,7 @@
                             {
                                 label: 'Actual',
                                 data: channelSalesData.map(c => c.actualAmount),
-                                backgroundColor: '#2563eb',
+                                backgroundColor: '#0078d4',
                                 borderRadius: 6
                             }
                         ]
@@ -656,8 +657,8 @@
                             {
                                 label: 'Actual',
                                 data: salesTrendData.map(t => t.actualAmount),
-                                borderColor: '#2563eb',
-                                backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                                borderColor: '#0078d4',
+                                backgroundColor: 'rgba(0, 120, 212, 0.10)',
                                 fill: true,
                                 tension: 0.3,
                                 pointRadius: 3
@@ -858,4 +859,6 @@
         })();
     </script>
 }
+
+</div>
 

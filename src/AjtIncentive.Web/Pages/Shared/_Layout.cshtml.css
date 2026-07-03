@@ -46,3 +46,43 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+/* Fluent UI overrides for the shared layout shell. */
+:where(a.navbar-brand) {
+  white-space: normal;
+  text-align: center;
+  word-break: normal;
+}
+
+:where(a) {
+  color: #d71920;
+}
+
+:where(.btn-primary) {
+  color: #fff;
+  background-color: #d71920;
+  border-color: #d71920;
+}
+
+:where(.btn-primary:hover, .btn-primary:focus, .btn-primary:active) {
+  background-color: #b81218;
+  border-color: #b81218;
+}
+
+:where(.nav-pills .nav-link.active, .nav-pills .show > .nav-link) {
+  color: #d71920;
+  background-color: rgba(215, 25, 32, 0.1);
+  border-color: rgba(215, 25, 32, 0.18);
+}
+
+:where(.border-top) {
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+:where(.border-bottom) {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+:where(.box-shadow) {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}

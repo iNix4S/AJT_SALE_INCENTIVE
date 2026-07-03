@@ -30,15 +30,15 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AjtIncentive.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header class="site-header border-bottom">
+<body class="app-shell">
+    <header class="site-header fluent-shell border-bottom">
         <div class="brand-strip">
             <div class="container d-flex justify-content-between align-items-center py-2">
                 <span class="brand-strip__title">AJT Sale Incentive</span>
                 <span class="brand-strip__tag">Eat Well, Live Well.</span>
             </div>
         </div>
-        <nav class="navbar navbar-expand-lg navbar-light main-nav">
+        <nav class="navbar navbar-expand-lg navbar-light main-nav fluent-commandbar">
             <div class="container">
                 <a class="navbar-brand fw-semibold" asp-area="" asp-page="/Index">AJT Sale Incentive</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav"
@@ -204,13 +204,13 @@
         </nav>
     </header>
 
-    <main class="main-shell">
+    <main class="main-shell fluent-content-shell">
         <div class="container py-4">
             @RenderBody()
         </div>
     </main>
 
-    <footer class="site-footer border-top text-muted">
+    <footer class="site-footer fluent-footer border-top text-muted">
         <div class="container py-3 d-flex flex-column flex-md-row justify-content-between gap-2">
             <span>&copy; 2026 - AJT Sale Incentive Demo POC</span>
             <a asp-area="" asp-page="/Privacy" class="text-muted text-decoration-none">Privacy</a>
