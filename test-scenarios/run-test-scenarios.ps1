@@ -79,7 +79,7 @@ if (-not $envFilePath) {
 
 $envValues = Load-EnvFile -Path $envFilePath
 
-$DbServer = if ($env:DB_SERVER) { $env:DB_SERVER } elseif ($envValues.ContainsKey("DB_SERVER")) { $envValues["DB_SERVER"] } else { "192.168.11.40" }
+$DbServer = if ($env:DB_SERVER) { $env:DB_SERVER } elseif ($envValues.ContainsKey("DB_SERVER")) { $envValues["DB_SERVER"] } else { "localhost,1437" }
 $DbName = if ($env:DB_DATABASE) { $env:DB_DATABASE } elseif ($envValues.ContainsKey("DB_DATABASE")) { $envValues["DB_DATABASE"] } else { "AJT_SALE_INCENTIVE" }
 $DbUser = if ($env:DB_USERNAME) { $env:DB_USERNAME } elseif ($envValues.ContainsKey("DB_USERNAME")) { $envValues["DB_USERNAME"] } else { "sa" }
 $DbPassword = if ($env:DB_PASSWORD) { $env:DB_PASSWORD } elseif ($envValues.ContainsKey("DB_PASSWORD")) { $envValues["DB_PASSWORD"] } else { "" }
