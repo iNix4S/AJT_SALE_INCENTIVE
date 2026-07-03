@@ -164,6 +164,7 @@ $env:ApiSecurity__ApiKey = "your-dev-key-here"
 
 ## 6. ไฟล์ที่เกี่ยวข้อง
 
+- **รายละเอียด endpoint ครบทุกตัว (request/response body):** [`API_REFERENCE.md`](API_REFERENCE.md)
 - Endpoint ทั้งหมด: [`Program.cs`](Program.cs)
 - Authentication/Authorization: [`Security/ApiKeyAuthenticationHandler.cs`](Security/ApiKeyAuthenticationHandler.cs)
 - ตัวอย่าง config: [`appsettings.json`](appsettings.json)
