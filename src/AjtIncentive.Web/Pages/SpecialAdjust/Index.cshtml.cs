@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
 using AjtIncentive.Web.Services;
+using System.Data;
 
 namespace AjtIncentive.Web.Pages.SpecialAdjust;
 
@@ -41,17 +42,24 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(@"
-                INSERT INTO dbo.trn_special_adjustment
-                    (period_id, channel_id, adjustment_type, employee_code, product_code,
-                     override_achievement, reason, approved_by)
-                VALUES
-                    (@PeriodId, @ChannelId, 'SHORTAGE', NULLIF(@EmployeeCode,''), @ProductCode,
-                     @OverrideAchievement, @Reason, @ApprovedBy);",
-                new { PeriodId, ChannelId,
-                      EmployeeCode = string.IsNullOrEmpty(employeeCode) ? null : employeeCode,
-                      ProductCode = productCode, OverrideAchievement = overrideAchievement,
-                      Reason = reason, ApprovedBy = approvedBy });
+            var parameters = new DynamicParameters();
+            parameters.Add("AdjustmentId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("PeriodId", PeriodId);
+            parameters.Add("ChannelId", ChannelId);
+            parameters.Add("AdjustmentType", "SHORTAGE");
+            parameters.Add("EmployeeCode", string.IsNullOrEmpty(employeeCode) ? null : employeeCode);
+            parameters.Add("ProductCode", productCode);
+            parameters.Add("OverrideAchievement", overrideAchievement);
+            parameters.Add("AdjustedTargetAmount", null);
+            parameters.Add("AdjustedWeightPercent", null);
+            parameters.Add("Reason", reason);
+            parameters.Add("ApprovedBy", approvedBy);
+            parameters.Add("IsActive", true);
+
+            await conn.ExecuteAsync(
+                "dbo.usp_trn_special_adjustment_upsert",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
             TempData["Message"] = $"บันทึก Shortage Adjustment สำหรับ {productCode} (override={overrideAchievement:P0}) เรียบร้อย";
         }
@@ -70,20 +78,24 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(@"
-                INSERT INTO dbo.trn_special_adjustment
-                    (period_id, channel_id, adjustment_type, employee_code, product_code,
-                     adjusted_target_amount, adjusted_weight_percent, reason, approved_by)
-                VALUES
-                    (@PeriodId, @ChannelId, 'SPECIAL_SITUATION',
-                     NULLIF(@EmployeeCode,''), NULLIF(@ProductCode,''),
-                     @AdjustedTargetAmount, @AdjustedWeightPercent, @Reason, @ApprovedBy);",
-                new { PeriodId, ChannelId,
-                      EmployeeCode = string.IsNullOrEmpty(employeeCode) ? null : employeeCode,
-                      ProductCode = string.IsNullOrEmpty(productCode) ? null : productCode,
-                      AdjustedTargetAmount = adjustedTargetAmount,
-                      AdjustedWeightPercent = adjustedWeightPercent,
-                      Reason = reason, ApprovedBy = approvedBy });
+            var parameters = new DynamicParameters();
+            parameters.Add("AdjustmentId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("PeriodId", PeriodId);
+            parameters.Add("ChannelId", ChannelId);
+            parameters.Add("AdjustmentType", "SPECIAL_SITUATION");
+            parameters.Add("EmployeeCode", string.IsNullOrEmpty(employeeCode) ? null : employeeCode);
+            parameters.Add("ProductCode", string.IsNullOrEmpty(productCode) ? null : productCode);
+            parameters.Add("OverrideAchievement", null);
+            parameters.Add("AdjustedTargetAmount", adjustedTargetAmount);
+            parameters.Add("AdjustedWeightPercent", adjustedWeightPercent);
+            parameters.Add("Reason", reason);
+            parameters.Add("ApprovedBy", approvedBy);
+            parameters.Add("IsActive", true);
+
+            await conn.ExecuteAsync(
+                "dbo.usp_trn_special_adjustment_upsert",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
             TempData["Message"] = "บันทึก Special Situation Adjustment เรียบร้อย";
         }
@@ -99,9 +111,10 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(
-                "DELETE FROM dbo.trn_special_adjustment WHERE adjustment_id = @Id",
-                new { Id = adjustmentId });
+            await conn.ExecuteScalarAsync<int>(
+                "dbo.usp_trn_special_adjustment_delete",
+                new { AdjustmentId = adjustmentId },
+                commandType: CommandType.StoredProcedure);
             TempData["Message"] = "ลบ Adjustment record เรียบร้อย";
         }
         catch (Exception ex)

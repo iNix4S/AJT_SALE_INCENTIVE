@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using AjtIncentive.Web.Services;
 using System.IO.Compression;
 using System.Text;
+using System.Data;
 
 namespace AjtIncentive.Web.Pages.Target;
 
@@ -71,58 +72,26 @@ public class IndexModel : PageModel
         {
             await using var conn = new SqlConnection(_connectionString);
 
-            if (salesTargetId.HasValue)
-            {
-                var affected = await conn.ExecuteAsync(@"
-UPDATE dbo.trn_sales_target
-SET salesman_code = @SalesmanCode,
-    product_code = @ProductCode,
-    target_amount = @TargetAmount,
-    pct_salesman = @PctSalesman,
-    approved_by = NULLIF(@ApprovedBy, ''),
-    approved_at = @ApprovedAt,
-    updated_at = SYSUTCDATETIME()
-WHERE sales_target_id = @SalesTargetId
-  AND period_id = @PeriodId
-  AND channel_id = @ChannelId;",
-                    new
-                    {
-                        SalesTargetId = salesTargetId.Value,
-                        PeriodId,
-                        ChannelId,
-                        SalesmanCode = salesmanCode,
-                        ProductCode = productCode,
-                        TargetAmount = targetAmount,
-                        PctSalesman = pctSalesman,
-                        ApprovedBy = approvedBy,
-                        ApprovedAt = approvedAt
-                    });
+            var parameters = new DynamicParameters();
+            parameters.Add("SalesTargetId", salesTargetId, dbType: DbType.Int64, direction: ParameterDirection.InputOutput);
+            parameters.Add("PeriodId", PeriodId);
+            parameters.Add("ChannelId", ChannelId);
+            parameters.Add("SalesmanCode", salesmanCode);
+            parameters.Add("ProductCode", productCode);
+            parameters.Add("TargetAmount", targetAmount);
+            parameters.Add("PctSalesman", pctSalesman);
+            parameters.Add("ApprovedBy", approvedBy);
+            parameters.Add("ApprovedAt", approvedAt);
 
-                TempData["Message"] = affected > 0
-                    ? $"อัปเดต Target ID {salesTargetId.Value} เรียบร้อย"
-                    : "ไม่พบข้อมูล Target ที่ต้องการแก้ไข";
-            }
-            else
-            {
-                await conn.ExecuteAsync(@"
-INSERT INTO dbo.trn_sales_target
-    (period_id, channel_id, salesman_code, product_code, target_amount, pct_salesman, approved_by, approved_at)
-VALUES
-    (@PeriodId, @ChannelId, @SalesmanCode, @ProductCode, @TargetAmount, @PctSalesman, NULLIF(@ApprovedBy, ''), @ApprovedAt);",
-                    new
-                    {
-                        PeriodId,
-                        ChannelId,
-                        SalesmanCode = salesmanCode,
-                        ProductCode = productCode,
-                        TargetAmount = targetAmount,
-                        PctSalesman = pctSalesman,
-                        ApprovedBy = approvedBy,
-                        ApprovedAt = approvedAt
-                    });
+            await conn.ExecuteAsync(
+                "dbo.usp_trn_sales_target_upsert",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
-                TempData["Message"] = $"เพิ่ม Target สำหรับ {salesmanCode}/{productCode} เรียบร้อย";
-            }
+            var savedId = parameters.Get<long>("SalesTargetId");
+            TempData["Message"] = salesTargetId.HasValue
+                ? $"อัปเดต Target ID {savedId} เรียบร้อย"
+                : $"เพิ่ม Target สำหรับ {salesmanCode}/{productCode} เรียบร้อย (ID={savedId})";
         }
         catch (Exception ex)
         {
@@ -137,12 +106,10 @@ VALUES
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            var affected = await conn.ExecuteAsync(@"
-DELETE FROM dbo.trn_sales_target
-WHERE sales_target_id = @SalesTargetId
-  AND period_id = @PeriodId
-  AND channel_id = @ChannelId;",
-                new { SalesTargetId = salesTargetId, PeriodId, ChannelId });
+                        var affected = await conn.ExecuteScalarAsync<int>(
+                                "dbo.usp_trn_sales_target_delete",
+                                new { SalesTargetId = salesTargetId, PeriodId, ChannelId },
+                                commandType: CommandType.StoredProcedure);
 
             TempData["Message"] = affected > 0
                 ? "ลบ Target เรียบร้อย"
@@ -233,23 +200,22 @@ WHERE sales_target_id = @SalesTargetId
             var insertedCount = 0;
             foreach (var row in preview.ValidRows)
             {
-                var affected = await conn.ExecuteAsync(@"
-INSERT INTO dbo.trn_sales_target
-    (period_id, channel_id, salesman_code, product_code, target_amount, pct_salesman, approved_by, approved_at)
-VALUES
-    (@PeriodId, @ChannelId, @SalesmanCode, @ProductCode, @TargetAmount, @PctSalesman, NULLIF(@ApprovedBy, ''), @ApprovedAt);",
-                    new
-                    {
-                        PeriodId,
-                        ChannelId,
-                        SalesmanCode = row.SalesmanCode,
-                        ProductCode = row.ProductCode,
-                        TargetAmount = row.TargetAmount,
-                        PctSalesman = row.PctSalesman,
-                        ApprovedBy = row.ApprovedBy ?? string.Empty,
-                        ApprovedAt = row.ApprovedAt
-                    });
-                if (affected > 0) insertedCount++;
+                var parameters = new DynamicParameters();
+                parameters.Add("SalesTargetId", dbType: DbType.Int64, direction: ParameterDirection.Output);
+                parameters.Add("PeriodId", PeriodId);
+                parameters.Add("ChannelId", ChannelId);
+                parameters.Add("SalesmanCode", row.SalesmanCode);
+                parameters.Add("ProductCode", row.ProductCode);
+                parameters.Add("TargetAmount", row.TargetAmount);
+                parameters.Add("PctSalesman", row.PctSalesman);
+                parameters.Add("ApprovedBy", row.ApprovedBy ?? string.Empty);
+                parameters.Add("ApprovedAt", row.ApprovedAt);
+
+                await conn.ExecuteAsync(
+                    "dbo.usp_trn_sales_target_upsert",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+                insertedCount++;
             }
 
             // Clear session

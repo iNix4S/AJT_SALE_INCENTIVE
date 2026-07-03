@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using NCalc;
@@ -273,43 +274,38 @@ WHERE f.formula_code = @FormulaCode;",
     public async Task<int> SaveAsync(FormulaExpression formula)
     {
         await using var conn = new SqlConnection(_connectionString);
-        if (formula.FormulaId == 0)
-        {
-            return await conn.ExecuteAsync(@"
-INSERT INTO dbo.mst_formula_expression
-    (formula_code, formula_name, formula_step, channel_id, position_level_id,
-     ws_type, formula_expr, variables_json, description, sort_order,
-     effective_from, effective_to, is_active)
-VALUES
-    (@FormulaCode, @FormulaName, @FormulaStep, @ChannelId, @PositionLevelId,
-     @WsType, @FormulaExpr, @VariablesJson, @Description, @SortOrder,
-     @EffectiveFrom, @EffectiveTo, @IsActive);", formula);
-        }
-        return await conn.ExecuteAsync(@"
-UPDATE dbo.mst_formula_expression SET
-    formula_code       = @FormulaCode,
-    formula_name       = @FormulaName,
-    formula_step       = @FormulaStep,
-    channel_id         = @ChannelId,
-    position_level_id  = @PositionLevelId,
-    ws_type            = @WsType,
-    formula_expr       = @FormulaExpr,
-    variables_json     = @VariablesJson,
-    description        = @Description,
-    sort_order         = @SortOrder,
-    effective_from     = @EffectiveFrom,
-    effective_to       = @EffectiveTo,
-    is_active          = @IsActive,
-    updated_at         = SYSUTCDATETIME()
-WHERE formula_id = @FormulaId;", formula);
+
+        var parameters = new DynamicParameters();
+        parameters.Add("FormulaId", formula.FormulaId == 0 ? null : formula.FormulaId, dbType: DbType.Int32, direction: ParameterDirection.InputOutput);
+        parameters.Add("FormulaCode", formula.FormulaCode);
+        parameters.Add("FormulaName", formula.FormulaName);
+        parameters.Add("FormulaStep", formula.FormulaStep);
+        parameters.Add("ChannelId", formula.ChannelId);
+        parameters.Add("PositionLevelId", formula.PositionLevelId);
+        parameters.Add("WsType", formula.WsType);
+        parameters.Add("FormulaExpr", formula.FormulaExpr);
+        parameters.Add("VariablesJson", formula.VariablesJson);
+        parameters.Add("Description", formula.Description);
+        parameters.Add("SortOrder", formula.SortOrder);
+        parameters.Add("EffectiveFrom", formula.EffectiveFrom.ToDateTime(TimeOnly.MinValue));
+        parameters.Add("EffectiveTo", formula.EffectiveTo?.ToDateTime(TimeOnly.MinValue));
+        parameters.Add("IsActive", formula.IsActive);
+
+        await conn.ExecuteAsync(
+            "dbo.usp_formula_expression_upsert_version",
+            parameters,
+            commandType: CommandType.StoredProcedure);
+
+        return parameters.Get<int>("FormulaId");
     }
 
     public async Task<int> DeleteAsync(int formulaId)
     {
         await using var conn = new SqlConnection(_connectionString);
-        return await conn.ExecuteAsync(
-            "DELETE FROM dbo.mst_formula_expression WHERE formula_id = @FormulaId;",
-            new { FormulaId = formulaId });
+        return await conn.ExecuteScalarAsync<int>(
+            "dbo.usp_formula_expression_delete",
+            new { FormulaId = formulaId },
+            commandType: CommandType.StoredProcedure);
     }
 }
 

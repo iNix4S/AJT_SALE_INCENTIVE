@@ -1,4 +1,5 @@
 using AjtIncentive.Api.Contracts;
+using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using NCalc;
@@ -132,7 +133,6 @@ FROM ctx;";
                 },
                 cancellationToken: cancellationToken))).ToArray();
 
-        var now = DateTime.UtcNow;
         var approvedBy = string.IsNullOrWhiteSpace(request.ApprovedBy) ? "sandbox-api" : request.ApprovedBy;
 
         var outputRows = trialRows.Select(row =>
@@ -174,60 +174,46 @@ FROM ctx;";
             };
         }
 
-        const string insertRunSql = @"
-INSERT INTO dbo.sbx_calc_run
-(target_channel_id, source_channel_id, period_id, engine, formula_set_ref, run_status, approved_by, created_at)
-VALUES
-(@TargetChannelId, @SourceChannelId, @PeriodId, @Engine, @FormulaSetRef, N'CALCULATED', @ApprovedBy, SYSUTCDATETIME());
-SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
+        var runParameters = new DynamicParameters();
+        runParameters.Add("SandboxRunId", dbType: DbType.Int64, direction: ParameterDirection.Output);
+        runParameters.Add("TargetChannelId", targetChannelId);
+        runParameters.Add("SourceChannelId", sourceChannelId);
+        runParameters.Add("PeriodId", request.PeriodId);
+        runParameters.Add("Engine", request.Engine);
+        runParameters.Add("FormulaSetRef", request.FormulaSetRef);
+        runParameters.Add("RunStatus", "CALCULATED");
+        runParameters.Add("ApprovedBy", approvedBy);
 
-        var sandboxRunId = await conn.ExecuteScalarAsync<long>(
-            new CommandDefinition(insertRunSql,
-                new
-                {
-                    TargetChannelId = targetChannelId,
-                    SourceChannelId = sourceChannelId,
-                    request.PeriodId,
-                    request.Engine,
-                    request.FormulaSetRef,
-                    ApprovedBy = approvedBy
-                },
+        await conn.ExecuteAsync(
+            new CommandDefinition(
+                "dbo.usp_sbx_calc_run_create",
+                runParameters,
+                commandType: CommandType.StoredProcedure,
                 cancellationToken: cancellationToken));
 
-        const string insertDetailSql = @"
-INSERT INTO dbo.sbx_incentive_detail
-(
-    sandbox_run_id, salesman_code, product_code,
-    target_amount, actual_amount, achievement,
-    goal_multiplier, incentive_base, product_weight,
-    formula_expr, incentive_amount, created_at
-)
-VALUES
-(
-    @SandboxRunId, @SalesmanCode, @ProductCode,
-    @TargetAmount, @ActualAmount, @Achievement,
-    @GoalMult, @BaseRate, @WeightPct,
-    @FormulaExpr, @IncentiveAmount, SYSUTCDATETIME()
-);";
+        var sandboxRunId = runParameters.Get<long>("SandboxRunId");
 
         foreach (var row in outputRows)
         {
+            var detailParameters = new DynamicParameters();
+            detailParameters.Add("SandboxIncentiveDetailId", dbType: DbType.Int64, direction: ParameterDirection.Output);
+            detailParameters.Add("SandboxRunId", sandboxRunId);
+            detailParameters.Add("SalesmanCode", row.SalesmanCode);
+            detailParameters.Add("ProductCode", row.ProductCode);
+            detailParameters.Add("TargetAmount", row.TargetAmount);
+            detailParameters.Add("ActualAmount", row.ActualAmount);
+            detailParameters.Add("Achievement", row.Achievement);
+            detailParameters.Add("GoalMultiplier", row.GoalMult);
+            detailParameters.Add("IncentiveBase", row.BaseRate);
+            detailParameters.Add("ProductWeight", row.WeightPct);
+            detailParameters.Add("FormulaExpr", row.FormulaExpr);
+            detailParameters.Add("IncentiveAmount", row.IncentiveAmount);
+
             await conn.ExecuteAsync(
-                new CommandDefinition(insertDetailSql,
-                    new
-                    {
-                        SandboxRunId = sandboxRunId,
-                        row.SalesmanCode,
-                        row.ProductCode,
-                        row.TargetAmount,
-                        row.ActualAmount,
-                        row.Achievement,
-                        row.GoalMult,
-                        row.BaseRate,
-                        row.WeightPct,
-                        row.FormulaExpr,
-                        row.IncentiveAmount
-                    },
+                new CommandDefinition(
+                    "dbo.usp_sbx_incentive_detail_insert",
+                    detailParameters,
+                    commandType: CommandType.StoredProcedure,
                     cancellationToken: cancellationToken));
         }
 

@@ -2,6 +2,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace AjtIncentive.Web.Pages.Periods;
 
@@ -40,49 +41,24 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
+            var parameters = new DynamicParameters();
+            parameters.Add("PeriodId", Input.PeriodId > 0 ? Input.PeriodId : null, dbType: DbType.Int32, direction: ParameterDirection.InputOutput);
+            parameters.Add("PeriodCode", Input.PeriodCode);
+            parameters.Add("SalesMonth", Input.SalesMonth);
+            parameters.Add("YearNo", Input.YearNo);
+            parameters.Add("MonthNo", Input.MonthNo);
+            parameters.Add("Status", Input.Status);
+            parameters.Add("IsClosed", Input.IsClosed);
 
-            if (Input.PeriodId > 0)
-            {
-                await conn.ExecuteAsync(@"
-UPDATE dbo.mst_period
-SET period_code = @PeriodCode,
-    sales_month = @SalesMonth,
-    year_no = @YearNo,
-    month_no = @MonthNo,
-    status = @Status,
-    is_closed = @IsClosed,
-    updated_at = SYSUTCDATETIME()
-WHERE period_id = @PeriodId;",
-                new
-                {
-                    Input.PeriodId,
-                    Input.PeriodCode,
-                    Input.SalesMonth,
-                    Input.YearNo,
-                    Input.MonthNo,
-                    Input.Status,
-                    Input.IsClosed
-                });
+            await conn.ExecuteAsync(
+                "dbo.usp_master_period_upsert",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
-                TempData["Message"] = $"อัปเดต Period {Input.PeriodCode} เรียบร้อย";
-            }
-            else
-            {
-                await conn.ExecuteAsync(@"
-INSERT INTO dbo.mst_period (period_code, sales_month, year_no, month_no, status, is_closed)
-VALUES (@PeriodCode, @SalesMonth, @YearNo, @MonthNo, @Status, @IsClosed);",
-                new
-                {
-                    Input.PeriodCode,
-                    Input.SalesMonth,
-                    Input.YearNo,
-                    Input.MonthNo,
-                    Input.Status,
-                    Input.IsClosed
-                });
-
-                TempData["Message"] = $"เพิ่ม Period {Input.PeriodCode} เรียบร้อย";
-            }
+            var savedId = parameters.Get<int>("PeriodId");
+            TempData["Message"] = Input.PeriodId > 0
+                ? $"อัปเดต Period {Input.PeriodCode} เรียบร้อย (ID={savedId})"
+                : $"เพิ่ม Period {Input.PeriodCode} เรียบร้อย (ID={savedId})";
 
             return RedirectToPage();
         }
@@ -99,10 +75,13 @@ VALUES (@PeriodCode, @SalesMonth, @YearNo, @MonthNo, @Status, @IsClosed);",
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(
-                "DELETE FROM dbo.mst_period WHERE period_id = @PeriodId;",
-                new { PeriodId = periodId });
-            TempData["Message"] = $"ลบ Period ID {periodId} เรียบร้อย";
+            var deletedRows = await conn.ExecuteScalarAsync<int>(
+                "dbo.usp_master_period_delete",
+                new { PeriodId = periodId },
+                commandType: CommandType.StoredProcedure);
+            TempData["Message"] = deletedRows > 0
+                ? $"ลบ Period ID {periodId} เรียบร้อย"
+                : "ไม่พบ Period ที่ต้องการลบ";
         }
         catch (Exception ex)
         {

@@ -46,18 +46,22 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(@"
-                MERGE dbo.trn_prorate_adjustment AS tgt
-                USING (SELECT @PeriodId AS period_id, @ChannelId AS channel_id, @EmployeeCode AS employee_code) AS src
-                    ON tgt.period_id = src.period_id AND tgt.channel_id = src.channel_id AND tgt.employee_code = src.employee_code
-                WHEN MATCHED THEN
-                    UPDATE SET prorate_type = @ProrateType, actual_days = @ActualDays, total_days = @TotalDays,
-                               approved_by = @ApprovedBy, remarks = @Remarks, updated_at = SYSUTCDATETIME()
-                WHEN NOT MATCHED THEN
-                    INSERT (period_id, channel_id, employee_code, prorate_type, actual_days, total_days, approved_by, remarks)
-                    VALUES (@PeriodId, @ChannelId, @EmployeeCode, @ProrateType, @ActualDays, @TotalDays, @ApprovedBy, @Remarks);",
-                new { PeriodId, ChannelId, EmployeeCode = employeeCode, ProrateType = prorateType,
-                      ActualDays = actualDays, TotalDays = totalDays, ApprovedBy = approvedBy, Remarks = remarks });
+            var parameters = new DynamicParameters();
+            parameters.Add("ProrateId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("PeriodId", PeriodId);
+            parameters.Add("ChannelId", ChannelId);
+            parameters.Add("EmployeeCode", employeeCode);
+            parameters.Add("ProrateType", prorateType);
+            parameters.Add("ActualDays", actualDays);
+            parameters.Add("TotalDays", totalDays);
+            parameters.Add("ApprovedBy", approvedBy);
+            parameters.Add("Remarks", remarks);
+            parameters.Add("IsActive", true);
+
+            await conn.ExecuteAsync(
+                "dbo.usp_trn_prorate_adjustment_upsert",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
             TempData["Message"] = $"บันทึก Prorate ของ {employeeCode} ({prorateType}: {actualDays}/{totalDays}) เรียบร้อย";
         }
@@ -73,9 +77,10 @@ public sealed class IndexModel : PageModel
         try
         {
             await using var conn = new SqlConnection(_connectionString);
-            await conn.ExecuteAsync(
-                "DELETE FROM dbo.trn_prorate_adjustment WHERE prorate_id = @Id",
-                new { Id = prorateId });
+            await conn.ExecuteScalarAsync<int>(
+                "dbo.usp_trn_prorate_adjustment_delete",
+                new { ProrateId = prorateId },
+                commandType: CommandType.StoredProcedure);
             TempData["Message"] = "ลบ Prorate record เรียบร้อย";
         }
         catch (Exception ex)
