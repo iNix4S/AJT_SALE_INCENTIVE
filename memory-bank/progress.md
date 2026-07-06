@@ -53,6 +53,8 @@ Legend: ✅ เสร็จ | 🟡 บางส่วน | ⏳ รอคิว (
 | 9 | `vw_formula_expression_active` v2 (เพิ่ม job_function_code, 07-02) แก้ผ่าน terminal ตรง ไม่มี DDL script เก็บไว้ | เสี่ยงหายถ้า deploy DB ใหม่ / ต้อง `sp_helptext` ทุกครั้งเพื่อยืนยัน definition จริง | P2 |
 | 10 | TT Manager Cascade formula (script 55) ไม่มีระดับ AD — ยังไม่ยืนยันจาก SA ว่า SP ควรมี cascade ถึง AD หรือไม่ | เอกสาร formula อาจไม่ครบถ้ามี AD cascade จริงในอนาคต | P3 |
 | 11 | ไฟล์ `database/ddl/55_add_missing_tt_formula_expressions.sql` มี description ภาษาไทยที่ไม่ตรงกับ DB จริง (DB ถูก UPDATE เป็น English แล้วเพื่อแก้ mojibake) | หาก re-deploy script จากไฟล์จะได้ description ภาษาไทยที่อ่านไม่ออกอีก | P3 |
+| 12 | `.git/info/exclude` (local-only เครื่องนี้) ยัง block `database/`, `.github/`, `chat-log/` ทั้งที่ pre-push hook อนุญาต `database/` แล้ว | ต้อง `git add -f` ทุกครั้งที่ commit ไฟล์ใน `database/` (เคยเสนอ user ให้แก้แล้วแต่ยังไม่ได้รับคำตอบ) | P3 |
+| 13 | Concept Presentation doc ใหม่ (`docs/06-presenatation/AJT_Concept_Presentation_Excel_vs_DB_Calculation_TT_MT.md`) ยังเป็น draft ส่วน TT อ้างอิง Validation Gate แทน exact reconciliation | ต้อง review ก่อนใช้นำเสนอจริง โดยเฉพาะ TT | P2 |
 
 ## Open Business Decisions (บล็อก Sign-off ระดับ P0)
 
@@ -82,6 +84,13 @@ Legend: ✅ เสร็จ | 🟡 บางส่วน | ⏳ รอคิว (
 - **2026-07-06**: แก้ mojibake (ภาษาไทยอ่านไม่ออก) ใน column `description` ของ 10 formula_code
   (TT + SHARED) โดย UPDATE เป็น English-only text โดยตรงใน DB — สาเหตุคือ sqlcmd/codepage
   ของ terminal session ไม่รองรับ Thai text แม้ใช้ `N'...'` prefix
+- **2026-07-06**: เพิ่ม `memory-bank/` เข้า pre-push allowlist (`src/.githooks/pre-push`) และ push
+  ขึ้น GitHub ตามคำขอ user — ตรวจสอบแล้วว่าไม่มี credential หลุดก่อน push
+- **2026-07-06**: เพิ่ม DB environment profile ที่ 3 (`database-dev - cds.37.env`, server
+  `192.168.11.37` / `AJTSERVER`) เพื่อรองรับการเข้าถึงอีก server หนึ่งนอกเหนือจาก .40
+- **2026-07-06**: สร้างเอกสาร Concept Presentation (Excel vs DB, SP→Formula→Master Data,
+  Prorate, Adjust Shortage) — พบว่า MT reconciliation ตรงกับ Excel 100% ในระดับ product/
+  พนักงาน ใช้เป็นหลักฐานสำคัญของเอกสาร
 
 ## Test Coverage Summary
 
