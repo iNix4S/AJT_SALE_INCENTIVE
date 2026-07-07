@@ -1,6 +1,6 @@
 # Progress — AJT New Sale Incentive
 
-## ภาพรวมสถานะ (ณ 2026-07-06, อ้างอิง chat-log ถึง 2026.07.03_004)
+## ภาพรวมสถานะ (ณ 2026-07-07, อ้างอิง chat-log ถึง 2026.07.07_001)
 
 | หมวด | สถานะ |
 |---|---|
@@ -91,6 +91,12 @@ Legend: ✅ เสร็จ | 🟡 บางส่วน | ⏳ รอคิว (
 - **2026-07-06**: สร้างเอกสาร Concept Presentation (Excel vs DB, SP→Formula→Master Data,
   Prorate, Adjust Shortage) — พบว่า MT reconciliation ตรงกับ Excel 100% ในระดับ product/
   พนักงาน ใช้เป็นหลักฐานสำคัญของเอกสาร
+- **2026-07-07**: สร้างไฟล์ log เพิ่มเติมตามคำขอผู้ใช้ `create cat-log` ที่
+  [chat-log/cat-log_2026.07.07_001.md](../chat-log/cat-log_2026.07.07_001.md) เพื่อให้ trace
+  เหตุการณ์ของเซสชันล่าสุดครบถ้วน
+- **2026-07-07**: สร้างไฟล์ log ของวันนี้เพิ่มตามคำขอผู้ใช้ที่
+  [chat-log/copilot_2026.07.07_001.md](../chat-log/copilot_2026.07.07_001.md) เพื่อให้มี chat-log
+  รายวันในรูปแบบมาตรฐาน `copilot_YYYY.MM.DD_XXX.md`
 
 ## Test Coverage Summary
 
