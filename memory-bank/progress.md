@@ -97,6 +97,18 @@ Legend: ✅ เสร็จ | 🟡 บางส่วน | ⏳ รอคิว (
 - **2026-07-07**: สร้างไฟล์ log ของวันนี้เพิ่มตามคำขอผู้ใช้ที่
   [chat-log/copilot_2026.07.07_001.md](../chat-log/copilot_2026.07.07_001.md) เพื่อให้มี chat-log
   รายวันในรูปแบบมาตรฐาน `copilot_YYYY.MM.DD_XXX.md`
+- **2026-07-07**: commit + push memory-bank updates ขึ้น GitHub สำเร็จ (`5ab1c43`) — แยก commit
+  เฉพาะไฟล์ที่ policy อนุญาต เพราะ `chat-log/` ยังไม่อยู่ใน pre-push allowlist
+- **2026-07-08**: สร้าง [docs/06-presenatation/AJT_MT_Demo_Story_Actual_to_ForHR.md](../docs/06-presenatation/AJT_MT_Demo_Story_Actual_to_ForHR.md)
+  เป็น demo script Channel MT ครบวงจร (Actual → Calculation → ForHR + What-if เปลี่ยน Actual/
+  เปลี่ยน Master Data) ใช้ baseline จริงจาก DB และ REST API endpoints จริงประกอบ script
+- **2026-07-08**: ปรับ [docs/06-presenatation/AJT_MT_Demo_Story_Actual_to_ForHR.md](../docs/06-presenatation/AJT_MT_Demo_Story_Actual_to_ForHR.md)
+  ให้สาธิตแบบ direct DB operations ทั้งหมด (SQL UPDATE + EXEC SP) แทน API และตรวจสอบ schema จริง
+  เพิ่มเติมจาก DB (`trn_sales_actual`, `mst_formula_expression`, `trn_calc_run`, SP parameters)
+- **2026-07-08**: สร้าง [docs/06-presenatation/AJT_MT_Demo2_FormulaChange_StepByStep.md](../docs/06-presenatation/AJT_MT_Demo2_FormulaChange_StepByStep.md)
+  เป็นเอกสาร Demo #2 เฉพาะทางแบบละเอียด พร้อม mapping Excel↔DB ต่อขั้นตอนและ query ครบ
+- **2026-07-08**: สร้าง chat-log ของวันนี้เพิ่มที่
+  [chat-log/copilot_2026.07.08_001.md](../chat-log/copilot_2026.07.08_001.md)
 
 ## Test Coverage Summary
 
